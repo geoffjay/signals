@@ -11,7 +11,11 @@ export type BlockType =
   | 'multiplexer'
   | 'splitter'
   | 'oscilloscope'
-  | 'audio-output';
+  | 'audio-output'
+  | 'slider'
+  | 'button'
+  | 'toggle'
+  | 'pulse';
 
 export interface BlockConfig {
   // Wave generators
@@ -40,6 +44,14 @@ export interface BlockConfig {
   // Audio output
   volume?: number;
   muted?: boolean;
+
+  // Input controls
+  min?: number;
+  max?: number;
+  step?: number;
+  value?: number;
+  pulseValue?: number;
+  pulseDuration?: number; // in milliseconds
 }
 
 export interface BlockDefinition {
@@ -212,6 +224,46 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     defaultConfig: {
       volume: 0.5,
       muted: false
+    }
+  },
+  'slider': {
+    type: 'slider',
+    label: 'Slider',
+    inputs: [],
+    outputs: [{ id: 'out', label: 'Out' }],
+    defaultConfig: {
+      min: 0,
+      max: 1,
+      step: 0.01,
+      value: 0.5
+    }
+  },
+  'button': {
+    type: 'button',
+    label: 'Button',
+    inputs: [],
+    outputs: [{ id: 'out', label: 'Out' }],
+    defaultConfig: {
+      value: 1.0
+    }
+  },
+  'toggle': {
+    type: 'toggle',
+    label: 'Toggle',
+    inputs: [],
+    outputs: [{ id: 'out', label: 'Out' }],
+    defaultConfig: {
+      value: 1.0
+    }
+  },
+  'pulse': {
+    type: 'pulse',
+    label: 'Pulse',
+    inputs: [],
+    outputs: [{ id: 'out', label: 'Out' }],
+    defaultConfig: {
+      pulseValue: 1.0,
+      pulseDuration: 100
     }
   }
 };

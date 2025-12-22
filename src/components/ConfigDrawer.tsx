@@ -232,6 +232,108 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
     </>
   );
 
+  const renderSliderConfig = () => (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="min">Minimum</Label>
+        <Input
+          id="min"
+          type="number"
+          step="0.01"
+          value={config.min ?? 0}
+          onChange={(e) => updateConfig({ min: parseFloat(e.target.value) })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="max">Maximum</Label>
+        <Input
+          id="max"
+          type="number"
+          step="0.01"
+          value={config.max ?? 1}
+          onChange={(e) => updateConfig({ max: parseFloat(e.target.value) })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="step">Step</Label>
+        <Input
+          id="step"
+          type="number"
+          min="0.001"
+          step="0.001"
+          value={config.step ?? 0.01}
+          onChange={(e) => updateConfig({ step: parseFloat(e.target.value) })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="value">Current Value: {(config.value ?? 0.5).toFixed(3)}</Label>
+        <input
+          id="value"
+          type="range"
+          min={config.min ?? 0}
+          max={config.max ?? 1}
+          step={config.step ?? 0.01}
+          value={config.value ?? 0.5}
+          onChange={(e) => updateConfig({ value: parseFloat(e.target.value) })}
+          className="w-full"
+        />
+      </div>
+    </>
+  );
+
+  const renderButtonConfig = () => (
+    <div className="space-y-2">
+      <Label htmlFor="value">Output Value</Label>
+      <Input
+        id="value"
+        type="number"
+        step="0.01"
+        value={config.value ?? 1.0}
+        onChange={(e) => updateConfig({ value: parseFloat(e.target.value) })}
+      />
+    </div>
+  );
+
+  const renderToggleConfig = () => (
+    <div className="space-y-2">
+      <Label htmlFor="value">Output Value</Label>
+      <Input
+        id="value"
+        type="number"
+        step="0.01"
+        value={config.value ?? 1.0}
+        onChange={(e) => updateConfig({ value: parseFloat(e.target.value) })}
+      />
+    </div>
+  );
+
+  const renderPulseConfig = () => (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="pulseValue">Pulse Value</Label>
+        <Input
+          id="pulseValue"
+          type="number"
+          step="0.01"
+          value={config.pulseValue ?? 1.0}
+          onChange={(e) => updateConfig({ pulseValue: parseFloat(e.target.value) })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="pulseDuration">Duration (ms)</Label>
+        <Input
+          id="pulseDuration"
+          type="number"
+          min="10"
+          max="5000"
+          step="10"
+          value={config.pulseDuration ?? 100}
+          onChange={(e) => updateConfig({ pulseDuration: parseInt(e.target.value) })}
+        />
+      </div>
+    </>
+  );
+
   const renderConfig = () => {
     switch (blockType) {
       case 'sine-wave':
@@ -255,6 +357,14 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
         return renderOscilloscopeConfig();
       case 'audio-output':
         return renderAudioOutputConfig();
+      case 'slider':
+        return renderSliderConfig();
+      case 'button':
+        return renderButtonConfig();
+      case 'toggle':
+        return renderToggleConfig();
+      case 'pulse':
+        return renderPulseConfig();
       default:
         return null;
     }

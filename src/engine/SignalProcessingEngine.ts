@@ -6,6 +6,7 @@ export class SignalProcessingEngine {
   private nodes: Map<string, AudioNode | OscillatorNode | GainNode | BiquadFilterNode> = new Map();
   private oscillators: Map<string, OscillatorNode> = new Map();
   private analysers: Map<string, AnalyserNode> = new Map();
+  private constantSources: Map<string, ConstantSourceNode> = new Map();
   private isRunning = false;
 
   async start() {
@@ -36,7 +37,17 @@ export class SignalProcessingEngine {
       }
     });
 
+    // Stop all constant sources
+    this.constantSources.forEach((source) => {
+      try {
+        source.stop();
+      } catch (e) {
+        // Source might already be stopped
+      }
+    });
+
     this.oscillators.clear();
+    this.constantSources.clear();
     this.nodes.clear();
     this.analysers.clear();
 
@@ -78,6 +89,17 @@ export class SignalProcessingEngine {
         this.oscillators.delete(nodeId);
       }
 
+      // Stop and remove constant source if it exists
+      const constantSource = this.constantSources.get(nodeId);
+      if (constantSource) {
+        try {
+          constantSource.stop();
+        } catch (e) {
+          // Already stopped
+        }
+        this.constantSources.delete(nodeId);
+      }
+
       this.nodes.delete(nodeId);
       this.analysers.delete(nodeId);
     });
@@ -106,6 +128,19 @@ export class SignalProcessingEngine {
         try {
           oscillator.disconnect();
           oscillator.connect(gainNode);
+        } catch (e) {
+          // Connection failed
+        }
+      }
+    });
+
+    // Reconnect constant sources to their nodes
+    this.constantSources.forEach((source, nodeId) => {
+      const node = this.nodes.get(nodeId);
+      if (node) {
+        try {
+          source.disconnect();
+          source.connect(node);
         } catch (e) {
           // Connection failed
         }
@@ -174,6 +209,13 @@ export class SignalProcessingEngine {
 
       case 'audio-output':
         this.createAudioOutput(nodeId, config);
+        break;
+
+      case 'slider':
+      case 'button':
+      case 'toggle':
+      case 'pulse':
+        this.createConstantSource(nodeId, config);
         break;
 
       // Note: Multiplexer is complex and would need custom processing
@@ -294,6 +336,18 @@ export class SignalProcessingEngine {
     this.nodes.set(nodeId, gainNode);
   }
 
+  private createConstantSource(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const constantSource = this.audioContext.createConstantSource();
+    // Initialize with the configured value or 0
+    constantSource.offset.value = config.value || 0;
+    constantSource.start();
+
+    this.constantSources.set(nodeId, constantSource);
+    this.nodes.set(nodeId, constantSource);
+  }
+
   private connectNodes(sourceId: string, _sourceHandle: string, targetId: string, _targetHandle: string) {
     const sourceNode = this.nodes.get(sourceId);
     const targetNode = this.nodes.get(targetId);
@@ -309,6 +363,17 @@ export class SignalProcessingEngine {
 
   getAnalyser(nodeId: string): AnalyserNode | undefined {
     return this.analysers.get(nodeId);
+  }
+
+  getConstantSource(nodeId: string): ConstantSourceNode | undefined {
+    return this.constantSources.get(nodeId);
+  }
+
+  updateConstantValue(nodeId: string, value: number) {
+    const source = this.constantSources.get(nodeId);
+    if (source) {
+      source.offset.value = value;
+    }
   }
 
   updateNodeConfig(nodeId: string, blockType: BlockType, config: BlockConfig) {
@@ -354,6 +419,24 @@ export class SignalProcessingEngine {
       case 'audio-output': {
         if (node instanceof GainNode) {
           node.gain.value = config.muted ? 0 : (config.volume || 0.5);
+        }
+        break;
+      }
+
+      case 'slider':
+      case 'button':
+      case 'toggle': {
+        const source = this.constantSources.get(nodeId);
+        if (source instanceof ConstantSourceNode) {
+          source.offset.value = config.value || 0;
+        }
+        break;
+      }
+
+      case 'pulse': {
+        const source = this.constantSources.get(nodeId);
+        if (source instanceof ConstantSourceNode) {
+          source.offset.value = config.pulseValue || 1.0;
         }
         break;
       }

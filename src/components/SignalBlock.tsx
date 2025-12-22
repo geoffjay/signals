@@ -43,6 +43,20 @@ export const SignalBlock = memo(({ data, selected }: NodeProps) => {
         </div>
       )}
 
+      {/* Input Control Value Display */}
+      {(blockData.blockType === 'slider' ||
+        blockData.blockType === 'button' ||
+        blockData.blockType === 'toggle' ||
+        blockData.blockType === 'pulse') && (
+        <div className="mb-2 text-center">
+          <div className="text-2xl font-bold text-primary">
+            {blockData.blockType === 'pulse'
+              ? (blockData.config.pulseValue || 1.0).toFixed(2)
+              : (blockData.config.value || 0).toFixed(2)}
+          </div>
+        </div>
+      )}
+
       {/* Input Ports */}
       {hasInputs && (
         <div className="space-y-2 mb-2">

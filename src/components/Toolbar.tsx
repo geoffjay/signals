@@ -14,6 +14,10 @@ import {
   Combine,
   LineChart,
   Speaker,
+  SlidersHorizontal,
+  Circle,
+  ToggleLeft,
+  Zap as Pulse,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -36,6 +40,10 @@ const BLOCK_ICONS: Record<
   splitter: Split,
   oscilloscope: LineChart,
   "audio-output": Speaker,
+  slider: SlidersHorizontal,
+  button: Circle,
+  toggle: ToggleLeft,
+  pulse: Pulse,
 };
 
 interface ToolbarProps {
@@ -44,6 +52,10 @@ interface ToolbarProps {
 }
 
 const blockGroups = [
+  {
+    title: "Inputs",
+    blocks: ["slider", "button", "toggle", "pulse"] as BlockType[],
+  },
   {
     title: "Generators",
     blocks: [
