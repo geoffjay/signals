@@ -1,7 +1,40 @@
-import { Play, Square } from 'lucide-react';
+import {
+  Play,
+  Square,
+  Waves,
+  Box,
+  Triangle,
+  Zap,
+  Radio,
+  Volume2,
+  Filter,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Split,
+  Combine,
+  LineChart,
+  Speaker
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { type BlockType, BLOCK_DEFINITIONS } from '@/types/blocks';
+
+const BLOCK_ICONS: Record<BlockType, React.ComponentType<{ className?: string }>> = {
+  'sine-wave': Waves,
+  'square-wave': Box,
+  'triangle-wave': Triangle,
+  'sawtooth-wave': Zap,
+  'noise': Radio,
+  'gain': Volume2,
+  'low-pass-filter': TrendingDown,
+  'high-pass-filter': TrendingUp,
+  'band-pass-filter': Filter,
+  'multiplexer': Combine,
+  'splitter': Split,
+  'oscilloscope': LineChart,
+  'audio-output': Speaker,
+};
 
 interface ToolbarProps {
   isPlaying: boolean;
@@ -68,20 +101,33 @@ export function Toolbar({ isPlaying, onTogglePlayback }: ToolbarProps) {
             <div className="space-y-1">
               {group.blocks.map((blockType) => {
                 const definition = BLOCK_DEFINITIONS[blockType];
+                const Icon = BLOCK_ICONS[blockType];
                 return (
-                  <button
+                  <div
                     key={blockType}
                     draggable
                     onDragStart={(e) => onDragStart(e, blockType)}
                     className="
-                      w-full px-3 py-2 text-sm text-left
-                      bg-secondary hover:bg-accent
-                      border border-border rounded-md
-                      transition-colors cursor-grab active:cursor-grabbing
+                      flex items-center gap-2 w-full
+                      cursor-grab active:cursor-grabbing
+                      group
                     "
                   >
-                    {definition.label}
-                  </button>
+                    <div
+                      className="
+                        flex items-center justify-center
+                        w-8 h-8 flex-shrink-0
+                        bg-secondary group-hover:bg-accent
+                        border border-border rounded-md
+                        transition-colors
+                      "
+                    >
+                      <Icon className="w-4 h-4 text-foreground" />
+                    </div>
+                    <span className="text-sm text-foreground">
+                      {definition.label}
+                    </span>
+                  </div>
                 );
               })}
             </div>
