@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -20,21 +20,84 @@ import { SignalBlock, type SignalBlockData } from './SignalBlock';
 import { Toolbar } from './Toolbar';
 import { ConfigDrawer } from './ConfigDrawer';
 import { SignalProcessingEngine } from '@/engine/SignalProcessingEngine';
+import { useSignalFlowStore } from '@/store/signalFlowStore';
 
 const nodeTypes = {
   signalBlock: SignalBlock,
 };
 
 export function SignalFlowApp() {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+  // Zustand store
+  const {
+    nodes: storeNodes,
+    edges: storeEdges,
+    selectedNodeId,
+    isPlaying,
+    setNodes: setStoreNodes,
+    setEdges: setStoreEdges,
+    setSelectedNodeId,
+    setIsPlaying,
+    incrementNodeIdCounter,
+    updateNodeData,
+    deleteNode,
+  } = useSignalFlowStore();
+
+  // ReactFlow state for UI updates
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(storeNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(storeEdges);
+
+  const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const nodeIdCounter = useRef(0);
   const engineRef = useRef(new SignalProcessingEngine());
   const isInternalNodeUpdate = useRef(false);
+  const hasInitialized = useRef(false);
+
+  // Sync ReactFlow state to Zustand store
+  useEffect(() => {
+    if (!isInternalNodeUpdate.current) {
+      setStoreNodes(nodes);
+    }
+  }, [nodes, setStoreNodes]);
+
+  useEffect(() => {
+    setStoreEdges(edges);
+  }, [edges, setStoreEdges]);
+
+  // Initialize from store on mount
+  useEffect(() => {
+    if (!hasInitialized.current && storeNodes.length > 0) {
+      setNodes(storeNodes);
+      setEdges(storeEdges);
+      hasInitialized.current = true;
+
+      // If we were playing when the page refreshed, restart the engine
+      if (isPlaying) {
+        engineRef.current.start();
+        engineRef.current.updateGraph(storeNodes, storeEdges);
+
+        // Attach analysers to oscilloscope nodes
+        isInternalNodeUpdate.current = true;
+        setNodes((nds) =>
+          nds.map((node) => {
+            if (node.data.blockType === 'oscilloscope') {
+              const analyser = engineRef.current.getAnalyser(node.id);
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  analyser,
+                },
+              };
+            }
+            return node;
+          })
+        );
+        setTimeout(() => {
+          isInternalNodeUpdate.current = false;
+        }, 0);
+      }
+    }
+  }, []);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -72,18 +135,18 @@ export function SignalFlowApp() {
     (event: React.DragEvent) => {
       event.preventDefault();
 
-      if (!reactFlowWrapper.current || !reactFlowInstance) return;
+      if (!reactFlowWrapper.current || !reactFlowInstanceRef.current) return;
 
       const blockType = event.dataTransfer.getData('application/reactflow') as BlockType;
       if (!blockType) return;
 
-      const position = reactFlowInstance.screenToFlowPosition({
+      const position = reactFlowInstanceRef.current.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       });
 
       const definition = BLOCK_DEFINITIONS[blockType];
-      const newNodeId = `node-${nodeIdCounter.current++}`;
+      const newNodeId = `node-${incrementNodeIdCounter()}`;
 
       const newNode: Node = {
         id: newNodeId,
@@ -98,7 +161,7 @@ export function SignalFlowApp() {
 
       setNodes((nds) => nds.concat(newNode));
     },
-    [reactFlowInstance, setNodes]
+    [incrementNodeIdCounter, setNodes]
   );
 
   const updateNodeConfig = useCallback(
@@ -136,11 +199,11 @@ export function SignalFlowApp() {
       eds.filter((edge) => edge.source !== selectedNodeId && edge.target !== selectedNodeId)
     );
     setSelectedNodeId(null);
-  }, [selectedNodeId, setNodes, setEdges]);
+  }, [selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
 
   const togglePlayback = useCallback(() => {
-    setIsPlaying((prev) => !prev);
-  }, []);
+    setIsPlaying(!isPlaying);
+  }, [isPlaying, setIsPlaying]);
 
   // Update edge animation when playback state changes
   useEffect(() => {
@@ -293,7 +356,9 @@ export function SignalFlowApp() {
           onPaneClick={onPaneClick}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          onInit={setReactFlowInstance}
+          onInit={(instance) => {
+            reactFlowInstanceRef.current = instance;
+          }}
           nodeTypes={nodeTypes}
           fitView
         >
