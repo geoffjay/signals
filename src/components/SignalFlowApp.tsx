@@ -220,14 +220,28 @@ export function SignalFlowApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
-  // Update graph when nodes or edges change during playback
+  // Update graph when nodes are added/removed or edges change during playback
   const prevIsPlayingRef = useRef(isPlaying);
+  const prevNodeCountRef = useRef(nodes.length);
+  const prevNodeIdsRef = useRef(nodes.map(n => n.id).join(','));
+  const prevEdgesRef = useRef(edges.map(e => `${e.source}-${e.target}`).join(','));
+
   useEffect(() => {
-    // Only update if already playing and not an internal node update (analyser assignment)
-    if (isPlaying && prevIsPlayingRef.current && !isInternalNodeUpdate.current) {
+    const currentNodeIds = nodes.map(n => n.id).join(',');
+    const currentEdges = edges.map(e => `${e.source}-${e.target}`).join(',');
+    const nodeCountChanged = nodes.length !== prevNodeCountRef.current;
+    const nodeIdsChanged = currentNodeIds !== prevNodeIdsRef.current;
+    const edgesChanged = currentEdges !== prevEdgesRef.current;
+
+    // Only update if already playing and topology changed (nodes added/removed or connections changed)
+    if (isPlaying && prevIsPlayingRef.current && !isInternalNodeUpdate.current && (nodeCountChanged || nodeIdsChanged || edgesChanged)) {
       engineRef.current.updateGraph(nodes, edges);
     }
+
     prevIsPlayingRef.current = isPlaying;
+    prevNodeCountRef.current = nodes.length;
+    prevNodeIdsRef.current = currentNodeIds;
+    prevEdgesRef.current = currentEdges;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges, isPlaying]);
 
