@@ -8,7 +8,7 @@ export class SignalProcessingEngine {
   private analysers: Map<string, AnalyserNode> = new Map();
   private isRunning = false;
 
-  start() {
+  async start() {
     if (this.isRunning) return;
 
     // Create audio context if it doesn't exist
@@ -18,7 +18,7 @@ export class SignalProcessingEngine {
 
     // Resume audio context if suspended
     if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume();
+      await this.audioContext.resume();
     }
 
     this.isRunning = true;
@@ -108,6 +108,21 @@ export class SignalProcessingEngine {
           oscillator.connect(gainNode);
         } catch (e) {
           // Connection failed
+        }
+      }
+    });
+
+    // Reconnect audio outputs to destination
+    // Audio output nodes need to stay connected to speakers
+    nodes.forEach((node) => {
+      if (node.data.blockType === 'audio-output') {
+        const audioOutputNode = this.nodes.get(node.id);
+        if (audioOutputNode && this.audioContext) {
+          try {
+            audioOutputNode.connect(this.audioContext.destination);
+          } catch (e) {
+            // Already connected
+          }
         }
       }
     });

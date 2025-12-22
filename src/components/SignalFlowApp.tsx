@@ -72,31 +72,10 @@ export function SignalFlowApp() {
       setEdges(storeEdges);
       hasInitialized.current = true;
 
-      // If we were playing when the page refreshed, restart the engine
+      // Reset play state to false on page load
+      // AudioContext requires user gesture to start, so we can't auto-play
       if (isPlaying) {
-        engineRef.current.start();
-        engineRef.current.updateGraph(storeNodes, storeEdges);
-
-        // Attach analysers to oscilloscope nodes
-        isInternalNodeUpdate.current = true;
-        setNodes((nds) =>
-          nds.map((node) => {
-            if (node.data.blockType === "oscilloscope") {
-              const analyser = engineRef.current.getAnalyser(node.id);
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  analyser,
-                },
-              };
-            }
-            return node;
-          }),
-        );
-        setTimeout(() => {
-          isInternalNodeUpdate.current = false;
-        }, 0);
+        setIsPlaying(false);
       }
     }
   }, []);
@@ -242,30 +221,33 @@ export function SignalFlowApp() {
   // Handle playback state changes
   useEffect(() => {
     if (isPlaying) {
-      engineRef.current.start();
-      engineRef.current.updateGraph(nodes, edges);
+      // Start audio engine (async to properly resume AudioContext)
+      (async () => {
+        await engineRef.current.start();
+        engineRef.current.updateGraph(nodes, edges);
 
-      // Update oscilloscope nodes with analysers
-      isInternalNodeUpdate.current = true;
-      setNodes((nds) =>
-        nds.map((node) => {
-          if (node.data.blockType === "oscilloscope") {
-            const analyser = engineRef.current.getAnalyser(node.id);
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                analyser,
-              },
-            };
-          }
-          return node;
-        }),
-      );
-      // Reset flag after state update completes
-      setTimeout(() => {
-        isInternalNodeUpdate.current = false;
-      }, 0);
+        // Update oscilloscope nodes with analysers
+        isInternalNodeUpdate.current = true;
+        setNodes((nds) =>
+          nds.map((node) => {
+            if (node.data.blockType === "oscilloscope") {
+              const analyser = engineRef.current.getAnalyser(node.id);
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  analyser,
+                },
+              };
+            }
+            return node;
+          }),
+        );
+        // Reset flag after state update completes
+        setTimeout(() => {
+          isInternalNodeUpdate.current = false;
+        }, 0);
+      })();
     } else {
       engineRef.current.stop();
 
