@@ -10,30 +10,32 @@ import {
   Filter,
   TrendingUp,
   TrendingDown,
-  Activity,
   Split,
   Combine,
   LineChart,
-  Speaker
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { type BlockType, BLOCK_DEFINITIONS } from '@/types/blocks';
+  Speaker,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { type BlockType, BLOCK_DEFINITIONS } from "@/types/blocks";
 
-const BLOCK_ICONS: Record<BlockType, React.ComponentType<{ className?: string }>> = {
-  'sine-wave': Waves,
-  'square-wave': Box,
-  'triangle-wave': Triangle,
-  'sawtooth-wave': Zap,
-  'noise': Radio,
-  'gain': Volume2,
-  'low-pass-filter': TrendingDown,
-  'high-pass-filter': TrendingUp,
-  'band-pass-filter': Filter,
-  'multiplexer': Combine,
-  'splitter': Split,
-  'oscilloscope': LineChart,
-  'audio-output': Speaker,
+const BLOCK_ICONS: Record<
+  BlockType,
+  React.ComponentType<{ className?: string }>
+> = {
+  "sine-wave": Waves,
+  "square-wave": Box,
+  "triangle-wave": Triangle,
+  "sawtooth-wave": Zap,
+  noise: Radio,
+  gain: Volume2,
+  "low-pass-filter": TrendingDown,
+  "high-pass-filter": TrendingUp,
+  "band-pass-filter": Filter,
+  multiplexer: Combine,
+  splitter: Split,
+  oscilloscope: LineChart,
+  "audio-output": Speaker,
 };
 
 interface ToolbarProps {
@@ -43,27 +45,38 @@ interface ToolbarProps {
 
 const blockGroups = [
   {
-    title: 'Generators',
-    blocks: ['sine-wave', 'square-wave', 'triangle-wave', 'sawtooth-wave', 'noise'] as BlockType[],
+    title: "Generators",
+    blocks: [
+      "sine-wave",
+      "square-wave",
+      "triangle-wave",
+      "sawtooth-wave",
+      "noise",
+    ] as BlockType[],
   },
   {
-    title: 'Processors',
-    blocks: ['gain', 'low-pass-filter', 'high-pass-filter', 'band-pass-filter'] as BlockType[],
+    title: "Processors",
+    blocks: [
+      "gain",
+      "low-pass-filter",
+      "high-pass-filter",
+      "band-pass-filter",
+    ] as BlockType[],
   },
   {
-    title: 'Routing',
-    blocks: ['multiplexer', 'splitter'] as BlockType[],
+    title: "Routing",
+    blocks: ["multiplexer", "splitter"] as BlockType[],
   },
   {
-    title: 'Outputs',
-    blocks: ['oscilloscope', 'audio-output'] as BlockType[],
+    title: "Outputs",
+    blocks: ["oscilloscope", "audio-output"] as BlockType[],
   },
 ];
 
 export function Toolbar({ isPlaying, onTogglePlayback }: ToolbarProps) {
   const onDragStart = (event: React.DragEvent, blockType: BlockType) => {
-    event.dataTransfer.setData('application/reactflow', blockType);
-    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData("application/reactflow", blockType);
+    event.dataTransfer.effectAllowed = "move";
   };
 
   return (
@@ -73,7 +86,7 @@ export function Toolbar({ isPlaying, onTogglePlayback }: ToolbarProps) {
         <Button
           onClick={onTogglePlayback}
           className="w-full"
-          variant={isPlaying ? 'destructive' : 'default'}
+          variant={isPlaying ? "destructive" : "default"}
         >
           {isPlaying ? (
             <>

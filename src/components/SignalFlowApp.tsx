@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect } from "react";
 import {
   ReactFlow,
   Background,
@@ -12,15 +12,19 @@ import {
   type Node,
   ReactFlowProvider,
   type ReactFlowInstance,
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
-import { type BlockType, BLOCK_DEFINITIONS, type BlockConfig } from '@/types/blocks';
-import { SignalBlock, type SignalBlockData } from './SignalBlock';
-import { Toolbar } from './Toolbar';
-import { ConfigDrawer } from './ConfigDrawer';
-import { SignalProcessingEngine } from '@/engine/SignalProcessingEngine';
-import { useSignalFlowStore } from '@/store/signalFlowStore';
+import {
+  type BlockType,
+  BLOCK_DEFINITIONS,
+  type BlockConfig,
+} from "@/types/blocks";
+import { SignalBlock, type SignalBlockData } from "./SignalBlock";
+import { Toolbar } from "./Toolbar";
+import { ConfigDrawer } from "./ConfigDrawer";
+import { SignalProcessingEngine } from "@/engine/SignalProcessingEngine";
+import { useSignalFlowStore } from "@/store/signalFlowStore";
 
 const nodeTypes = {
   signalBlock: SignalBlock,
@@ -38,8 +42,6 @@ export function SignalFlowApp() {
     setSelectedNodeId,
     setIsPlaying,
     incrementNodeIdCounter,
-    updateNodeData,
-    deleteNode,
   } = useSignalFlowStore();
 
   // ReactFlow state for UI updates
@@ -79,7 +81,7 @@ export function SignalFlowApp() {
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
-            if (node.data.blockType === 'oscilloscope') {
+            if (node.data.blockType === "oscilloscope") {
               const analyser = engineRef.current.getAnalyser(node.id);
               return {
                 ...node,
@@ -90,7 +92,7 @@ export function SignalFlowApp() {
               };
             }
             return node;
-          })
+          }),
         );
         setTimeout(() => {
           isInternalNodeUpdate.current = false;
@@ -105,7 +107,8 @@ export function SignalFlowApp() {
       const targetHandle = params.targetHandle;
       if (targetHandle) {
         const existingEdge = edges.find(
-          (edge) => edge.target === params.target && edge.targetHandle === targetHandle
+          (edge) =>
+            edge.target === params.target && edge.targetHandle === targetHandle,
         );
         if (existingEdge) {
           // Remove the existing connection first
@@ -115,7 +118,7 @@ export function SignalFlowApp() {
 
       setEdges((eds) => addEdge({ ...params, animated: isPlaying }, eds));
     },
-    [edges, setEdges, isPlaying]
+    [edges, setEdges, isPlaying],
   );
 
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
@@ -128,7 +131,7 @@ export function SignalFlowApp() {
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer.dropEffect = "move";
   }, []);
 
   const onDrop = useCallback(
@@ -137,7 +140,9 @@ export function SignalFlowApp() {
 
       if (!reactFlowWrapper.current || !reactFlowInstanceRef.current) return;
 
-      const blockType = event.dataTransfer.getData('application/reactflow') as BlockType;
+      const blockType = event.dataTransfer.getData(
+        "application/reactflow",
+      ) as BlockType;
       if (!blockType) return;
 
       const position = reactFlowInstanceRef.current.screenToFlowPosition({
@@ -150,7 +155,7 @@ export function SignalFlowApp() {
 
       const newNode: Node = {
         id: newNodeId,
-        type: 'signalBlock',
+        type: "signalBlock",
         position,
         data: {
           blockType,
@@ -161,7 +166,7 @@ export function SignalFlowApp() {
 
       setNodes((nds) => nds.concat(newNode));
     },
-    [incrementNodeIdCounter, setNodes]
+    [incrementNodeIdCounter, setNodes],
   );
 
   const updateNodeConfig = useCallback(
@@ -185,10 +190,10 @@ export function SignalFlowApp() {
             };
           }
           return node;
-        })
+        }),
       );
     },
-    [setNodes, isPlaying]
+    [setNodes, isPlaying],
   );
 
   const deleteSelectedNode = useCallback(() => {
@@ -196,7 +201,10 @@ export function SignalFlowApp() {
 
     setNodes((nds) => nds.filter((node) => node.id !== selectedNodeId));
     setEdges((eds) =>
-      eds.filter((edge) => edge.source !== selectedNodeId && edge.target !== selectedNodeId)
+      eds.filter(
+        (edge) =>
+          edge.source !== selectedNodeId && edge.target !== selectedNodeId,
+      ),
     );
     setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
@@ -211,21 +219,24 @@ export function SignalFlowApp() {
       eds.map((edge) => ({
         ...edge,
         animated: isPlaying,
-      }))
+      })),
     );
   }, [isPlaying, setEdges]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodeId) {
+      if (
+        (event.key === "Delete" || event.key === "Backspace") &&
+        selectedNodeId
+      ) {
         event.preventDefault();
         deleteSelectedNode();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedNodeId, deleteSelectedNode]);
 
   // Handle playback state changes
@@ -238,7 +249,7 @@ export function SignalFlowApp() {
       isInternalNodeUpdate.current = true;
       setNodes((nds) =>
         nds.map((node) => {
-          if (node.data.blockType === 'oscilloscope') {
+          if (node.data.blockType === "oscilloscope") {
             const analyser = engineRef.current.getAnalyser(node.id);
             return {
               ...node,
@@ -249,7 +260,7 @@ export function SignalFlowApp() {
             };
           }
           return node;
-        })
+        }),
       );
       // Reset flag after state update completes
       setTimeout(() => {
@@ -262,7 +273,7 @@ export function SignalFlowApp() {
       isInternalNodeUpdate.current = true;
       setNodes((nds) =>
         nds.map((node) => {
-          if (node.data.blockType === 'oscilloscope') {
+          if (node.data.blockType === "oscilloscope") {
             return {
               ...node,
               data: {
@@ -272,7 +283,7 @@ export function SignalFlowApp() {
             };
           }
           return node;
-        })
+        }),
       );
       // Reset flag after state update completes
       setTimeout(() => {
@@ -286,30 +297,37 @@ export function SignalFlowApp() {
   // Update graph when nodes are added/removed or edges change during playback
   const prevIsPlayingRef = useRef(isPlaying);
   const prevNodeCountRef = useRef(nodes.length);
-  const prevNodeIdsRef = useRef(nodes.map(n => n.id).join(','));
-  const prevEdgesRef = useRef(edges.map(e => `${e.source}-${e.target}`).join(','));
+  const prevNodeIdsRef = useRef(nodes.map((n) => n.id).join(","));
+  const prevEdgesRef = useRef(
+    edges.map((e) => `${e.source}-${e.target}`).join(","),
+  );
 
   useEffect(() => {
-    const currentNodeIds = nodes.map(n => n.id).join(',');
-    const currentEdges = edges.map(e => `${e.source}-${e.target}`).join(',');
+    const currentNodeIds = nodes.map((n) => n.id).join(",");
+    const currentEdges = edges.map((e) => `${e.source}-${e.target}`).join(",");
     const nodeCountChanged = nodes.length !== prevNodeCountRef.current;
     const nodeIdsChanged = currentNodeIds !== prevNodeIdsRef.current;
     const edgesChanged = currentEdges !== prevEdgesRef.current;
 
     // Only update if already playing and topology changed (nodes added/removed or connections changed)
-    if (isPlaying && prevIsPlayingRef.current && !isInternalNodeUpdate.current && (nodeCountChanged || nodeIdsChanged || edgesChanged)) {
+    if (
+      isPlaying &&
+      prevIsPlayingRef.current &&
+      !isInternalNodeUpdate.current &&
+      (nodeCountChanged || nodeIdsChanged || edgesChanged)
+    ) {
       engineRef.current.updateGraph(nodes, edges);
 
       // Attach analysers to any new oscilloscope nodes that don't have them yet
-      const needsAnalyserUpdate = nodes.some(node =>
-        node.data.blockType === 'oscilloscope' && !node.data.analyser
+      const needsAnalyserUpdate = nodes.some(
+        (node) => node.data.blockType === "oscilloscope" && !node.data.analyser,
       );
 
       if (needsAnalyserUpdate) {
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
-            if (node.data.blockType === 'oscilloscope' && !node.data.analyser) {
+            if (node.data.blockType === "oscilloscope" && !node.data.analyser) {
               const analyser = engineRef.current.getAnalyser(node.id);
               if (analyser) {
                 return {
@@ -322,7 +340,7 @@ export function SignalFlowApp() {
               }
             }
             return node;
-          })
+          }),
         );
         setTimeout(() => {
           isInternalNodeUpdate.current = false;
@@ -371,7 +389,9 @@ export function SignalFlowApp() {
       {/* Right Configuration Drawer */}
       <ConfigDrawer
         node={selectedNode as Node<SignalBlockData> | undefined}
-        onConfigChange={(config) => selectedNode && updateNodeConfig(selectedNode.id, config)}
+        onConfigChange={(config) =>
+          selectedNode && updateNodeConfig(selectedNode.id, config)
+        }
         onDelete={deleteSelectedNode}
         onClose={() => setSelectedNodeId(null)}
       />
