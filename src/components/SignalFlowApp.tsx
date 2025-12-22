@@ -34,6 +34,7 @@ export function SignalFlowApp() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const nodeIdCounter = useRef(0);
   const engineRef = useRef(new SignalProcessingEngine());
+  const isInternalNodeUpdate = useRef(false);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -171,6 +172,7 @@ export function SignalFlowApp() {
       engineRef.current.updateGraph(nodes, edges);
 
       // Update oscilloscope nodes with analysers
+      isInternalNodeUpdate.current = true;
       setNodes((nds) =>
         nds.map((node) => {
           if (node.data.blockType === 'oscilloscope') {
@@ -186,10 +188,15 @@ export function SignalFlowApp() {
           return node;
         })
       );
+      // Reset flag after state update completes
+      setTimeout(() => {
+        isInternalNodeUpdate.current = false;
+      }, 0);
     } else {
       engineRef.current.stop();
 
       // Clear analysers from oscilloscope nodes
+      isInternalNodeUpdate.current = true;
       setNodes((nds) =>
         nds.map((node) => {
           if (node.data.blockType === 'oscilloscope') {
@@ -204,19 +211,25 @@ export function SignalFlowApp() {
           return node;
         })
       );
+      // Reset flag after state update completes
+      setTimeout(() => {
+        isInternalNodeUpdate.current = false;
+      }, 0);
     }
     // Only depend on isPlaying to avoid infinite loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
   // Update graph when nodes or edges change during playback
-  // Note: We intentionally exclude 'nodes' from dependencies to avoid infinite loop
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const prevIsPlayingRef = useRef(isPlaying);
   useEffect(() => {
-    if (isPlaying) {
+    // Only update if already playing and not an internal node update (analyser assignment)
+    if (isPlaying && prevIsPlayingRef.current && !isInternalNodeUpdate.current) {
       engineRef.current.updateGraph(nodes, edges);
     }
-  }, [edges, isPlaying]);
+    prevIsPlayingRef.current = isPlaying;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes, edges, isPlaying]);
 
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 

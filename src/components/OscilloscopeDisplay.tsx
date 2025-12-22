@@ -33,6 +33,14 @@ export function OscilloscopeDisplay({
       ctx.fillStyle = 'rgb(20, 20, 30)';
       ctx.fillRect(0, 0, width, height);
 
+      // Draw center line
+      ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
+      ctx.stroke();
+
       // Draw waveform
       ctx.lineWidth = 2;
       ctx.strokeStyle = 'rgb(100, 200, 100)';
@@ -42,8 +50,10 @@ export function OscilloscopeDisplay({
       let x = 0;
 
       for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = (v * height) / 2;
+        // dataArray[i] is 0-255, where 128 is center (zero crossing)
+        // Convert to -1 to +1 range, then map to canvas coordinates
+        const normalizedValue = (dataArray[i] - 128) / 128.0;
+        const y = height / 2 - (normalizedValue * height / 2);
 
         if (i === 0) {
           ctx.moveTo(x, y);
@@ -54,7 +64,6 @@ export function OscilloscopeDisplay({
         x += sliceWidth;
       }
 
-      ctx.lineTo(width, height / 2);
       ctx.stroke();
 
       animationFrameRef.current = requestAnimationFrame(() => draw());
