@@ -46,18 +46,73 @@ export class SignalProcessingEngine {
   updateGraph(nodes: Node[], edges: Edge[]) {
     if (!this.isRunning || !this.audioContext) return;
 
-    // Stop and clear existing nodes
-    this.stop();
-    this.start();
+    // Get current node IDs
+    const currentNodeIds = new Set(Array.from(this.nodes.keys()));
+    const newNodeIds = new Set(nodes.map(n => n.id));
 
-    // Create audio nodes for each block
-    nodes.forEach((node) => {
+    // Find nodes to remove
+    const nodesToRemove = Array.from(currentNodeIds).filter(id => !newNodeIds.has(id));
+
+    // Find nodes to add
+    const nodesToAdd = nodes.filter(node => !currentNodeIds.has(node.id));
+
+    // Remove deleted nodes
+    nodesToRemove.forEach(nodeId => {
+      const node = this.nodes.get(nodeId);
+      if (node) {
+        try {
+          node.disconnect();
+        } catch (e) {
+          // Already disconnected
+        }
+      }
+
+      // Stop and remove oscillator if it exists
+      const oscillator = this.oscillators.get(nodeId);
+      if (oscillator) {
+        try {
+          oscillator.stop();
+        } catch (e) {
+          // Already stopped
+        }
+        this.oscillators.delete(nodeId);
+      }
+
+      this.nodes.delete(nodeId);
+      this.analysers.delete(nodeId);
+    });
+
+    // Add new nodes
+    nodesToAdd.forEach((node) => {
       const blockType = node.data.blockType as BlockType;
       const config = node.data.config as BlockConfig;
       this.createAudioNode(node.id, blockType, config);
     });
 
-    // Connect nodes based on edges
+    // Rebuild all connections (simpler than tracking connection changes)
+    // First disconnect everything
+    this.nodes.forEach((node) => {
+      try {
+        node.disconnect();
+      } catch (e) {
+        // Already disconnected
+      }
+    });
+
+    // Reconnect oscillators to their gain nodes
+    this.oscillators.forEach((oscillator, nodeId) => {
+      const gainNode = this.nodes.get(nodeId);
+      if (gainNode && gainNode instanceof GainNode) {
+        try {
+          oscillator.disconnect();
+          oscillator.connect(gainNode);
+        } catch (e) {
+          // Connection failed
+        }
+      }
+    });
+
+    // Apply new connections from edges
     edges.forEach((edge) => {
       this.connectNodes(edge.source, edge.sourceHandle!, edge.target, edge.targetHandle!);
     });
