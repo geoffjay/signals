@@ -236,6 +236,35 @@ export function SignalFlowApp() {
     // Only update if already playing and topology changed (nodes added/removed or connections changed)
     if (isPlaying && prevIsPlayingRef.current && !isInternalNodeUpdate.current && (nodeCountChanged || nodeIdsChanged || edgesChanged)) {
       engineRef.current.updateGraph(nodes, edges);
+
+      // Attach analysers to any new oscilloscope nodes that don't have them yet
+      const needsAnalyserUpdate = nodes.some(node =>
+        node.data.blockType === 'oscilloscope' && !node.data.analyser
+      );
+
+      if (needsAnalyserUpdate) {
+        isInternalNodeUpdate.current = true;
+        setNodes((nds) =>
+          nds.map((node) => {
+            if (node.data.blockType === 'oscilloscope' && !node.data.analyser) {
+              const analyser = engineRef.current.getAnalyser(node.id);
+              if (analyser) {
+                return {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    analyser,
+                  },
+                };
+              }
+            }
+            return node;
+          })
+        );
+        setTimeout(() => {
+          isInternalNodeUpdate.current = false;
+        }, 0);
+      }
     }
 
     prevIsPlayingRef.current = isPlaying;
