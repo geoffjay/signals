@@ -153,15 +153,20 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   return (
     <div
       className={`
-        bg-card border-2 rounded-lg px-4 py-3 min-w-[180px]
+        bg-card border-2 rounded-lg min-w-[180px]
         transition-all duration-200
         ${selected ? 'border-primary shadow-lg' : 'border-border'}
       `}
     >
-      {/* Block Label */}
-      <div className="text-sm font-medium text-foreground text-center mb-2">
-        {blockData.label}
+      {/* Block Header */}
+      <div className="bg-muted/50 px-3 py-2 rounded-t-md border-b border-border">
+        <div className="text-sm font-medium text-foreground">
+          {blockData.label}
+        </div>
       </div>
+
+      {/* Block Content */}
+      <div className="px-4 py-3 relative">{/* Content wrapper for proper positioning */}
 
       {/* Oscilloscope Display */}
       {blockData.blockType === 'oscilloscope' && (
@@ -263,23 +268,25 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
 
       {/* Input Ports */}
       {hasInputs && (
-        <div className="space-y-2 mb-2">
-          {inputs.map((input, index) => (
-            <div key={input.id} className="relative flex items-center">
+        <div className="mt-2 space-y-1">
+          {inputs.map((input) => (
+            <div key={input.id} className="relative flex items-center h-6">
               <Handle
                 type="target"
                 position={Position.Left}
                 id={input.id}
                 style={{
-                  left: -8,
-                  top: `calc(50% + ${(index - (inputs.length - 1) / 2) * 32}px)`,
+                  left: '-6px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
                   background: '#555',
                   width: 12,
                   height: 12,
                   border: '2px solid #fff',
+                  position: 'absolute',
                 }}
               />
-              <span className="text-xs text-muted-foreground ml-2">{input.label}</span>
+              <span className="text-xs text-muted-foreground ml-3">{input.label}</span>
             </div>
           ))}
         </div>
@@ -287,27 +294,30 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
 
       {/* Output Ports */}
       {hasOutputs && (
-        <div className="space-y-2">
-          {outputs.map((output, index) => (
-            <div key={output.id} className="relative flex items-center justify-end">
-              <span className="text-xs text-muted-foreground mr-2">{output.label}</span>
+        <div className="mt-2 space-y-1 flex flex-col items-end">
+          {outputs.map((output) => (
+            <div key={output.id} className="relative flex items-center justify-end h-6">
+              <span className="text-xs text-muted-foreground mr-3">{output.label}</span>
               <Handle
                 type="source"
                 position={Position.Right}
                 id={output.id}
                 style={{
-                  right: -8,
-                  top: `calc(50% + ${(index - (outputs.length - 1) / 2) * 32}px)`,
+                  right: '-6px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
                   background: '#555',
                   width: 12,
                   height: 12,
                   border: '2px solid #fff',
+                  position: 'absolute',
                 }}
               />
             </div>
           ))}
         </div>
       )}
+      </div>{/* Close content wrapper */}
     </div>
   );
 });
