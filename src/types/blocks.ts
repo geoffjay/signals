@@ -50,6 +50,7 @@ export interface BlockConfig {
   max?: number;
   step?: number;
   value?: number;
+  outputValue?: number; // For button and toggle: the value to output when active
   pulseValue?: number;
   pulseDuration?: number; // in milliseconds
 }
@@ -244,7 +245,8 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     inputs: [],
     outputs: [{ id: 'out', label: 'Out' }],
     defaultConfig: {
-      value: 1.0
+      value: 0,
+      outputValue: 1.0
     }
   },
   'toggle': {
@@ -253,7 +255,8 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     inputs: [],
     outputs: [{ id: 'out', label: 'Out' }],
     defaultConfig: {
-      value: 1.0
+      value: 0,
+      outputValue: 1.0
     }
   },
   'pulse': {

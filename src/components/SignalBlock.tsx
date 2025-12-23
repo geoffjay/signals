@@ -1,7 +1,9 @@
-import { memo } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { memo, useCallback, useRef } from 'react';
+import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
 import { type BlockType, type BlockConfig, getBlockInputs, getBlockOutputs } from '@/types/blocks';
 import { OscilloscopeDisplay } from './OscilloscopeDisplay';
+import { Slider } from '@/components/ui/slider';
+import { Button } from '@/components/ui/button';
 
 export interface SignalBlockData extends Record<string, unknown> {
   blockType: BlockType;
@@ -10,13 +12,56 @@ export interface SignalBlockData extends Record<string, unknown> {
   analyser?: AnalyserNode;
 }
 
-export const SignalBlock = memo(({ data, selected }: NodeProps) => {
+export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   const blockData = data as SignalBlockData;
   const inputs = getBlockInputs(blockData.blockType, blockData.config);
   const outputs = getBlockOutputs(blockData.blockType, blockData.config);
+  const { updateNodeData } = useReactFlow();
+  const pulseTimeoutRef = useRef<number | null>(null);
 
   const hasInputs = inputs.length > 0;
   const hasOutputs = outputs.length > 0;
+
+  // Prevent node selection when clicking on interactive controls
+  const stopPropagation = useCallback((e: React.MouseEvent | React.PointerEvent) => {
+    e.stopPropagation();
+  }, []);
+
+  const handleSliderChange = useCallback((values: number[]) => {
+    updateNodeData(id, { config: { ...blockData.config, value: values[0] } });
+  }, [id, blockData.config, updateNodeData]);
+
+  const handleButtonPress = useCallback(() => {
+    updateNodeData(id, { config: { ...blockData.config, value: blockData.config.outputValue ?? 1.0 } });
+  }, [id, blockData.config, updateNodeData]);
+
+  const handleButtonRelease = useCallback(() => {
+    updateNodeData(id, { config: { ...blockData.config, value: 0 } });
+  }, [id, blockData.config, updateNodeData]);
+
+  const handleToggle = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    const currentValue = blockData.config.value ?? 0;
+    const newValue = currentValue === 0 ? (blockData.config.outputValue ?? 1.0) : 0;
+    updateNodeData(id, { config: { ...blockData.config, value: newValue } });
+  }, [id, blockData.config, updateNodeData]);
+
+  const handlePulse = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Clear any existing pulse timeout
+    if (pulseTimeoutRef.current !== null) {
+      window.clearTimeout(pulseTimeoutRef.current);
+    }
+
+    // Set pulse value
+    updateNodeData(id, { config: { ...blockData.config, value: blockData.config.pulseValue ?? 1.0 } });
+
+    // Reset to 0 after pulse duration
+    pulseTimeoutRef.current = window.setTimeout(() => {
+      updateNodeData(id, { config: { ...blockData.config, value: 0 } });
+      pulseTimeoutRef.current = null;
+    }, blockData.config.pulseDuration ?? 100);
+  }, [id, blockData.config, updateNodeData]);
 
   return (
     <div
@@ -43,16 +88,74 @@ export const SignalBlock = memo(({ data, selected }: NodeProps) => {
         </div>
       )}
 
-      {/* Input Control Value Display */}
-      {(blockData.blockType === 'slider' ||
-        blockData.blockType === 'button' ||
-        blockData.blockType === 'toggle' ||
-        blockData.blockType === 'pulse') && (
-        <div className="mb-2 text-center">
-          <div className="text-2xl font-bold text-primary">
-            {blockData.blockType === 'pulse'
-              ? (blockData.config.pulseValue || 1.0).toFixed(2)
-              : (blockData.config.value || 0).toFixed(2)}
+      {/* Slider Control */}
+      {blockData.blockType === 'slider' && (
+        <div className="mb-3 px-2 nodrag nowheel">
+          <div className="text-xs text-center text-muted-foreground mb-1">
+            {(blockData.config.value ?? 0.5).toFixed(3)}
+          </div>
+          <div onPointerDown={stopPropagation}>
+            <Slider
+              min={blockData.config.min ?? 0}
+              max={blockData.config.max ?? 1}
+              step={blockData.config.step ?? 0.01}
+              value={[blockData.config.value ?? 0.5]}
+              onValueChange={handleSliderChange}
+              className="w-full"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Button Control */}
+      {blockData.blockType === 'button' && (
+        <div className="mb-2 nodrag nowheel">
+          <Button
+            onMouseDown={handleButtonPress}
+            onMouseUp={handleButtonRelease}
+            onMouseLeave={handleButtonRelease}
+            onPointerDown={stopPropagation}
+            onClick={stopPropagation}
+            className="w-full"
+            size="sm"
+          >
+            Press
+          </Button>
+          <div className="text-xs text-center text-muted-foreground mt-1">
+            {(blockData.config.value ?? 0).toFixed(2)}
+          </div>
+        </div>
+      )}
+
+      {/* Toggle Control */}
+      {blockData.blockType === 'toggle' && (
+        <div className="mb-2 nodrag nowheel">
+          <Button
+            onClick={handleToggle}
+            variant={(blockData.config.value ?? 0) === 0 ? 'outline' : 'default'}
+            className="w-full"
+            size="sm"
+          >
+            {(blockData.config.value ?? 0) === 0 ? 'Off' : 'On'}
+          </Button>
+          <div className="text-xs text-center text-muted-foreground mt-1">
+            {(blockData.config.value ?? 0).toFixed(2)}
+          </div>
+        </div>
+      )}
+
+      {/* Pulse Control */}
+      {blockData.blockType === 'pulse' && (
+        <div className="mb-2 nodrag nowheel">
+          <Button
+            onClick={handlePulse}
+            className="w-full"
+            size="sm"
+          >
+            Pulse
+          </Button>
+          <div className="text-xs text-center text-muted-foreground mt-1">
+            {(blockData.config.value ?? 0).toFixed(2)}
           </div>
         </div>
       )}

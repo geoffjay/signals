@@ -265,44 +265,31 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
           onChange={(e) => updateConfig({ step: parseFloat(e.target.value) })}
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="value">Current Value: {(config.value ?? 0.5).toFixed(3)}</Label>
-        <input
-          id="value"
-          type="range"
-          min={config.min ?? 0}
-          max={config.max ?? 1}
-          step={config.step ?? 0.01}
-          value={config.value ?? 0.5}
-          onChange={(e) => updateConfig({ value: parseFloat(e.target.value) })}
-          className="w-full"
-        />
-      </div>
     </>
   );
 
   const renderButtonConfig = () => (
     <div className="space-y-2">
-      <Label htmlFor="value">Output Value</Label>
+      <Label htmlFor="outputValue">Output Value</Label>
       <Input
-        id="value"
+        id="outputValue"
         type="number"
         step="0.01"
-        value={config.value ?? 1.0}
-        onChange={(e) => updateConfig({ value: parseFloat(e.target.value) })}
+        value={config.outputValue ?? 1.0}
+        onChange={(e) => updateConfig({ outputValue: parseFloat(e.target.value) })}
       />
     </div>
   );
 
   const renderToggleConfig = () => (
     <div className="space-y-2">
-      <Label htmlFor="value">Output Value</Label>
+      <Label htmlFor="outputValue">Output Value</Label>
       <Input
-        id="value"
+        id="outputValue"
         type="number"
         step="0.01"
-        value={config.value ?? 1.0}
-        onChange={(e) => updateConfig({ value: parseFloat(e.target.value) })}
+        value={config.outputValue ?? 1.0}
+        onChange={(e) => updateConfig({ outputValue: parseFloat(e.target.value) })}
       />
     </div>
   );

@@ -102,7 +102,7 @@ export function SignalFlowApp() {
 
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
     setSelectedNodeId(node.id);
-  }, []);
+  }, [setSelectedNodeId]);
 
   const onPaneClick = useCallback(() => {
     setSelectedNodeId(null);
