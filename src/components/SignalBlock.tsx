@@ -22,11 +22,6 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   const hasInputs = inputs.length > 0;
   const hasOutputs = outputs.length > 0;
 
-  // Debug logging
-  if (blockData.blockType === 'slider') {
-    console.log('[DEBUG] Slider rendering:', { id, value: blockData.config.value, config: blockData.config });
-  }
-
   // Prevent node selection when clicking on interactive controls
   const stopPropagation = useCallback((e: React.MouseEvent | React.PointerEvent) => {
     e.stopPropagation();
@@ -34,12 +29,10 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
 
   const handleSliderChange = useCallback((values: number[] | number) => {
     const newValue = Array.isArray(values) ? values[0] : values;
-    console.log('[DEBUG] handleSliderChange called:', { id, values, newValue });
-    setNodes((nds) => {
-      const updated = nds.map((node) => {
+    setNodes((nds) =>
+      nds.map((node) => {
         if (node.id === id) {
           const nodeData = node.data as SignalBlockData;
-          console.log('[DEBUG] Updating node:', { id, oldValue: nodeData.config.value, newValue });
           return {
             ...node,
             data: {
@@ -49,10 +42,8 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
           };
         }
         return node;
-      });
-      console.log('[DEBUG] setNodes completed');
-      return updated;
-    });
+      })
+    );
   }, [id, setNodes]);
 
   const handleButtonPress = useCallback(() => {
