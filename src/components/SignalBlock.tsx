@@ -29,7 +29,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     e.stopPropagation();
   }, []);
 
-  const handleSliderChange = useCallback((values: number[] | number) => {
+  const handleSliderChange = useCallback((values: readonly number[] | number) => {
     const newValue = Array.isArray(values) ? values[0] : values;
     setNodes((nds) =>
       nds.map((node) => {

@@ -12,7 +12,7 @@ export function NumericMeterDisplay({
   unit = ''
 }: NumericMeterDisplayProps) {
   const [currentValue, setCurrentValue] = useState(0);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!analyser) {
