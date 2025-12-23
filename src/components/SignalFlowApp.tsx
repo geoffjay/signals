@@ -239,11 +239,11 @@ export function SignalFlowApp() {
         await engineRef.current.start();
         engineRef.current.updateGraph(nodes, edges);
 
-        // Update oscilloscope nodes with analysers
+        // Update oscilloscope and numeric-meter nodes with analysers
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
-            if (node.data.blockType === "oscilloscope") {
+            if (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter") {
               const analyser = engineRef.current.getAnalyser(node.id);
               return {
                 ...node,
@@ -264,11 +264,11 @@ export function SignalFlowApp() {
     } else {
       engineRef.current.stop();
 
-      // Clear analysers from oscilloscope nodes
+      // Clear analysers from oscilloscope and numeric-meter nodes
       isInternalNodeUpdate.current = true;
       setNodes((nds) =>
         nds.map((node) => {
-          if (node.data.blockType === "oscilloscope") {
+          if (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter") {
             return {
               ...node,
               data: {
@@ -288,6 +288,31 @@ export function SignalFlowApp() {
     // Only depend on isPlaying to avoid infinite loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
+
+  // Track previous values of input controls to detect changes
+  const prevInputValuesRef = useRef<Map<string, number>>(new Map());
+
+  // Update engine when input control values change during playback
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    nodes.forEach((node) => {
+      const blockType = node.data.blockType as BlockType;
+      const config = node.data.config as BlockConfig;
+
+      // Check if this is an input control block
+      if (['slider', 'button', 'toggle', 'pulse'].includes(blockType)) {
+        const currentValue = config.value ?? 0;
+        const prevValue = prevInputValuesRef.current.get(node.id);
+
+        // If value changed, update the engine
+        if (prevValue !== currentValue) {
+          engineRef.current.updateConstantValue(node.id, currentValue);
+          prevInputValuesRef.current.set(node.id, currentValue);
+        }
+      }
+    });
+  }, [nodes, isPlaying]);
 
   // Update graph when nodes are added/removed or edges change during playback
   const prevIsPlayingRef = useRef(isPlaying);
@@ -313,16 +338,16 @@ export function SignalFlowApp() {
     ) {
       engineRef.current.updateGraph(nodes, edges);
 
-      // Attach analysers to any new oscilloscope nodes that don't have them yet
+      // Attach analysers to any new oscilloscope or numeric-meter nodes that don't have them yet
       const needsAnalyserUpdate = nodes.some(
-        (node) => node.data.blockType === "oscilloscope" && !node.data.analyser,
+        (node) => (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter") && !node.data.analyser,
       );
 
       if (needsAnalyserUpdate) {
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
-            if (node.data.blockType === "oscilloscope" && !node.data.analyser) {
+            if ((node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter") && !node.data.analyser) {
               const analyser = engineRef.current.getAnalyser(node.id);
               if (analyser) {
                 return {

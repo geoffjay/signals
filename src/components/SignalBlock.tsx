@@ -2,6 +2,7 @@ import { memo, useCallback, useRef } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
 import { type BlockType, type BlockConfig, getBlockInputs, getBlockOutputs } from '@/types/blocks';
 import { OscilloscopeDisplay } from './OscilloscopeDisplay';
+import { NumericMeterDisplay } from './NumericMeterDisplay';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 
@@ -249,16 +250,11 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
       {/* Numeric Meter Display */}
       {blockData.blockType === 'numeric-meter' && (
         <div className="mb-2 px-2">
-          <div className="bg-muted rounded-md p-3 text-center">
-            <div className="text-2xl font-mono font-bold text-foreground">
-              {(blockData.currentValue ?? 0).toFixed(blockData.config.decimals ?? 3)}
-              {blockData.config.unit && (
-                <span className="text-sm ml-1 text-muted-foreground">
-                  {blockData.config.unit}
-                </span>
-              )}
-            </div>
-          </div>
+          <NumericMeterDisplay
+            analyser={blockData.analyser}
+            decimals={blockData.config.decimals ?? 3}
+            unit={blockData.config.unit ?? ''}
+          />
         </div>
       )}
 

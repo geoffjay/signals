@@ -218,6 +218,10 @@ export class SignalProcessingEngine {
         this.createConstantSource(nodeId, config);
         break;
 
+      case 'numeric-meter':
+        this.createAnalyser(nodeId);
+        break;
+
       // Note: Multiplexer is complex and would need custom processing
       // For now, we'll skip it or implement a simplified version
     }
