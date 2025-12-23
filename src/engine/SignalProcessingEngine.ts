@@ -7,6 +7,7 @@ export class SignalProcessingEngine {
   private oscillators: Map<string, OscillatorNode> = new Map();
   private analysers: Map<string, AnalyserNode> = new Map();
   private constantSources: Map<string, ConstantSourceNode> = new Map();
+  private reactFlowNodes: Node[] = [];
   private isRunning = false;
 
   async start() {
@@ -20,6 +21,13 @@ export class SignalProcessingEngine {
     // Resume audio context if suspended
     if (this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
+    }
+
+    // Register AudioWorklet processor for division
+    try {
+      await this.audioContext.audioWorklet.addModule('/divide-processor.js');
+    } catch (e) {
+      console.error('Failed to load divide-processor AudioWorklet:', e);
     }
 
     this.isRunning = true;
@@ -56,6 +64,9 @@ export class SignalProcessingEngine {
 
   updateGraph(nodes: Node[], edges: Edge[]) {
     if (!this.isRunning || !this.audioContext) return;
+
+    // Store nodes for connection routing logic
+    this.reactFlowNodes = nodes;
 
     // Get current node IDs
     const currentNodeIds = new Set(Array.from(this.nodes.keys()));
@@ -98,6 +109,17 @@ export class SignalProcessingEngine {
           // Already stopped
         }
         this.constantSources.delete(nodeId);
+      }
+
+      // Remove helper nodes (e.g., inverter for subtraction)
+      const helperNode = this.nodes.get(`${nodeId}-inverter`);
+      if (helperNode) {
+        try {
+          helperNode.disconnect();
+        } catch (e) {
+          // Already disconnected
+        }
+        this.nodes.delete(`${nodeId}-inverter`);
       }
 
       this.nodes.delete(nodeId);
@@ -220,6 +242,22 @@ export class SignalProcessingEngine {
 
       case 'numeric-meter':
         this.createAnalyser(nodeId);
+        break;
+
+      case 'add':
+        this.createAddNode(nodeId);
+        break;
+
+      case 'subtract':
+        this.createSubtractNode(nodeId);
+        break;
+
+      case 'multiply':
+        this.createMultiplyNode(nodeId);
+        break;
+
+      case 'divide':
+        this.createDivideNode(nodeId);
         break;
 
       // Note: Multiplexer is complex and would need custom processing
@@ -352,14 +390,125 @@ export class SignalProcessingEngine {
     this.nodes.set(nodeId, constantSource);
   }
 
-  private connectNodes(sourceId: string, _sourceHandle: string, targetId: string, _targetHandle: string) {
+  private createAddNode(nodeId: string) {
+    if (!this.audioContext) return;
+
+    // Addition: Web Audio naturally mixes (adds) inputs
+    const gainNode = this.audioContext.createGain();
+    gainNode.gain.value = 1.0;
+
+    this.nodes.set(nodeId, gainNode);
+  }
+
+  private createSubtractNode(nodeId: string) {
+    if (!this.audioContext) return;
+
+    // Subtraction: A - B = A + (-1 * B)
+    // Create summer node (main node)
+    const summer = this.audioContext.createGain();
+    summer.gain.value = 1.0;
+
+    // Create inverter node for input B
+    const inverter = this.audioContext.createGain();
+    inverter.gain.value = -1.0;
+
+    // Connect inverter to summer
+    inverter.connect(summer);
+
+    // Store both nodes
+    this.nodes.set(nodeId, summer); // Main node
+    this.nodes.set(`${nodeId}-inverter`, inverter); // Helper node
+  }
+
+  private createMultiplyNode(nodeId: string) {
+    if (!this.audioContext) return;
+
+    // Multiplication: One signal modulates gain of the other
+    // inputA passes through the gain node
+    // inputB modulates the gain parameter
+    const gainNode = this.audioContext.createGain();
+    gainNode.gain.value = 0; // Will be modulated by inputB
+
+    this.nodes.set(nodeId, gainNode);
+  }
+
+  private createDivideNode(nodeId: string) {
+    if (!this.audioContext) return;
+
+    try {
+      // Create AudioWorkletNode for division
+      const divideNode = new AudioWorkletNode(this.audioContext, 'divide-processor', {
+        numberOfInputs: 2,
+        numberOfOutputs: 1,
+        outputChannelCount: [1]
+      });
+
+      this.nodes.set(nodeId, divideNode);
+    } catch (e) {
+      console.error('Failed to create divide AudioWorkletNode:', e);
+      // Fallback to a simple gain node if worklet fails
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 1.0;
+      this.nodes.set(nodeId, gainNode);
+    }
+  }
+
+  private connectNodes(sourceId: string, _sourceHandle: string, targetId: string, targetHandle: string) {
     const sourceNode = this.nodes.get(sourceId);
     const targetNode = this.nodes.get(targetId);
 
     if (!sourceNode || !targetNode) return;
 
+    // Get target block type for handle-specific routing
+    const targetBlock = this.reactFlowNodes.find(n => n.id === targetId);
+    const blockType = targetBlock?.data?.blockType as BlockType | undefined;
+
     try {
-      sourceNode.connect(targetNode);
+      switch (blockType) {
+        case 'add':
+          // Both inputs connect to same node (mixing/addition)
+          sourceNode.connect(targetNode);
+          break;
+
+        case 'subtract':
+          if (targetHandle === 'inputA') {
+            // Input A connects directly to summer
+            sourceNode.connect(targetNode);
+          } else if (targetHandle === 'inputB') {
+            // Input B connects through inverter
+            const inverter = this.nodes.get(`${targetId}-inverter`);
+            if (inverter) {
+              sourceNode.connect(inverter);
+            }
+          }
+          break;
+
+        case 'multiply':
+          if (targetHandle === 'inputA') {
+            // Signal A passes through gain node
+            sourceNode.connect(targetNode);
+          } else if (targetHandle === 'inputB') {
+            // Signal B modulates the gain parameter
+            sourceNode.connect((targetNode as GainNode).gain);
+          }
+          break;
+
+        case 'divide':
+          // AudioWorklet with 2 inputs: connect to appropriate input channel
+          if (targetHandle === 'inputA') {
+            // Connect to first input (channel 0)
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (targetHandle === 'inputB') {
+            // Connect to second input (channel 1)
+            sourceNode.connect(targetNode, 0, 1);
+          }
+          break;
+
+        default:
+          // Default connection for all other block types
+          sourceNode.connect(targetNode);
+          break;
+      }
     } catch (e) {
       console.error('Failed to connect nodes:', e);
     }

@@ -19,6 +19,10 @@ import {
   ToggleLeft,
   Zap as Pulse,
   Gauge,
+  Plus,
+  Minus,
+  X as MultiplyIcon,
+  Divide,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -46,6 +50,10 @@ const BLOCK_ICONS: Record<
   toggle: ToggleLeft,
   pulse: Pulse,
   "numeric-meter": Gauge,
+  add: Plus,
+  subtract: Minus,
+  multiply: MultiplyIcon,
+  divide: Divide,
 };
 
 interface ToolbarProps {
@@ -76,6 +84,10 @@ const blockGroups = [
       "high-pass-filter",
       "band-pass-filter",
     ] as BlockType[],
+  },
+  {
+    title: "Math",
+    blocks: ["add", "subtract", "multiply", "divide"] as BlockType[],
   },
   {
     title: "Routing",

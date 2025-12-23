@@ -16,7 +16,11 @@ export type BlockType =
   | 'button'
   | 'toggle'
   | 'pulse'
-  | 'numeric-meter';
+  | 'numeric-meter'
+  | 'add'
+  | 'subtract'
+  | 'multiply'
+  | 'divide';
 
 export interface BlockConfig {
   // Wave generators
@@ -146,6 +150,46 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     defaultConfig: {
       gain: 1.0
     }
+  },
+  'add': {
+    type: 'add',
+    label: 'Add',
+    inputs: [
+      { id: 'inputA', label: 'A' },
+      { id: 'inputB', label: 'B' }
+    ],
+    outputs: [{ id: 'out', label: 'Out' }],
+    defaultConfig: {}
+  },
+  'subtract': {
+    type: 'subtract',
+    label: 'Subtract',
+    inputs: [
+      { id: 'inputA', label: 'A' },
+      { id: 'inputB', label: 'B' }
+    ],
+    outputs: [{ id: 'out', label: 'Out' }],
+    defaultConfig: {}
+  },
+  'multiply': {
+    type: 'multiply',
+    label: 'Multiply',
+    inputs: [
+      { id: 'inputA', label: 'A' },
+      { id: 'inputB', label: 'B' }
+    ],
+    outputs: [{ id: 'out', label: 'Out' }],
+    defaultConfig: {}
+  },
+  'divide': {
+    type: 'divide',
+    label: 'Divide',
+    inputs: [
+      { id: 'inputA', label: 'A' },
+      { id: 'inputB', label: 'B' }
+    ],
+    outputs: [{ id: 'out', label: 'Out' }],
+    defaultConfig: {}
   },
   'low-pass-filter': {
     type: 'low-pass-filter',

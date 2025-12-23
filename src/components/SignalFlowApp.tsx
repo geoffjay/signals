@@ -218,10 +218,18 @@ export function SignalFlowApp() {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        (event.key === "Delete" || event.key === "Backspace") &&
-        selectedNodeId
-      ) {
+      // Don't delete nodes when user is focused on form controls
+      const activeElement = document.activeElement;
+      const isFormControl =
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.tagName === "SELECT" ||
+          activeElement.getAttribute("contenteditable") === "true");
+
+      // Only allow Delete key (not Backspace) to delete nodes
+      // Backspace is reserved for text editing
+      if (event.key === "Delete" && selectedNodeId && !isFormControl) {
         event.preventDefault();
         deleteSelectedNode();
       }
