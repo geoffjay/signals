@@ -226,7 +226,7 @@ export class SignalProcessingEngine {
         break;
 
       case 'oscilloscope':
-        this.createAnalyser(nodeId);
+        this.createAnalyser(nodeId, config);
         break;
 
       case 'audio-output':
@@ -241,7 +241,7 @@ export class SignalProcessingEngine {
         break;
 
       case 'numeric-meter':
-        this.createAnalyser(nodeId);
+        this.createAnalyser(nodeId, config);
         break;
 
       case 'add':
@@ -355,11 +355,27 @@ export class SignalProcessingEngine {
     this.nodes.set(nodeId, gainNode);
   }
 
-  private createAnalyser(nodeId: string) {
+  private createAnalyser(nodeId: string, config: BlockConfig) {
     if (!this.audioContext) return;
 
     const analyser = this.audioContext.createAnalyser();
-    analyser.fftSize = 2048;
+
+    // Calculate fftSize based on timeWindow
+    // timeWindow is in seconds, we want to display that much time
+    // fftSize determines the number of samples in the frequency domain
+    // frequencyBinCount = fftSize / 2 = number of time domain samples
+    const timeWindow = config.timeWindow || 0.05; // Default 50ms
+    const sampleRate = this.audioContext.sampleRate;
+    const desiredSamples = timeWindow * sampleRate;
+
+    // fftSize must be a power of 2 between 32 and 32768
+    // frequencyBinCount = fftSize / 2, so we need fftSize = desiredSamples * 2
+    let fftSize = 32;
+    while (fftSize < desiredSamples * 2 && fftSize < 32768) {
+      fftSize *= 2;
+    }
+
+    analyser.fftSize = Math.min(fftSize, 32768);
     analyser.smoothingTimeConstant = 0.8;
 
     this.analysers.set(nodeId, analyser);
@@ -590,6 +606,25 @@ export class SignalProcessingEngine {
         const source = this.constantSources.get(nodeId);
         if (source instanceof ConstantSourceNode) {
           source.offset.value = config.pulseValue || 1.0;
+        }
+        break;
+      }
+
+      case 'oscilloscope':
+      case 'numeric-meter': {
+        const analyser = this.analysers.get(nodeId);
+        if (analyser && node instanceof AnalyserNode) {
+          // Recalculate fftSize based on new timeWindow
+          const timeWindow = config.timeWindow || 0.05;
+          const sampleRate = this.audioContext!.sampleRate;
+          const desiredSamples = timeWindow * sampleRate;
+
+          let fftSize = 32;
+          while (fftSize < desiredSamples * 2 && fftSize < 32768) {
+            fftSize *= 2;
+          }
+
+          analyser.fftSize = Math.min(fftSize, 32768);
         }
         break;
       }

@@ -171,6 +171,9 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
             width={200}
             height={100}
             refreshRate={blockData.config.refreshRate}
+            timeWindow={blockData.config.timeWindow}
+            minAmplitude={blockData.config.minAmplitude}
+            maxAmplitude={blockData.config.maxAmplitude}
           />
         </div>
       )}

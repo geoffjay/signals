@@ -45,6 +45,8 @@ export interface BlockConfig {
   // Oscilloscope
   timeWindow?: number;
   refreshRate?: number;
+  minAmplitude?: number;
+  maxAmplitude?: number;
 
   // Audio output
   volume?: number;
@@ -263,7 +265,9 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     outputs: [],
     defaultConfig: {
       timeWindow: 0.05,
-      refreshRate: 60
+      refreshRate: 60,
+      minAmplitude: -1,
+      maxAmplitude: 1
     }
   },
   'audio-output': {

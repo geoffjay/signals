@@ -183,9 +183,9 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
         <Input
           id="timeWindow"
           type="number"
-          min="0.01"
+          min="0.001"
           max="1"
-          step="0.01"
+          step="0.001"
           value={config.timeWindow || 0.05}
           onChange={(e) => updateConfig({ timeWindow: parseFloat(e.target.value) })}
         />
@@ -200,6 +200,30 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
           step="1"
           value={config.refreshRate || 60}
           onChange={(e) => updateConfig({ refreshRate: parseFloat(e.target.value) })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="minAmplitude">Min Amplitude</Label>
+        <Input
+          id="minAmplitude"
+          type="number"
+          min="-10"
+          max="0"
+          step="0.1"
+          value={config.minAmplitude ?? -1}
+          onChange={(e) => updateConfig({ minAmplitude: parseFloat(e.target.value) })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="maxAmplitude">Max Amplitude</Label>
+        <Input
+          id="maxAmplitude"
+          type="number"
+          min="0"
+          max="10"
+          step="0.1"
+          value={config.maxAmplitude ?? 1}
+          onChange={(e) => updateConfig({ maxAmplitude: parseFloat(e.target.value) })}
         />
       </div>
     </>
