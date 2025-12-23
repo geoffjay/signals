@@ -18,6 +18,7 @@ import {
   Circle,
   ToggleLeft,
   Zap as Pulse,
+  Gauge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -44,6 +45,7 @@ const BLOCK_ICONS: Record<
   button: Circle,
   toggle: ToggleLeft,
   pulse: Pulse,
+  "numeric-meter": Gauge,
 };
 
 interface ToolbarProps {
@@ -81,7 +83,7 @@ const blockGroups = [
   },
   {
     title: "Outputs",
-    blocks: ["oscilloscope", "audio-output"] as BlockType[],
+    blocks: ["oscilloscope", "numeric-meter", "audio-output"] as BlockType[],
   },
 ];
 

@@ -321,6 +321,33 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
     </>
   );
 
+  const renderNumericMeterConfig = () => (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="decimals">Decimal Places</Label>
+        <Input
+          id="decimals"
+          type="number"
+          min="0"
+          max="10"
+          step="1"
+          value={config.decimals ?? 3}
+          onChange={(e) => updateConfig({ decimals: parseInt(e.target.value) })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="unit">Unit (optional)</Label>
+        <Input
+          id="unit"
+          type="text"
+          placeholder="V, Hz, etc."
+          value={config.unit ?? ''}
+          onChange={(e) => updateConfig({ unit: e.target.value })}
+        />
+      </div>
+    </>
+  );
+
   const renderConfig = () => {
     switch (blockType) {
       case 'sine-wave':
@@ -352,6 +379,8 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
         return renderToggleConfig();
       case 'pulse':
         return renderPulseConfig();
+      case 'numeric-meter':
+        return renderNumericMeterConfig();
       default:
         return null;
     }

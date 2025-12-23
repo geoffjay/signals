@@ -10,6 +10,7 @@ export interface SignalBlockData extends Record<string, unknown> {
   label: string;
   config: BlockConfig;
   analyser?: AnalyserNode;
+  currentValue?: number; // For numeric meter display
 }
 
 export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
@@ -241,6 +242,22 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
           </Button>
           <div className="text-xs text-center text-muted-foreground mt-1">
             {(blockData.config.value ?? 0).toFixed(2)}
+          </div>
+        </div>
+      )}
+
+      {/* Numeric Meter Display */}
+      {blockData.blockType === 'numeric-meter' && (
+        <div className="mb-2 px-2">
+          <div className="bg-muted rounded-md p-3 text-center">
+            <div className="text-2xl font-mono font-bold text-foreground">
+              {(blockData.currentValue ?? 0).toFixed(blockData.config.decimals ?? 3)}
+              {blockData.config.unit && (
+                <span className="text-sm ml-1 text-muted-foreground">
+                  {blockData.config.unit}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}

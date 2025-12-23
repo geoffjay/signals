@@ -15,7 +15,8 @@ export type BlockType =
   | 'slider'
   | 'button'
   | 'toggle'
-  | 'pulse';
+  | 'pulse'
+  | 'numeric-meter';
 
 export interface BlockConfig {
   // Wave generators
@@ -53,6 +54,10 @@ export interface BlockConfig {
   outputValue?: number; // For button and toggle: the value to output when active
   pulseValue?: number;
   pulseDuration?: number; // in milliseconds
+
+  // Numeric meter
+  decimals?: number;
+  unit?: string;
 }
 
 export interface BlockDefinition {
@@ -267,6 +272,16 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     defaultConfig: {
       pulseValue: 1.0,
       pulseDuration: 100
+    }
+  },
+  'numeric-meter': {
+    type: 'numeric-meter',
+    label: 'Numeric Meter',
+    inputs: [{ id: 'in', label: 'In' }],
+    outputs: [],
+    defaultConfig: {
+      decimals: 3,
+      unit: ''
     }
   }
 };
