@@ -23,6 +23,7 @@ import {
 import { SignalBlock, type SignalBlockData } from "./SignalBlock";
 import { Toolbar } from "./Toolbar";
 import { ConfigDrawer } from "./ConfigDrawer";
+import { useTheme } from "@/components/theme-provider";
 import { SignalProcessingEngine } from "@/engine/SignalProcessingEngine";
 import { useSignalFlowStore } from "@/store/signalFlowStore";
 
@@ -43,6 +44,7 @@ export function SignalFlowApp() {
     setIsPlaying,
     incrementNodeIdCounter,
   } = useSignalFlowStore();
+  const { theme } = useTheme();
 
   // ReactFlow state for UI updates
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(storeNodes);
@@ -100,9 +102,12 @@ export function SignalFlowApp() {
     [edges, setEdges, isPlaying],
   );
 
-  const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    setSelectedNodeId(node.id);
-  }, [setSelectedNodeId]);
+  const onNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      setSelectedNodeId(node.id);
+    },
+    [setSelectedNodeId],
+  );
 
   const onPaneClick = useCallback(() => {
     setSelectedNodeId(null);
@@ -154,17 +159,25 @@ export function SignalFlowApp() {
         nds.map((node) => {
           if (node.id === nodeId) {
             const blockType = node.data.blockType as BlockType;
+            const nodeData = node.data as SignalBlockData;
+
+            // Merge with existing config to preserve all fields (especially value for input controls)
+            const mergedConfig = { ...nodeData.config, ...config };
 
             // Update the engine if playing
             if (isPlaying) {
-              engineRef.current.updateNodeConfig(nodeId, blockType, config);
+              engineRef.current.updateNodeConfig(
+                nodeId,
+                blockType,
+                mergedConfig,
+              );
             }
 
             return {
               ...node,
               data: {
-                ...node.data,
-                config,
+                ...nodeData,
+                config: mergedConfig,
               },
             };
           }
@@ -349,6 +362,7 @@ export function SignalFlowApp() {
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          colorMode={theme}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}

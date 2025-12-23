@@ -16,35 +16,101 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   const blockData = data as SignalBlockData;
   const inputs = getBlockInputs(blockData.blockType, blockData.config);
   const outputs = getBlockOutputs(blockData.blockType, blockData.config);
-  const { updateNodeData } = useReactFlow();
+  const { setNodes } = useReactFlow();
   const pulseTimeoutRef = useRef<number | null>(null);
 
   const hasInputs = inputs.length > 0;
   const hasOutputs = outputs.length > 0;
+
+  // Debug logging
+  if (blockData.blockType === 'slider') {
+    console.log('[DEBUG] Slider rendering:', { id, value: blockData.config.value, config: blockData.config });
+  }
 
   // Prevent node selection when clicking on interactive controls
   const stopPropagation = useCallback((e: React.MouseEvent | React.PointerEvent) => {
     e.stopPropagation();
   }, []);
 
-  const handleSliderChange = useCallback((values: number[]) => {
-    updateNodeData(id, { config: { ...blockData.config, value: values[0] } });
-  }, [id, blockData.config, updateNodeData]);
+  const handleSliderChange = useCallback((values: number[] | number) => {
+    const newValue = Array.isArray(values) ? values[0] : values;
+    console.log('[DEBUG] handleSliderChange called:', { id, values, newValue });
+    setNodes((nds) => {
+      const updated = nds.map((node) => {
+        if (node.id === id) {
+          const nodeData = node.data as SignalBlockData;
+          console.log('[DEBUG] Updating node:', { id, oldValue: nodeData.config.value, newValue });
+          return {
+            ...node,
+            data: {
+              ...nodeData,
+              config: { ...nodeData.config, value: newValue }
+            }
+          };
+        }
+        return node;
+      });
+      console.log('[DEBUG] setNodes completed');
+      return updated;
+    });
+  }, [id, setNodes]);
 
   const handleButtonPress = useCallback(() => {
-    updateNodeData(id, { config: { ...blockData.config, value: blockData.config.outputValue ?? 1.0 } });
-  }, [id, blockData.config, updateNodeData]);
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          const nodeData = node.data as SignalBlockData;
+          return {
+            ...node,
+            data: {
+              ...nodeData,
+              config: { ...nodeData.config, value: nodeData.config.outputValue ?? 1.0 }
+            }
+          };
+        }
+        return node;
+      })
+    );
+  }, [id, setNodes]);
 
   const handleButtonRelease = useCallback(() => {
-    updateNodeData(id, { config: { ...blockData.config, value: 0 } });
-  }, [id, blockData.config, updateNodeData]);
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          const nodeData = node.data as SignalBlockData;
+          return {
+            ...node,
+            data: {
+              ...nodeData,
+              config: { ...nodeData.config, value: 0 }
+            }
+          };
+        }
+        return node;
+      })
+    );
+  }, [id, setNodes]);
 
   const handleToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    const currentValue = blockData.config.value ?? 0;
-    const newValue = currentValue === 0 ? (blockData.config.outputValue ?? 1.0) : 0;
-    updateNodeData(id, { config: { ...blockData.config, value: newValue } });
-  }, [id, blockData.config, updateNodeData]);
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          const nodeData = node.data as SignalBlockData;
+          const currentValue = nodeData.config.value ?? 0;
+          const newValue = currentValue === 0 ? (nodeData.config.outputValue ?? 1.0) : 0;
+          return {
+            ...node,
+            data: {
+              ...nodeData,
+              config: { ...nodeData.config, value: newValue }
+            }
+          };
+        }
+        return node;
+      })
+    );
+  }, [id, setNodes]);
 
   const handlePulse = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -54,14 +120,42 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     }
 
     // Set pulse value
-    updateNodeData(id, { config: { ...blockData.config, value: blockData.config.pulseValue ?? 1.0 } });
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          const nodeData = node.data as SignalBlockData;
+          return {
+            ...node,
+            data: {
+              ...nodeData,
+              config: { ...nodeData.config, value: nodeData.config.pulseValue ?? 1.0 }
+            }
+          };
+        }
+        return node;
+      })
+    );
 
     // Reset to 0 after pulse duration
     pulseTimeoutRef.current = window.setTimeout(() => {
-      updateNodeData(id, { config: { ...blockData.config, value: 0 } });
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            const nodeData = node.data as SignalBlockData;
+            return {
+              ...node,
+              data: {
+                ...nodeData,
+                config: { ...nodeData.config, value: 0 }
+              }
+            };
+          }
+          return node;
+        })
+      );
       pulseTimeoutRef.current = null;
     }, blockData.config.pulseDuration ?? 100);
-  }, [id, blockData.config, updateNodeData]);
+  }, [id, blockData.config.pulseDuration, setNodes]);
 
   return (
     <div
@@ -94,7 +188,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
           <div className="text-xs text-center text-muted-foreground mb-1">
             {(blockData.config.value ?? 0.5).toFixed(3)}
           </div>
-          <div onPointerDown={stopPropagation}>
+          <div onClick={stopPropagation}>
             <Slider
               min={blockData.config.min ?? 0}
               max={blockData.config.max ?? 1}
