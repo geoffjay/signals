@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { Tooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css";
 import {
   Play,
   Square,
@@ -37,6 +40,10 @@ import {
   Superscript,
   Percent,
   Shrink,
+  ChevronDown,
+  ChevronRight,
+  LayoutGrid,
+  LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -148,15 +155,30 @@ const blockGroups = [
 ];
 
 export function Toolbar({ isPlaying, onTogglePlayback }: ToolbarProps) {
+  const [showLabels, setShowLabels] = useState(true);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+
   const onDragStart = (event: React.DragEvent, blockType: BlockType) => {
     event.dataTransfer.setData("application/reactflow", blockType);
     event.dataTransfer.effectAllowed = "move";
   };
 
+  const toggleSection = (title: string) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(title)) {
+        next.delete(title);
+      } else {
+        next.add(title);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="w-64 bg-card border-r border-border flex flex-col">
       {/* Playback Controls */}
-      <div className="p-4 space-y-2">
+      <div className="p-3 space-y-2">
         <Button
           onClick={onTogglePlayback}
           className="w-full"
@@ -174,53 +196,102 @@ export function Toolbar({ isPlaying, onTogglePlayback }: ToolbarProps) {
             </>
           )}
         </Button>
+        <Button
+          onClick={() => setShowLabels(!showLabels)}
+          className="w-full"
+          variant="outline"
+          size="sm"
+        >
+          {showLabels ? (
+            <>
+              <LayoutGrid className="w-3 h-3 mr-2" />
+              <span className="text-xs">Icons Only</span>
+            </>
+          ) : (
+            <>
+              <LayoutList className="w-3 h-3 mr-2" />
+              <span className="text-xs">Show Labels</span>
+            </>
+          )}
+        </Button>
       </div>
 
       <Separator />
 
       {/* Block Buttons */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {blockGroups.map((group) => (
-          <div key={group.title} className="space-y-2">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {group.title}
-            </h3>
-            <div className="space-y-1">
-              {group.blocks.map((blockType) => {
-                const definition = BLOCK_DEFINITIONS[blockType];
-                const Icon = BLOCK_ICONS[blockType];
-                return (
-                  <div
-                    key={blockType}
-                    draggable
-                    onDragStart={(e) => onDragStart(e, blockType)}
-                    className="
-                      flex items-center gap-2 w-full
-                      cursor-grab active:cursor-grabbing
-                      group
-                    "
-                  >
-                    <div
-                      className="
-                        flex items-center justify-center
-                        w-8 h-8 flex-shrink-0
-                        bg-secondary group-hover:bg-accent
-                        border border-border rounded-md
-                        transition-colors
-                      "
-                    >
-                      <Icon className="w-4 h-4 text-foreground" />
-                    </div>
-                    <span className="text-sm text-foreground">
-                      {definition.label}
-                    </span>
-                  </div>
-                );
-              })}
+      <div className="flex-1 overflow-y-auto p-3 space-y-4">
+        {blockGroups.map((group) => {
+          const isCollapsed = collapsedSections.has(group.title);
+          return (
+            <div key={group.title} className="space-y-1">
+              <button
+                onClick={() => toggleSection(group.title)}
+                className="flex items-center gap-1 w-full hover:bg-accent/50 rounded px-1 py-0.5 transition-colors"
+              >
+                {isCollapsed ? (
+                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                )}
+                <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  {group.title}
+                </h3>
+              </button>
+              {!isCollapsed && (
+                <div className={showLabels ? "space-y-0.5" : "flex flex-wrap gap-1"}>
+                  {group.blocks.map((blockType) => {
+                    const definition = BLOCK_DEFINITIONS[blockType];
+                    const Icon = BLOCK_ICONS[blockType];
+                    return (
+                      <div
+                        key={blockType}
+                        draggable
+                        onDragStart={(e) => onDragStart(e, blockType)}
+                        className={`
+                          cursor-grab active:cursor-grabbing
+                          group
+                          ${showLabels ? "flex items-center gap-2 w-full" : ""}
+                        `}
+                        {...(!showLabels && {
+                          "data-tooltip-id": "block-tooltip",
+                          "data-tooltip-content": definition.label,
+                        })}
+                      >
+                        <div
+                          className="
+                            flex items-center justify-center
+                            w-7 h-7 flex-shrink-0
+                            bg-secondary group-hover:bg-accent
+                            border border-border rounded-md
+                            transition-colors
+                          "
+                        >
+                          <Icon className="w-3.5 h-3.5 text-foreground" />
+                        </div>
+                        {showLabels && (
+                          <span className="text-[11px] text-foreground">
+                            {definition.label}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+      <Tooltip
+        id="block-tooltip"
+        place="top"
+        delayShow={300}
+        style={{
+          fontSize: "11px",
+          padding: "4px 8px",
+          zIndex: 9999,
+        }}
+      />
     </div>
   );
 }
