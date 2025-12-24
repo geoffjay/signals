@@ -139,7 +139,7 @@ describe("SignalProcessingEngine", () => {
     });
 
     it("should create math nodes", async () => {
-      const mathBlocks: Array<{ id: string; blockType: any }> = [
+      const mathBlocks: Array<{ id: string; blockType: BlockType }> = [
         { id: "1", blockType: "add" },
         { id: "2", blockType: "ceil" },
         { id: "3", blockType: "sqrt" },

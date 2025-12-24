@@ -58,7 +58,7 @@ export class SignalProcessingEngine {
     this.oscillators.forEach((osc) => {
       try {
         osc.stop();
-      } catch (e) {
+      } catch {
         // Oscillator might already be stopped
       }
     });
@@ -67,7 +67,7 @@ export class SignalProcessingEngine {
     this.constantSources.forEach((source) => {
       try {
         source.stop();
-      } catch (e) {
+      } catch {
         // Source might already be stopped
       }
     });
@@ -108,7 +108,7 @@ export class SignalProcessingEngine {
       if (node) {
         try {
           node.disconnect();
-        } catch (e) {
+        } catch {
           // Already disconnected
         }
       }
@@ -118,7 +118,7 @@ export class SignalProcessingEngine {
       if (oscillator) {
         try {
           oscillator.stop();
-        } catch (e) {
+        } catch {
           // Already stopped
         }
         this.oscillators.delete(nodeId);
@@ -129,7 +129,7 @@ export class SignalProcessingEngine {
       if (constantSource) {
         try {
           constantSource.stop();
-        } catch (e) {
+        } catch {
           // Already stopped
         }
         this.constantSources.delete(nodeId);
@@ -140,7 +140,7 @@ export class SignalProcessingEngine {
       if (helperNode) {
         try {
           helperNode.disconnect();
-        } catch (e) {
+        } catch {
           // Already disconnected
         }
         this.nodes.delete(`${nodeId}-inverter`);
@@ -166,7 +166,7 @@ export class SignalProcessingEngine {
       }
       try {
         node.disconnect();
-      } catch (e) {
+      } catch {
         // Already disconnected
       }
     });
@@ -250,7 +250,7 @@ export class SignalProcessingEngine {
         try {
           oscillator.disconnect();
           oscillator.connect(gainNode);
-        } catch (e) {
+        } catch {
           // Connection failed
         }
       }
@@ -263,7 +263,7 @@ export class SignalProcessingEngine {
         try {
           source.disconnect();
           source.connect(node);
-        } catch (e) {
+        } catch {
           // Connection failed
         }
       }
@@ -277,7 +277,7 @@ export class SignalProcessingEngine {
         if (audioOutputNode && this.audioContext) {
           try {
             audioOutputNode.connect(this.audioContext.destination);
-          } catch (e) {
+          } catch {
             // Already connected
           }
         }
@@ -309,7 +309,7 @@ export class SignalProcessingEngine {
               if (filter) {
                 try {
                   inputGain.connect(filter);
-                } catch (e) {
+                } catch {
                   // Already connected
                 }
               }

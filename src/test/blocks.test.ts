@@ -4,7 +4,6 @@ import {
   getBlockInputs,
   getBlockOutputs,
   type BlockType,
-  type BlockConfig,
 } from "../types/blocks";
 
 describe("Block Definitions", () => {

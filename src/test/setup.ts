@@ -97,14 +97,14 @@ global.AudioContext = class MockAudioContext {
   close() {
     return Promise.resolve();
   }
-} as any;
+} as unknown as typeof AudioContext;
 
 // Mock GainNode and BiquadFilterNode types for instanceof checks
 global.GainNode = class MockGainNode {
   gain = { value: 1 };
   connect = vi.fn();
   disconnect = vi.fn();
-} as any;
+} as unknown as typeof GainNode;
 
 global.BiquadFilterNode = class MockBiquadFilterNode {
   type = "lowpass";
@@ -112,7 +112,7 @@ global.BiquadFilterNode = class MockBiquadFilterNode {
   Q = { value: 1 };
   connect = vi.fn();
   disconnect = vi.fn();
-} as any;
+} as unknown as typeof BiquadFilterNode;
 
 // Mock AudioWorkletNode
 global.AudioWorkletNode = class MockAudioWorkletNode {
@@ -123,11 +123,11 @@ global.AudioWorkletNode = class MockAudioWorkletNode {
   };
 
   constructor(
-    public context: any,
+    public context: AudioContext,
     public name: string,
-    public options?: any,
+    public options?: Record<string, unknown>,
   ) {}
-} as any;
+} as unknown as typeof AudioWorkletNode;
 
 // Mock localStorage
 const localStorageMock = (() => {

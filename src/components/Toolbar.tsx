@@ -90,8 +90,6 @@ const BLOCK_ICONS: Record<
   clamp: Shrink,
 };
 
-interface ToolbarProps {}
-
 const blockGroups = [
   {
     title: "Inputs",
@@ -154,7 +152,7 @@ const blockGroups = [
   },
 ];
 
-export function Toolbar({}: ToolbarProps) {
+export function Toolbar() {
   // Initialize from localStorage
   const [showLabels, setShowLabels] = useState(() => {
     const saved = localStorage.getItem("toolbar-show-labels");
