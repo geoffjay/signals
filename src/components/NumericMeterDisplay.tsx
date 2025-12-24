@@ -27,14 +27,14 @@ export function NumericMeterDisplay({
       // Get time domain data (waveform)
       analyser.getFloatTimeDomainData(dataArray);
 
-      // Calculate the average of the samples to get the current DC value
-      let sum = 0;
+      // Calculate RMS (Root Mean Square) amplitude for AC signals
+      let sumSquares = 0;
       for (let i = 0; i < bufferLength; i++) {
-        sum += dataArray[i];
+        sumSquares += dataArray[i] * dataArray[i];
       }
-      const average = sum / bufferLength;
+      const rms = Math.sqrt(sumSquares / bufferLength);
 
-      setCurrentValue(average);
+      setCurrentValue(rms);
       animationRef.current = requestAnimationFrame(updateValue);
     };
 

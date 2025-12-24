@@ -74,8 +74,12 @@ export class SignalProcessingEngine {
     const currentNodeIds = new Set(Array.from(this.nodes.keys()));
     const newNodeIds = new Set(nodes.map(n => n.id));
 
-    // Find nodes to remove
-    const nodesToRemove = Array.from(currentNodeIds).filter(id => !newNodeIds.has(id));
+    // Find nodes to remove (excluding internal helper nodes like FFT filters and inverters)
+    const nodesToRemove = Array.from(currentNodeIds).filter(id =>
+      !newNodeIds.has(id) &&
+      !id.includes('-freq_out') &&  // FFT filter sub-nodes
+      !id.includes('-inverter')     // Subtraction inverter nodes
+    );
 
     // Find nodes to add
     const nodesToAdd = nodes.filter(node => !currentNodeIds.has(node.id));
@@ -136,8 +140,12 @@ export class SignalProcessingEngine {
     });
 
     // Rebuild all connections (simpler than tracking connection changes)
-    // First disconnect everything
-    this.nodes.forEach((node) => {
+    // First disconnect everything EXCEPT FFT filter sub-nodes (preserve internal FFT structure)
+    this.nodes.forEach((node, nodeId) => {
+      // Skip FFT filter sub-nodes - they maintain internal connections
+      if (nodeId.includes('-freq_out')) {
+        return;
+      }
       try {
         node.disconnect();
       } catch (e) {
@@ -253,6 +261,31 @@ export class SignalProcessingEngine {
     // Apply new connections from edges
     edges.forEach((edge) => {
       this.connectNodes(edge.source, edge.sourceHandle!, edge.target, edge.targetHandle!);
+    });
+
+    // Reconnect FFT frequency-output internal connections (inputGain -> filters)
+    // These are internal connections that need to be maintained after disconnection
+    nodes.forEach((node) => {
+      if (node.data.blockType === 'fft-analyzer') {
+        const config = node.data.config as BlockConfig;
+        if (config.fftMode === 'frequency-output') {
+          const inputGain = this.nodes.get(node.id);
+          const numOutputs = config.numFrequencyOutputs || 4;
+
+          if (inputGain) {
+            for (let i = 0; i < numOutputs; i++) {
+              const filter = this.nodes.get(`${node.id}-freq_out${i}`);
+              if (filter) {
+                try {
+                  inputGain.connect(filter);
+                } catch (e) {
+                  // Already connected
+                }
+              }
+            }
+          }
+        }
+      }
     });
   }
 
@@ -461,6 +494,13 @@ export class SignalProcessingEngine {
     analyser.fftSize = Math.min(fftSize, 32768);
     analyser.smoothingTimeConstant = 0.8;
 
+    // Connect analyser output to a silent dummy gain node to ensure audio processing
+    // Without an output connection, browsers may optimize away the analyser processing
+    const dummyGain = this.audioContext.createGain();
+    dummyGain.gain.value = 0; // Silent
+    analyser.connect(dummyGain);
+    dummyGain.connect(this.audioContext.destination);
+
     this.analysers.set(nodeId, analyser);
     this.nodes.set(nodeId, analyser);
   }
@@ -571,6 +611,8 @@ export class SignalProcessingEngine {
     const numOutputs = config.numFrequencyOutputs || 4;
     const bins = config.frequencyBins || [];
 
+    console.log(`[FFT] Creating frequency output for ${nodeId}, numOutputs=${numOutputs}`);
+
     // Create input splitter
     const inputGain = this.audioContext.createGain();
     inputGain.gain.value = 1.0;
@@ -595,16 +637,29 @@ export class SignalProcessingEngine {
       filter.frequency.value = centerFreq;
       filter.Q.value = bandwidth > 0 ? centerFreq / bandwidth : 1.0;
 
-      inputGain.connect(filter);
+      console.log(`[FFT] Filter ${i} (${bin.label}): ${startFreq.toFixed(1)}-${endFreq.toFixed(1)} Hz, center=${centerFreq.toFixed(1)} Hz, Q=${filter.Q.value.toFixed(2)}`);
+
+      // Connect input gain to filter
+      console.log(`[FFT] Connecting inputGain to filter ${i}...`);
+      try {
+        inputGain.connect(filter);
+        console.log(`[FFT] Successfully connected inputGain to filter ${i}`);
+      } catch (e) {
+        console.error(`[FFT] FAILED to connect inputGain to filter ${i}:`, e);
+      }
 
       // Store filter node with output ID
-      this.nodes.set(`${nodeId}-freq_out${i}`, filter);
+      const filterKey = `${nodeId}-freq_out${i}`;
+      this.nodes.set(filterKey, filter);
+      console.log(`[FFT] Stored filter as ${filterKey}`);
     }
 
     // Store main input node
     this.nodes.set(nodeId, inputGain);
+    console.log(`[FFT] Stored input gain as ${nodeId}`);
+    console.log(`[FFT] Input gain value: ${inputGain.gain.value}`);
 
-    // Also create analyser for potential visualization
+    // Create analyser for potential visualization
     const analyser = this.audioContext.createAnalyser();
     analyser.fftSize = config.fftSize || 2048;
     inputGain.connect(analyser);
@@ -661,15 +716,21 @@ export class SignalProcessingEngine {
     // Source handles like 'freq_out0', 'freq_out1' route from filter nodes
     let sourceNode = this.nodes.get(sourceId);
     if (sourceHandle.startsWith('freq_out')) {
-      const filterNode = this.nodes.get(`${sourceId}-${sourceHandle}`);
+      const filterKey = `${sourceId}-${sourceHandle}`;
+      const filterNode = this.nodes.get(filterKey);
+      console.log(`[FFT] Looking for filter node ${filterKey}: ${filterNode ? 'FOUND' : 'NOT FOUND'}`);
       if (filterNode) {
         sourceNode = filterNode;
+        console.log(`[FFT] Using filter node for connection`);
       }
     }
 
     const targetNode = this.nodes.get(targetId);
 
-    if (!sourceNode || !targetNode) return;
+    if (!sourceNode || !targetNode) {
+      console.log(`[Connection] Failed: sourceNode=${!!sourceNode}, targetNode=${!!targetNode}`);
+      return;
+    }
 
     // Get target block type for handle-specific routing
     const targetBlock = this.reactFlowNodes.find(n => n.id === targetId);
@@ -769,12 +830,17 @@ export class SignalProcessingEngine {
 
         case 'fft-analyzer':
           // FFT analyzer: normal audio connection to input
+          console.log(`[FFT] Connecting input: ${sourceId}(${sourceHandle}) -> ${targetId}(${targetHandle})`);
+          console.log(`[FFT] Target node type: ${targetNode.constructor.name}`);
           sourceNode.connect(targetNode);
+          console.log(`[FFT] Input connected successfully`);
           break;
 
         default:
           // Default connection for all other block types
+          console.log(`[Connection] Default connect: ${sourceId}(${sourceHandle}) -> ${targetId}(${targetHandle}), blockType=${blockType}`);
           sourceNode.connect(targetNode);
+          console.log(`[Connection] Successfully connected`);
           break;
       }
     } catch (e) {
@@ -883,6 +949,71 @@ export class SignalProcessingEngine {
 
       case 'fft-analyzer': {
         const mode = config.fftMode || 'spectrum';
+
+        // Check if node structure matches the current mode
+        // If not, we need to recreate the node (mode was switched)
+        const currentNode = this.nodes.get(nodeId);
+        let needsRecreation = false;
+
+        if (mode === 'spectrum' || mode === 'peak-detection') {
+          // Should be an AnalyserNode
+          needsRecreation = !(currentNode instanceof AnalyserNode);
+        } else if (mode === 'frequency-output') {
+          // Should be a GainNode with filter sub-nodes
+          needsRecreation = !(currentNode instanceof GainNode);
+        } else if (mode === 'spectral-processing') {
+          // Should be a BiquadFilterNode
+          needsRecreation = !(currentNode instanceof BiquadFilterNode);
+        }
+
+        // If mode changed, recreate the node
+        if (needsRecreation) {
+          console.log(`[FFT] Mode changed, recreating node ${nodeId}`);
+
+          // Disconnect old nodes before removing
+          const oldNode = this.nodes.get(nodeId);
+          if (oldNode) {
+            console.log(`[FFT] Disconnecting old node ${nodeId}`);
+            oldNode.disconnect();
+          }
+
+          // Disconnect frequency output sub-nodes if they exist
+          const numOutputs = config.numFrequencyOutputs || 4;
+          for (let i = 0; i < numOutputs; i++) {
+            const filterNode = this.nodes.get(`${nodeId}-freq_out${i}`);
+            if (filterNode) {
+              console.log(`[FFT] Disconnecting old filter ${nodeId}-freq_out${i}`);
+              filterNode.disconnect();
+            }
+            this.nodes.delete(`${nodeId}-freq_out${i}`);
+          }
+
+          // Remove old nodes from maps
+          this.nodes.delete(nodeId);
+          this.analysers.delete(nodeId);
+          this.oscillators.delete(nodeId);
+          this.constantSources.delete(nodeId);
+
+          // Recreate node with new mode
+          switch (mode) {
+            case 'spectrum':
+            case 'peak-detection':
+              this.createFFTAnalyzer(nodeId, config);
+              break;
+            case 'frequency-output':
+              this.createFFTFrequencyOutput(nodeId, config);
+              break;
+            case 'spectral-processing':
+              this.createFFTSpectralProcessor(nodeId, config);
+              break;
+          }
+
+          // Force graph update to reconnect edges after node recreation
+          if (this.reactFlowNodes && this.reactFlowEdges) {
+            this.updateGraph(this.reactFlowNodes, this.reactFlowEdges);
+          }
+          return;
+        }
 
         // Update analyser parameters for modes that use it
         if (mode === 'spectrum' || mode === 'peak-detection') {
