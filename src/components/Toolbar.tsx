@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 import {
@@ -155,8 +155,26 @@ const blockGroups = [
 ];
 
 export function Toolbar({ isPlaying, onTogglePlayback }: ToolbarProps) {
-  const [showLabels, setShowLabels] = useState(true);
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  // Initialize from localStorage
+  const [showLabels, setShowLabels] = useState(() => {
+    const saved = localStorage.getItem("toolbar-show-labels");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem("toolbar-collapsed-sections");
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+
+  // Save showLabels to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("toolbar-show-labels", JSON.stringify(showLabels));
+  }, [showLabels]);
+
+  // Save collapsedSections to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("toolbar-collapsed-sections", JSON.stringify(Array.from(collapsedSections)));
+  }, [collapsedSections]);
 
   const onDragStart = (event: React.DragEvent, blockType: BlockType) => {
     event.dataTransfer.setData("application/reactflow", blockType);
