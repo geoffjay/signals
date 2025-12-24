@@ -1,12 +1,18 @@
-import { X, Trash2 } from 'lucide-react';
-import { type Node, type Edge } from '@xyflow/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { type BlockConfig } from '@/types/blocks';
-import { type SignalBlockData } from './SignalBlock';
+import { X, Trash2 } from "lucide-react";
+import { type Node, type Edge } from "@xyflow/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { type BlockConfig } from "@/types/blocks";
+import { type SignalBlockData } from "./SignalBlock";
 
 interface ConfigDrawerProps {
   node: Node<SignalBlockData> | undefined;
@@ -16,7 +22,13 @@ interface ConfigDrawerProps {
   onClose: () => void;
 }
 
-export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }: ConfigDrawerProps) {
+export function ConfigDrawer({
+  node,
+  edges,
+  onConfigChange,
+  onDelete,
+  onClose,
+}: ConfigDrawerProps) {
   if (!node) return null;
 
   const { blockType, label, config } = node.data;
@@ -27,19 +39,24 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
 
   // Helper function to check if a specific input handle is connected
   const isInputConnected = (handleId: string): boolean => {
-    return edges.some(edge => edge.target === node.id && edge.targetHandle === handleId);
+    return edges.some(
+      (edge) => edge.target === node.id && edge.targetHandle === handleId,
+    );
   };
 
   const renderWaveGeneratorConfig = () => {
-    const freqConnected = isInputConnected('freq');
-    const ampConnected = isInputConnected('amp');
-    const phaseConnected = isInputConnected('phase');
+    const freqConnected = isInputConnected("freq");
+    const ampConnected = isInputConnected("amp");
+    const phaseConnected = isInputConnected("phase");
 
     return (
       <>
         <div className="space-y-2">
-          <Label htmlFor="frequency" className={freqConnected ? 'text-muted-foreground' : ''}>
-            Frequency (Hz) {freqConnected && '(Connected)'}
+          <Label
+            htmlFor="frequency"
+            className={freqConnected ? "text-muted-foreground" : ""}
+          >
+            Frequency (Hz) {freqConnected && "(Connected)"}
           </Label>
           <Input
             id="frequency"
@@ -48,14 +65,19 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
             max="20000"
             step="1"
             value={config.frequency || 440}
-            onChange={(e) => updateConfig({ frequency: parseFloat(e.target.value) })}
+            onChange={(e) =>
+              updateConfig({ frequency: parseFloat(e.target.value) })
+            }
             disabled={freqConnected}
-            className={freqConnected ? 'opacity-50 cursor-not-allowed' : ''}
+            className={freqConnected ? "opacity-50 cursor-not-allowed" : ""}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="amplitude" className={ampConnected ? 'text-muted-foreground' : ''}>
-            Amplitude {ampConnected && '(Connected)'}
+          <Label
+            htmlFor="amplitude"
+            className={ampConnected ? "text-muted-foreground" : ""}
+          >
+            Amplitude {ampConnected && "(Connected)"}
           </Label>
           <Input
             id="amplitude"
@@ -64,14 +86,19 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
             max="1"
             step="0.01"
             value={config.amplitude || 0.5}
-            onChange={(e) => updateConfig({ amplitude: parseFloat(e.target.value) })}
+            onChange={(e) =>
+              updateConfig({ amplitude: parseFloat(e.target.value) })
+            }
             disabled={ampConnected}
-            className={ampConnected ? 'opacity-50 cursor-not-allowed' : ''}
+            className={ampConnected ? "opacity-50 cursor-not-allowed" : ""}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phase" className={phaseConnected ? 'text-muted-foreground' : ''}>
-            Phase (degrees) {phaseConnected && '(Connected)'}
+          <Label
+            htmlFor="phase"
+            className={phaseConnected ? "text-muted-foreground" : ""}
+          >
+            Phase (degrees) {phaseConnected && "(Connected)"}
           </Label>
           <Input
             id="phase"
@@ -80,9 +107,11 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
             max="360"
             step="1"
             value={config.phase || 0}
-            onChange={(e) => updateConfig({ phase: parseFloat(e.target.value) })}
+            onChange={(e) =>
+              updateConfig({ phase: parseFloat(e.target.value) })
+            }
             disabled={phaseConnected}
-            className={phaseConnected ? 'opacity-50 cursor-not-allowed' : ''}
+            className={phaseConnected ? "opacity-50 cursor-not-allowed" : ""}
           />
         </div>
       </>
@@ -90,12 +119,15 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
   };
 
   const renderNoiseConfig = () => {
-    const ampConnected = isInputConnected('amp');
+    const ampConnected = isInputConnected("amp");
 
     return (
       <div className="space-y-2">
-        <Label htmlFor="amplitude" className={ampConnected ? 'text-muted-foreground' : ''}>
-          Amplitude {ampConnected && '(Connected)'}
+        <Label
+          htmlFor="amplitude"
+          className={ampConnected ? "text-muted-foreground" : ""}
+        >
+          Amplitude {ampConnected && "(Connected)"}
         </Label>
         <Input
           id="amplitude"
@@ -104,9 +136,11 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           max="1"
           step="0.01"
           value={config.amplitude || 0.5}
-          onChange={(e) => updateConfig({ amplitude: parseFloat(e.target.value) })}
+          onChange={(e) =>
+            updateConfig({ amplitude: parseFloat(e.target.value) })
+          }
           disabled={ampConnected}
-          className={ampConnected ? 'opacity-50 cursor-not-allowed' : ''}
+          className={ampConnected ? "opacity-50 cursor-not-allowed" : ""}
         />
       </div>
     );
@@ -128,13 +162,16 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
   );
 
   const renderFilterConfig = () => {
-    const cutoffConnected = isInputConnected('cutoff');
+    const cutoffConnected = isInputConnected("cutoff");
 
     return (
       <>
         <div className="space-y-2">
-          <Label htmlFor="cutoffFrequency" className={cutoffConnected ? 'text-muted-foreground' : ''}>
-            Cutoff Frequency (Hz) {cutoffConnected && '(Connected)'}
+          <Label
+            htmlFor="cutoffFrequency"
+            className={cutoffConnected ? "text-muted-foreground" : ""}
+          >
+            Cutoff Frequency (Hz) {cutoffConnected && "(Connected)"}
           </Label>
           <Input
             id="cutoffFrequency"
@@ -143,9 +180,11 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
             max="20000"
             step="1"
             value={config.cutoffFrequency || 1000}
-            onChange={(e) => updateConfig({ cutoffFrequency: parseFloat(e.target.value) })}
+            onChange={(e) =>
+              updateConfig({ cutoffFrequency: parseFloat(e.target.value) })
+            }
             disabled={cutoffConnected}
-            className={cutoffConnected ? 'opacity-50 cursor-not-allowed' : ''}
+            className={cutoffConnected ? "opacity-50 cursor-not-allowed" : ""}
           />
         </div>
         <div className="space-y-2">
@@ -157,7 +196,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
             max="20"
             step="0.1"
             value={config.qFactor || 1.0}
-            onChange={(e) => updateConfig({ qFactor: parseFloat(e.target.value) })}
+            onChange={(e) =>
+              updateConfig({ qFactor: parseFloat(e.target.value) })
+            }
           />
         </div>
       </>
@@ -170,7 +211,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
         <Label htmlFor="numInputs">Number of Inputs</Label>
         <Select
           value={String(config.numInputs || 2)}
-          onValueChange={(value) => value && updateConfig({ numInputs: parseInt(value) })}
+          onValueChange={(value) =>
+            value && updateConfig({ numInputs: parseInt(value) })
+          }
         >
           <SelectTrigger id="numInputs">
             <SelectValue />
@@ -191,7 +234,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           max={(config.numInputs || 2) - 1}
           step="1"
           value={config.selectorValue || 0}
-          onChange={(e) => updateConfig({ selectorValue: parseInt(e.target.value) })}
+          onChange={(e) =>
+            updateConfig({ selectorValue: parseInt(e.target.value) })
+          }
         />
       </div>
     </>
@@ -202,7 +247,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
       <Label htmlFor="numOutputs">Number of Outputs</Label>
       <Select
         value={String(config.numOutputs || 2)}
-        onValueChange={(value) => value && updateConfig({ numOutputs: parseInt(value) })}
+        onValueChange={(value) =>
+          value && updateConfig({ numOutputs: parseInt(value) })
+        }
       >
         <SelectTrigger id="numOutputs">
           <SelectValue />
@@ -227,7 +274,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           max="1"
           step="0.001"
           value={config.timeWindow || 0.05}
-          onChange={(e) => updateConfig({ timeWindow: parseFloat(e.target.value) })}
+          onChange={(e) =>
+            updateConfig({ timeWindow: parseFloat(e.target.value) })
+          }
         />
       </div>
       <div className="space-y-2">
@@ -239,7 +288,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           max="120"
           step="1"
           value={config.refreshRate || 60}
-          onChange={(e) => updateConfig({ refreshRate: parseFloat(e.target.value) })}
+          onChange={(e) =>
+            updateConfig({ refreshRate: parseFloat(e.target.value) })
+          }
         />
       </div>
       <div className="space-y-2">
@@ -251,7 +302,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           max="0"
           step="0.1"
           value={config.minAmplitude ?? -1}
-          onChange={(e) => updateConfig({ minAmplitude: parseFloat(e.target.value) })}
+          onChange={(e) =>
+            updateConfig({ minAmplitude: parseFloat(e.target.value) })
+          }
         />
       </div>
       <div className="space-y-2">
@@ -263,7 +316,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           max="10"
           step="0.1"
           value={config.maxAmplitude ?? 1}
-          onChange={(e) => updateConfig({ maxAmplitude: parseFloat(e.target.value) })}
+          onChange={(e) =>
+            updateConfig({ maxAmplitude: parseFloat(e.target.value) })
+          }
         />
       </div>
     </>
@@ -340,7 +395,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
         type="number"
         step="0.01"
         value={config.outputValue ?? 1.0}
-        onChange={(e) => updateConfig({ outputValue: parseFloat(e.target.value) })}
+        onChange={(e) =>
+          updateConfig({ outputValue: parseFloat(e.target.value) })
+        }
       />
     </div>
   );
@@ -353,7 +410,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
         type="number"
         step="0.01"
         value={config.outputValue ?? 1.0}
-        onChange={(e) => updateConfig({ outputValue: parseFloat(e.target.value) })}
+        onChange={(e) =>
+          updateConfig({ outputValue: parseFloat(e.target.value) })
+        }
       />
     </div>
   );
@@ -367,7 +426,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           type="number"
           step="0.01"
           value={config.pulseValue ?? 1.0}
-          onChange={(e) => updateConfig({ pulseValue: parseFloat(e.target.value) })}
+          onChange={(e) =>
+            updateConfig({ pulseValue: parseFloat(e.target.value) })
+          }
         />
       </div>
       <div className="space-y-2">
@@ -379,7 +440,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           max="5000"
           step="10"
           value={config.pulseDuration ?? 100}
-          onChange={(e) => updateConfig({ pulseDuration: parseInt(e.target.value) })}
+          onChange={(e) =>
+            updateConfig({ pulseDuration: parseInt(e.target.value) })
+          }
         />
       </div>
     </>
@@ -405,7 +468,7 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
           id="unit"
           type="text"
           placeholder="V, Hz, etc."
-          value={config.unit ?? ''}
+          value={config.unit ?? ""}
           onChange={(e) => updateConfig({ unit: e.target.value })}
         />
       </div>
@@ -417,8 +480,17 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
       <div className="space-y-2">
         <Label htmlFor="fftMode">Mode</Label>
         <Select
-          value={config.fftMode || 'spectrum'}
-          onValueChange={(value) => value && updateConfig({ fftMode: value as 'spectrum' | 'frequency-output' | 'peak-detection' | 'spectral-processing' })}
+          value={config.fftMode || "spectrum"}
+          onValueChange={(value) =>
+            value &&
+            updateConfig({
+              fftMode: value as
+                | "spectrum"
+                | "frequency-output"
+                | "peak-detection"
+                | "spectral-processing",
+            })
+          }
         >
           <SelectTrigger id="fftMode">
             <SelectValue />
@@ -427,7 +499,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
             <SelectItem value="spectrum">Spectrum Analyzer</SelectItem>
             <SelectItem value="frequency-output">Frequency Output</SelectItem>
             <SelectItem value="peak-detection">Peak Detection</SelectItem>
-            <SelectItem value="spectral-processing">Spectral Processing</SelectItem>
+            <SelectItem value="spectral-processing">
+              Spectral Processing
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -437,7 +511,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
         <Label htmlFor="fftSize">FFT Size</Label>
         <Select
           value={String(config.fftSize || 2048)}
-          onValueChange={(value) => value && updateConfig({ fftSize: parseInt(value) })}
+          onValueChange={(value) =>
+            value && updateConfig({ fftSize: parseInt(value) })
+          }
         >
           <SelectTrigger id="fftSize">
             <SelectValue />
@@ -455,7 +531,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
       </div>
 
       {/* Mode-specific settings */}
-      {(config.fftMode === 'spectrum' || config.fftMode === 'peak-detection' || !config.fftMode) && (
+      {(config.fftMode === "spectrum" ||
+        config.fftMode === "peak-detection" ||
+        !config.fftMode) && (
         <>
           <div className="space-y-2">
             <Label htmlFor="smoothingTimeConstant">Smoothing (0-1)</Label>
@@ -466,7 +544,11 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
               max="1"
               step="0.1"
               value={config.smoothingTimeConstant ?? 0.8}
-              onChange={(e) => updateConfig({ smoothingTimeConstant: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                updateConfig({
+                  smoothingTimeConstant: parseFloat(e.target.value),
+                })
+              }
             />
           </div>
           <div className="space-y-2">
@@ -478,7 +560,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
               max="-30"
               step="1"
               value={config.minDecibels ?? -90}
-              onChange={(e) => updateConfig({ minDecibels: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                updateConfig({ minDecibels: parseFloat(e.target.value) })
+              }
             />
           </div>
           <div className="space-y-2">
@@ -490,18 +574,22 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
               max="0"
               step="1"
               value={config.maxDecibels ?? -10}
-              onChange={(e) => updateConfig({ maxDecibels: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                updateConfig({ maxDecibels: parseFloat(e.target.value) })
+              }
             />
           </div>
         </>
       )}
 
-      {config.fftMode === 'frequency-output' && (
+      {config.fftMode === "frequency-output" && (
         <div className="space-y-2">
           <Label htmlFor="numFrequencyOutputs">Number of Outputs</Label>
           <Select
             value={String(config.numFrequencyOutputs || 4)}
-            onValueChange={(value) => value && updateConfig({ numFrequencyOutputs: parseInt(value) })}
+            onValueChange={(value) =>
+              value && updateConfig({ numFrequencyOutputs: parseInt(value) })
+            }
           >
             <SelectTrigger id="numFrequencyOutputs">
               <SelectValue />
@@ -519,38 +607,38 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
 
   const renderConfig = () => {
     switch (blockType) {
-      case 'sine-wave':
-      case 'square-wave':
-      case 'triangle-wave':
-      case 'sawtooth-wave':
+      case "sine-wave":
+      case "square-wave":
+      case "triangle-wave":
+      case "sawtooth-wave":
         return renderWaveGeneratorConfig();
-      case 'noise':
+      case "noise":
         return renderNoiseConfig();
-      case 'gain':
+      case "gain":
         return renderGainConfig();
-      case 'low-pass-filter':
-      case 'high-pass-filter':
-      case 'band-pass-filter':
+      case "low-pass-filter":
+      case "high-pass-filter":
+      case "band-pass-filter":
         return renderFilterConfig();
-      case 'multiplexer':
+      case "multiplexer":
         return renderMultiplexerConfig();
-      case 'splitter':
+      case "splitter":
         return renderSplitterConfig();
-      case 'oscilloscope':
+      case "oscilloscope":
         return renderOscilloscopeConfig();
-      case 'audio-output':
+      case "audio-output":
         return renderAudioOutputConfig();
-      case 'slider':
+      case "slider":
         return renderSliderConfig();
-      case 'button':
+      case "button":
         return renderButtonConfig();
-      case 'toggle':
+      case "toggle":
         return renderToggleConfig();
-      case 'pulse':
+      case "pulse":
         return renderPulseConfig();
-      case 'numeric-meter':
+      case "numeric-meter":
         return renderNumericMeterConfig();
-      case 'fft-analyzer':
+      case "fft-analyzer":
         return renderFFTAnalyzerConfig();
       default:
         return null;
@@ -568,7 +656,9 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
       </div>
 
       {/* Configuration Options */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">{renderConfig()}</div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {renderConfig()}
+      </div>
 
       <Separator />
 

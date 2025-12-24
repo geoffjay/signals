@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface SpectrumDisplayProps {
   analyser: AnalyserNode | undefined;
@@ -25,7 +25,7 @@ export function SpectrumDisplay({
     if (!analyser || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const bufferLength = analyser.frequencyBinCount;
@@ -41,13 +41,16 @@ export function SpectrumDisplay({
 
     // Logarithmic frequency scale helper
     const logX = (freq: number): number => {
-      return (Math.log10(freq) - Math.log10(minFreq)) /
-             (Math.log10(maxFreq) - Math.log10(minFreq)) * width;
+      return (
+        ((Math.log10(freq) - Math.log10(minFreq)) /
+          (Math.log10(maxFreq) - Math.log10(minFreq))) *
+        width
+      );
     };
 
     // Convert frequency to bin index
     const freqToBin = (freq: number): number => {
-      return Math.round(freq * bufferLength / nyquist);
+      return Math.round((freq * bufferLength) / nyquist);
     };
 
     const draw = (timestamp: number) => {
@@ -62,18 +65,31 @@ export function SpectrumDisplay({
       analyser.getByteFrequencyData(dataArray);
 
       // Clear canvas
-      ctx.fillStyle = 'rgb(20, 20, 30)';
+      ctx.fillStyle = "rgb(20, 20, 30)";
       ctx.fillRect(0, 0, width, height);
 
       // Draw frequency grid lines and labels
-      const frequencies = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
-      const labels = ['20', '50', '100', '200', '500', '1k', '2k', '5k', '10k', '20k'];
+      const frequencies = [
+        20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000,
+      ];
+      const labels = [
+        "20",
+        "50",
+        "100",
+        "200",
+        "500",
+        "1k",
+        "2k",
+        "5k",
+        "10k",
+        "20k",
+      ];
 
-      ctx.strokeStyle = 'rgba(100, 100, 100, 0.2)';
+      ctx.strokeStyle = "rgba(100, 100, 100, 0.2)";
       ctx.lineWidth = 1;
-      ctx.fillStyle = 'rgba(150, 150, 150, 0.6)';
-      ctx.font = '9px monospace';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = "rgba(150, 150, 150, 0.6)";
+      ctx.font = "9px monospace";
+      ctx.textAlign = "center";
 
       frequencies.forEach((freq, i) => {
         const x = logX(freq);
@@ -85,7 +101,7 @@ export function SpectrumDisplay({
       });
 
       // Draw spectrum bars
-      ctx.fillStyle = 'rgb(100, 200, 100)';
+      ctx.fillStyle = "rgb(100, 200, 100)";
 
       // Use logarithmic spacing for bars
       const numBars = Math.min(100, bufferLength);

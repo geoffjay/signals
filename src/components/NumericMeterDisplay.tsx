@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 interface NumericMeterDisplayProps {
   analyser?: AnalyserNode;
@@ -9,7 +9,7 @@ interface NumericMeterDisplayProps {
 export function NumericMeterDisplay({
   analyser,
   decimals = 3,
-  unit = ''
+  unit = "",
 }: NumericMeterDisplayProps) {
   const [currentValue, setCurrentValue] = useState(0);
   const animationRef = useRef<number | undefined>(undefined);
@@ -52,9 +52,7 @@ export function NumericMeterDisplay({
       <div className="text-2xl font-mono font-bold text-foreground">
         {currentValue.toFixed(decimals)}
         {unit && (
-          <span className="text-sm ml-1 text-muted-foreground">
-            {unit}
-          </span>
+          <span className="text-sm ml-1 text-muted-foreground">{unit}</span>
         )}
       </div>
     </div>

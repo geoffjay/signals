@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface OscilloscopeDisplayProps {
   analyser: AnalyserNode | undefined;
@@ -27,7 +27,7 @@ export function OscilloscopeDisplay({
     if (!analyser || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const bufferLength = analyser.frequencyBinCount;
@@ -48,16 +48,17 @@ export function OscilloscopeDisplay({
       analyser.getByteTimeDomainData(dataArray);
 
       // Clear canvas
-      ctx.fillStyle = 'rgb(20, 20, 30)';
+      ctx.fillStyle = "rgb(20, 20, 30)";
       ctx.fillRect(0, 0, width, height);
 
       // Calculate zero line position based on amplitude range
       const amplitudeRange = maxAmplitude - minAmplitude;
-      const zeroPosition = amplitudeRange !== 0 ? (0 - minAmplitude) / amplitudeRange : 0.5;
+      const zeroPosition =
+        amplitudeRange !== 0 ? (0 - minAmplitude) / amplitudeRange : 0.5;
       const zeroY = height * (1 - zeroPosition);
 
       // Draw center line (zero line)
-      ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+      ctx.strokeStyle = "rgba(100, 100, 100, 0.3)";
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, zeroY);
@@ -66,7 +67,7 @@ export function OscilloscopeDisplay({
 
       // Draw waveform
       ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgb(100, 200, 100)';
+      ctx.strokeStyle = "rgb(100, 200, 100)";
       ctx.beginPath();
 
       const sliceWidth = width / bufferLength;
@@ -80,7 +81,10 @@ export function OscilloscopeDisplay({
         // Map amplitude to canvas Y coordinate based on viewport range
         // amplitude is the actual signal value (e.g., -1 to +1 for normal audio, but can exceed)
         // We map it to the minAmplitude-maxAmplitude viewport
-        const normalizedY = amplitudeRange !== 0 ? (amplitude - minAmplitude) / amplitudeRange : 0.5;
+        const normalizedY =
+          amplitudeRange !== 0
+            ? (amplitude - minAmplitude) / amplitudeRange
+            : 0.5;
         const y = height * (1 - normalizedY);
 
         if (i === 0) {
@@ -104,7 +108,15 @@ export function OscilloscopeDisplay({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [analyser, width, height, refreshRate, timeWindow, minAmplitude, maxAmplitude]);
+  }, [
+    analyser,
+    width,
+    height,
+    refreshRate,
+    timeWindow,
+    minAmplitude,
+    maxAmplitude,
+  ]);
 
   return (
     <canvas

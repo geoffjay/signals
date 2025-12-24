@@ -41,4 +41,4 @@ class DivideProcessor extends AudioWorkletProcessor {
 }
 
 // Register the processor
-registerProcessor('divide-processor', DivideProcessor);
+registerProcessor("divide-processor", DivideProcessor);

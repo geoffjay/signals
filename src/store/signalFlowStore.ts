@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { type Node, type Edge } from '@xyflow/react';
-import { type SignalBlockData } from '@/components/SignalBlock';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { type Node, type Edge } from "@xyflow/react";
+import { type SignalBlockData } from "@/components/SignalBlock";
 
 interface SignalFlowState {
   nodes: Node[];
@@ -33,17 +33,19 @@ export const useSignalFlowStore = create<SignalFlowState>()(
 
       setNodes: (nodesOrUpdater) => {
         set((state) => ({
-          nodes: typeof nodesOrUpdater === 'function'
-            ? nodesOrUpdater(state.nodes)
-            : nodesOrUpdater,
+          nodes:
+            typeof nodesOrUpdater === "function"
+              ? nodesOrUpdater(state.nodes)
+              : nodesOrUpdater,
         }));
       },
 
       setEdges: (edgesOrUpdater) => {
         set((state) => ({
-          edges: typeof edgesOrUpdater === 'function'
-            ? edgesOrUpdater(state.edges)
-            : edgesOrUpdater,
+          edges:
+            typeof edgesOrUpdater === "function"
+              ? edgesOrUpdater(state.edges)
+              : edgesOrUpdater,
         }));
       },
 
@@ -74,7 +76,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
                     ...updates,
                   },
                 }
-              : node
+              : node,
           ),
         }));
       },
@@ -83,9 +85,10 @@ export const useSignalFlowStore = create<SignalFlowState>()(
         set((state) => ({
           nodes: state.nodes.filter((node) => node.id !== nodeId),
           edges: state.edges.filter(
-            (edge) => edge.source !== nodeId && edge.target !== nodeId
+            (edge) => edge.source !== nodeId && edge.target !== nodeId,
           ),
-          selectedNodeId: state.selectedNodeId === nodeId ? null : state.selectedNodeId,
+          selectedNodeId:
+            state.selectedNodeId === nodeId ? null : state.selectedNodeId,
         }));
       },
 
@@ -100,13 +103,13 @@ export const useSignalFlowStore = create<SignalFlowState>()(
                     ...data,
                   },
                 }
-              : node
+              : node,
           ),
         }));
       },
     }),
     {
-      name: 'signal-flow-storage',
+      name: "signal-flow-storage",
       partialize: (state) => ({
         nodes: state.nodes.map((node) => ({
           ...node,
@@ -121,6 +124,6 @@ export const useSignalFlowStore = create<SignalFlowState>()(
         isPlaying: state.isPlaying,
         nodeIdCounter: state.nodeIdCounter,
       }),
-    }
-  )
+    },
+  ),
 );

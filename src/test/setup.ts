@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import "@testing-library/jest-dom";
+import { cleanup } from "@testing-library/react";
+import { afterEach, vi } from "vitest";
 
 // Cleanup after each test
 afterEach(() => {
@@ -12,7 +12,7 @@ global.AudioContext = class MockAudioContext {
   destination = {};
   sampleRate = 48000;
   currentTime = 0;
-  state = 'running';
+  state = "running";
   audioWorklet = {
     addModule: vi.fn().mockResolvedValue(undefined),
   };
@@ -20,7 +20,7 @@ global.AudioContext = class MockAudioContext {
   createOscillator() {
     const freq = { value: 440 };
     return {
-      type: 'sine',
+      type: "sine",
       frequency: freq,
       connect: vi.fn(),
       disconnect: vi.fn(),
@@ -39,7 +39,7 @@ global.AudioContext = class MockAudioContext {
 
   createBiquadFilter() {
     return {
-      type: 'lowpass',
+      type: "lowpass",
       frequency: { value: 1000 },
       Q: { value: 1 },
       connect: vi.fn(),
@@ -107,7 +107,7 @@ global.GainNode = class MockGainNode {
 } as any;
 
 global.BiquadFilterNode = class MockBiquadFilterNode {
-  type = 'lowpass';
+  type = "lowpass";
   frequency = { value: 1000 };
   Q = { value: 1 };
   connect = vi.fn();
@@ -122,7 +122,11 @@ global.AudioWorkletNode = class MockAudioWorkletNode {
     postMessage: vi.fn(),
   };
 
-  constructor(public context: any, public name: string, public options?: any) {}
+  constructor(
+    public context: any,
+    public name: string,
+    public options?: any,
+  ) {}
 } as any;
 
 // Mock localStorage
@@ -143,7 +147,7 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
 });
 

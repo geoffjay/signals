@@ -1,12 +1,12 @@
-import { ThemeProvider } from "@/components/theme-provider"
-import { SignalFlowAppWithProvider } from "@/components/SignalFlowApp"
+import { ThemeProvider } from "@/components/theme-provider";
+import { SignalFlowAppWithProvider } from "@/components/SignalFlowApp";
 
 export function App() {
-return (
-  <ThemeProvider defaultTheme="dark">
-    <SignalFlowAppWithProvider />
-  </ThemeProvider>
-);
+  return (
+    <ThemeProvider defaultTheme="dark">
+      <SignalFlowAppWithProvider />
+    </ThemeProvider>
+  );
 }
 
 export default App;

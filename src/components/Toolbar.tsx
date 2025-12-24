@@ -145,7 +145,12 @@ const blockGroups = [
   },
   {
     title: "Outputs",
-    blocks: ["oscilloscope", "numeric-meter", "fft-analyzer", "audio-output"] as BlockType[],
+    blocks: [
+      "oscilloscope",
+      "numeric-meter",
+      "fft-analyzer",
+      "audio-output",
+    ] as BlockType[],
   },
 ];
 
@@ -156,10 +161,12 @@ export function Toolbar({}: ToolbarProps) {
     return saved !== null ? JSON.parse(saved) : true;
   });
 
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem("toolbar-collapsed-sections");
-    return saved ? new Set(JSON.parse(saved)) : new Set();
-  });
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
+    () => {
+      const saved = localStorage.getItem("toolbar-collapsed-sections");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    },
+  );
 
   // Save showLabels to localStorage when it changes
   useEffect(() => {
@@ -168,7 +175,10 @@ export function Toolbar({}: ToolbarProps) {
 
   // Save collapsedSections to localStorage when it changes
   useEffect(() => {
-    localStorage.setItem("toolbar-collapsed-sections", JSON.stringify(Array.from(collapsedSections)));
+    localStorage.setItem(
+      "toolbar-collapsed-sections",
+      JSON.stringify(Array.from(collapsedSections)),
+    );
   }, [collapsedSections]);
 
   const onDragStart = (event: React.DragEvent, blockType: BlockType) => {
@@ -191,8 +201,10 @@ export function Toolbar({}: ToolbarProps) {
   return (
     <div className="w-64 flex flex-col">
       {/* Header */}
-      <div className="p-3 flex items-center justify-between">
-        <span className="text-sm font-semibold">Tools</span>
+      <div className="px-3 py-1 flex items-center justify-between">
+        <span className="text-sm font-semibold text-muted-foreground">
+          Tools
+        </span>
         <Button
           onClick={() => setShowLabels(!showLabels)}
           variant="ghost"
@@ -231,7 +243,11 @@ export function Toolbar({}: ToolbarProps) {
                 </h3>
               </button>
               {!isCollapsed && (
-                <div className={showLabels ? "space-y-0.5" : "flex flex-wrap gap-1"}>
+                <div
+                  className={
+                    showLabels ? "space-y-0.5" : "flex flex-wrap gap-1"
+                  }
+                >
                   {group.blocks.map((blockType) => {
                     const definition = BLOCK_DEFINITIONS[blockType];
                     const Icon = BLOCK_ICONS[blockType];
