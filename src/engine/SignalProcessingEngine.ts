@@ -25,7 +25,9 @@ export class SignalProcessingEngine {
 
     // Register AudioWorklet processor for division
     try {
-      await this.audioContext.audioWorklet.addModule('/divide-processor.js');
+      // Use relative path to respect Vite's base configuration
+      const basePath = import.meta.env.BASE_URL || '/';
+      await this.audioContext.audioWorklet.addModule(`${basePath}divide-processor.js`);
     } catch (e) {
       console.error('Failed to load divide-processor AudioWorklet:', e);
     }
