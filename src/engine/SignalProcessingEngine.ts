@@ -32,6 +32,14 @@ export class SignalProcessingEngine {
       console.error('Failed to load divide-processor AudioWorklet:', e);
     }
 
+    // Register AudioWorklet processors for math operations
+    try {
+      const basePath = import.meta.env.BASE_URL || '/';
+      await this.audioContext.audioWorklet.addModule(`${basePath}math-processors.js`);
+    } catch (e) {
+      console.error('Failed to load math-processors AudioWorklet:', e);
+    }
+
     this.isRunning = true;
   }
 
@@ -376,6 +384,62 @@ export class SignalProcessingEngine {
         break;
       }
 
+      case 'ceil':
+        this.createMathNode(nodeId, 'ceil-processor');
+        break;
+
+      case 'floor':
+        this.createMathNode(nodeId, 'floor-processor');
+        break;
+
+      case 'round':
+        this.createMathNode(nodeId, 'round-processor');
+        break;
+
+      case 'abs':
+        this.createMathNode(nodeId, 'abs-processor');
+        break;
+
+      case 'sign':
+        this.createMathNode(nodeId, 'sign-processor');
+        break;
+
+      case 'negate':
+        this.createNegateNode(nodeId);
+        break;
+
+      case 'sqrt':
+        this.createMathNode(nodeId, 'sqrt-processor');
+        break;
+
+      case 'sin':
+        this.createMathNode(nodeId, 'sin-processor');
+        break;
+
+      case 'cos':
+        this.createMathNode(nodeId, 'cos-processor');
+        break;
+
+      case 'min':
+        this.createTwoInputMathNode(nodeId, 'min-processor');
+        break;
+
+      case 'max':
+        this.createTwoInputMathNode(nodeId, 'max-processor');
+        break;
+
+      case 'pow':
+        this.createTwoInputMathNode(nodeId, 'pow-processor');
+        break;
+
+      case 'mod':
+        this.createTwoInputMathNode(nodeId, 'mod-processor');
+        break;
+
+      case 'clamp':
+        this.createThreeInputMathNode(nodeId, 'clamp-processor');
+        break;
+
       // Note: Multiplexer is complex and would need custom processing
       // For now, we'll skip it or implement a simplified version
     }
@@ -585,6 +649,78 @@ export class SignalProcessingEngine {
       this.nodes.set(nodeId, divideNode);
     } catch (e) {
       console.error('Failed to create divide AudioWorkletNode:', e);
+      // Fallback to a simple gain node if worklet fails
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 1.0;
+      this.nodes.set(nodeId, gainNode);
+    }
+  }
+
+  private createMathNode(nodeId: string, processorName: string) {
+    if (!this.audioContext) return;
+
+    try {
+      // Create AudioWorkletNode for single-input math operations
+      const mathNode = new AudioWorkletNode(this.audioContext, processorName, {
+        numberOfInputs: 1,
+        numberOfOutputs: 1,
+        outputChannelCount: [1]
+      });
+
+      this.nodes.set(nodeId, mathNode);
+    } catch (e) {
+      console.error(`Failed to create ${processorName} AudioWorkletNode:`, e);
+      // Fallback to a simple gain node if worklet fails
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 1.0;
+      this.nodes.set(nodeId, gainNode);
+    }
+  }
+
+  private createNegateNode(nodeId: string) {
+    if (!this.audioContext) return;
+
+    // Negate is simple: use a gain node with -1 gain
+    const gainNode = this.audioContext.createGain();
+    gainNode.gain.value = -1.0;
+    this.nodes.set(nodeId, gainNode);
+  }
+
+  private createTwoInputMathNode(nodeId: string, processorName: string) {
+    if (!this.audioContext) return;
+
+    try {
+      // Create AudioWorkletNode for two-input math operations
+      const mathNode = new AudioWorkletNode(this.audioContext, processorName, {
+        numberOfInputs: 2,
+        numberOfOutputs: 1,
+        outputChannelCount: [1]
+      });
+
+      this.nodes.set(nodeId, mathNode);
+    } catch (e) {
+      console.error(`Failed to create ${processorName} AudioWorkletNode:`, e);
+      // Fallback to a simple gain node if worklet fails
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 1.0;
+      this.nodes.set(nodeId, gainNode);
+    }
+  }
+
+  private createThreeInputMathNode(nodeId: string, processorName: string) {
+    if (!this.audioContext) return;
+
+    try {
+      // Create AudioWorkletNode for three-input math operations (clamp)
+      const mathNode = new AudioWorkletNode(this.audioContext, processorName, {
+        numberOfInputs: 3,
+        numberOfOutputs: 1,
+        outputChannelCount: [1]
+      });
+
+      this.nodes.set(nodeId, mathNode);
+    } catch (e) {
+      console.error(`Failed to create ${processorName} AudioWorkletNode:`, e);
       // Fallback to a simple gain node if worklet fails
       const gainNode = this.audioContext.createGain();
       gainNode.gain.value = 1.0;
