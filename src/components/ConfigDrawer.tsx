@@ -1,5 +1,5 @@
 import { X, Trash2 } from 'lucide-react';
-import { type Node } from '@xyflow/react';
+import { type Node, type Edge } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,12 +10,13 @@ import { type SignalBlockData } from './SignalBlock';
 
 interface ConfigDrawerProps {
   node: Node<SignalBlockData> | undefined;
+  edges: Edge[];
   onConfigChange: (config: BlockConfig) => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
-export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: ConfigDrawerProps) {
+export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }: ConfigDrawerProps) {
   if (!node) return null;
 
   const { blockType, label, config } = node.data;
@@ -24,22 +25,78 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
     onConfigChange({ ...config, ...updates });
   };
 
-  const renderWaveGeneratorConfig = () => (
-    <>
+  // Helper function to check if a specific input handle is connected
+  const isInputConnected = (handleId: string): boolean => {
+    return edges.some(edge => edge.target === node.id && edge.targetHandle === handleId);
+  };
+
+  const renderWaveGeneratorConfig = () => {
+    const freqConnected = isInputConnected('freq');
+    const ampConnected = isInputConnected('amp');
+    const phaseConnected = isInputConnected('phase');
+
+    return (
+      <>
+        <div className="space-y-2">
+          <Label htmlFor="frequency" className={freqConnected ? 'text-muted-foreground' : ''}>
+            Frequency (Hz) {freqConnected && '(Connected)'}
+          </Label>
+          <Input
+            id="frequency"
+            type="number"
+            min="20"
+            max="20000"
+            step="1"
+            value={config.frequency || 440}
+            onChange={(e) => updateConfig({ frequency: parseFloat(e.target.value) })}
+            disabled={freqConnected}
+            className={freqConnected ? 'opacity-50 cursor-not-allowed' : ''}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="amplitude" className={ampConnected ? 'text-muted-foreground' : ''}>
+            Amplitude {ampConnected && '(Connected)'}
+          </Label>
+          <Input
+            id="amplitude"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            value={config.amplitude || 0.5}
+            onChange={(e) => updateConfig({ amplitude: parseFloat(e.target.value) })}
+            disabled={ampConnected}
+            className={ampConnected ? 'opacity-50 cursor-not-allowed' : ''}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phase" className={phaseConnected ? 'text-muted-foreground' : ''}>
+            Phase (degrees) {phaseConnected && '(Connected)'}
+          </Label>
+          <Input
+            id="phase"
+            type="number"
+            min="0"
+            max="360"
+            step="1"
+            value={config.phase || 0}
+            onChange={(e) => updateConfig({ phase: parseFloat(e.target.value) })}
+            disabled={phaseConnected}
+            className={phaseConnected ? 'opacity-50 cursor-not-allowed' : ''}
+          />
+        </div>
+      </>
+    );
+  };
+
+  const renderNoiseConfig = () => {
+    const ampConnected = isInputConnected('amp');
+
+    return (
       <div className="space-y-2">
-        <Label htmlFor="frequency">Frequency (Hz)</Label>
-        <Input
-          id="frequency"
-          type="number"
-          min="20"
-          max="20000"
-          step="1"
-          value={config.frequency || 440}
-          onChange={(e) => updateConfig({ frequency: parseFloat(e.target.value) })}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="amplitude">Amplitude</Label>
+        <Label htmlFor="amplitude" className={ampConnected ? 'text-muted-foreground' : ''}>
+          Amplitude {ampConnected && '(Connected)'}
+        </Label>
         <Input
           id="amplitude"
           type="number"
@@ -48,37 +105,12 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
           step="0.01"
           value={config.amplitude || 0.5}
           onChange={(e) => updateConfig({ amplitude: parseFloat(e.target.value) })}
+          disabled={ampConnected}
+          className={ampConnected ? 'opacity-50 cursor-not-allowed' : ''}
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="phase">Phase (degrees)</Label>
-        <Input
-          id="phase"
-          type="number"
-          min="0"
-          max="360"
-          step="1"
-          value={config.phase || 0}
-          onChange={(e) => updateConfig({ phase: parseFloat(e.target.value) })}
-        />
-      </div>
-    </>
-  );
-
-  const renderNoiseConfig = () => (
-    <div className="space-y-2">
-      <Label htmlFor="amplitude">Amplitude</Label>
-      <Input
-        id="amplitude"
-        type="number"
-        min="0"
-        max="1"
-        step="0.01"
-        value={config.amplitude || 0.5}
-        onChange={(e) => updateConfig({ amplitude: parseFloat(e.target.value) })}
-      />
-    </div>
-  );
+    );
+  };
 
   const renderGainConfig = () => (
     <div className="space-y-2">
@@ -95,34 +127,42 @@ export function ConfigDrawer({ node, onConfigChange, onDelete, onClose }: Config
     </div>
   );
 
-  const renderFilterConfig = () => (
-    <>
-      <div className="space-y-2">
-        <Label htmlFor="cutoffFrequency">Cutoff Frequency (Hz)</Label>
-        <Input
-          id="cutoffFrequency"
-          type="number"
-          min="20"
-          max="20000"
-          step="1"
-          value={config.cutoffFrequency || 1000}
-          onChange={(e) => updateConfig({ cutoffFrequency: parseFloat(e.target.value) })}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="qFactor">Q Factor</Label>
-        <Input
-          id="qFactor"
-          type="number"
-          min="0.1"
-          max="20"
-          step="0.1"
-          value={config.qFactor || 1.0}
-          onChange={(e) => updateConfig({ qFactor: parseFloat(e.target.value) })}
-        />
-      </div>
-    </>
-  );
+  const renderFilterConfig = () => {
+    const cutoffConnected = isInputConnected('cutoff');
+
+    return (
+      <>
+        <div className="space-y-2">
+          <Label htmlFor="cutoffFrequency" className={cutoffConnected ? 'text-muted-foreground' : ''}>
+            Cutoff Frequency (Hz) {cutoffConnected && '(Connected)'}
+          </Label>
+          <Input
+            id="cutoffFrequency"
+            type="number"
+            min="20"
+            max="20000"
+            step="1"
+            value={config.cutoffFrequency || 1000}
+            onChange={(e) => updateConfig({ cutoffFrequency: parseFloat(e.target.value) })}
+            disabled={cutoffConnected}
+            className={cutoffConnected ? 'opacity-50 cursor-not-allowed' : ''}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="qFactor">Q Factor</Label>
+          <Input
+            id="qFactor"
+            type="number"
+            min="0.1"
+            max="20"
+            step="0.1"
+            value={config.qFactor || 1.0}
+            onChange={(e) => updateConfig({ qFactor: parseFloat(e.target.value) })}
+          />
+        </div>
+      </>
+    );
+  };
 
   const renderMultiplexerConfig = () => (
     <>

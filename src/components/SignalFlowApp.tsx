@@ -418,6 +418,7 @@ export function SignalFlowApp() {
       {/* Right Configuration Drawer */}
       <ConfigDrawer
         node={selectedNode as Node<SignalBlockData> | undefined}
+        edges={edges}
         onConfigChange={(config) =>
           selectedNode && updateNodeConfig(selectedNode.id, config)
         }

@@ -143,6 +143,72 @@ export class SignalProcessingEngine {
       }
     });
 
+    // Reset AudioParam values to configured values (before reconnecting)
+    // Only reset params that are NOT connected (check edges first)
+    nodes.forEach((node) => {
+      const blockType = node.data.blockType as BlockType;
+      const config = node.data.config as BlockConfig;
+      const audioNode = this.nodes.get(node.id);
+
+      if (!audioNode) return;
+
+      // Helper to check if a specific input handle has an incoming connection
+      const isInputConnected = (handleId: string): boolean => {
+        return edges.some(edge => edge.target === node.id && edge.targetHandle === handleId);
+      };
+
+      switch (blockType) {
+        case 'sine-wave':
+        case 'square-wave':
+        case 'triangle-wave':
+        case 'sawtooth-wave': {
+          const oscillator = this.oscillators.get(node.id);
+          // Only set frequency if NOT connected
+          if (oscillator && !isInputConnected('freq')) {
+            oscillator.frequency.value = config.frequency || 440;
+            console.log(`[${node.id}] Freq NOT connected, set to config:`, config.frequency || 440);
+          } else if (oscillator && isInputConnected('freq')) {
+            // If connected, set base to 0 so signal directly controls it
+            oscillator.frequency.value = 0;
+            console.log(`[${node.id}] Freq IS connected, set base to 0`);
+          }
+
+          // Only set amplitude if NOT connected
+          if (audioNode instanceof GainNode && !isInputConnected('amp')) {
+            audioNode.gain.value = config.amplitude || 0.5;
+          } else if (audioNode instanceof GainNode && isInputConnected('amp')) {
+            // If connected, set base to 0 so signal directly controls it
+            audioNode.gain.value = 0;
+          }
+          break;
+        }
+
+        case 'noise': {
+          // Only set amplitude if NOT connected
+          if (audioNode instanceof GainNode && !isInputConnected('amp')) {
+            audioNode.gain.value = config.amplitude || 0.5;
+          } else if (audioNode instanceof GainNode && isInputConnected('amp')) {
+            // If connected, set base to 0 so signal directly controls it
+            audioNode.gain.value = 0;
+          }
+          break;
+        }
+
+        case 'low-pass-filter':
+        case 'high-pass-filter':
+        case 'band-pass-filter': {
+          // Only set cutoff if NOT connected
+          if (audioNode instanceof BiquadFilterNode && !isInputConnected('cutoff')) {
+            audioNode.frequency.value = config.cutoffFrequency || 1000;
+          } else if (audioNode instanceof BiquadFilterNode && isInputConnected('cutoff')) {
+            // If connected, set base to 0 so signal directly controls it
+            audioNode.frequency.value = 0;
+          }
+          break;
+        }
+      }
+    });
+
     // Reconnect oscillators to their gain nodes
     this.oscillators.forEach((oscillator, nodeId) => {
       const gainNode = this.nodes.get(nodeId);
@@ -402,6 +468,8 @@ export class SignalProcessingEngine {
     constantSource.offset.value = config.value || 0;
     constantSource.start();
 
+    console.log(`[${nodeId}] ConstantSource created with value:`, config.value || 0);
+
     this.constantSources.set(nodeId, constantSource);
     this.nodes.set(nodeId, constantSource);
   }
@@ -481,6 +549,58 @@ export class SignalProcessingEngine {
 
     try {
       switch (blockType) {
+        case 'sine-wave':
+        case 'square-wave':
+        case 'triangle-wave':
+        case 'sawtooth-wave': {
+          // Wave generators: connect to AudioParams based on handle
+          if (targetHandle === 'freq') {
+            const oscillator = this.oscillators.get(targetId);
+            if (oscillator) {
+              // Base value already set to 0 in updateGraph reset loop
+              sourceNode.connect(oscillator.frequency);
+              console.log(`[${sourceId}] -> [${targetId}].frequency, current base:`, oscillator.frequency.value);
+            }
+          } else if (targetHandle === 'amp') {
+            // targetNode is the gain node
+            if (targetNode instanceof GainNode) {
+              // Base value already set to 0 in updateGraph reset loop
+              sourceNode.connect(targetNode.gain);
+            }
+          } else if (targetHandle === 'phase') {
+            // Phase modulation not directly supported by Web Audio API
+            // Would need custom processing - for now, ignore
+          }
+          break;
+        }
+
+        case 'noise': {
+          if (targetHandle === 'amp') {
+            // targetNode is the gain node
+            if (targetNode instanceof GainNode) {
+              // Base value already set to 0 in updateGraph reset loop
+              sourceNode.connect(targetNode.gain);
+            }
+          }
+          break;
+        }
+
+        case 'low-pass-filter':
+        case 'high-pass-filter':
+        case 'band-pass-filter': {
+          if (targetHandle === 'in') {
+            // Normal audio connection
+            sourceNode.connect(targetNode);
+          } else if (targetHandle === 'cutoff') {
+            // Connect to filter frequency parameter
+            if (targetNode instanceof BiquadFilterNode) {
+              // Base value already set to 0 in updateGraph reset loop
+              sourceNode.connect(targetNode.frequency);
+            }
+          }
+          break;
+        }
+
         case 'add':
           // Both inputs connect to same node (mixing/addition)
           sourceNode.connect(targetNode);
@@ -542,6 +662,7 @@ export class SignalProcessingEngine {
     const source = this.constantSources.get(nodeId);
     if (source) {
       source.offset.value = value;
+      console.log(`[${nodeId}] Slider value updated to:`, value);
     }
   }
 
