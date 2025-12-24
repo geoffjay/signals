@@ -247,11 +247,11 @@ export function SignalFlowApp() {
         await engineRef.current.start();
         engineRef.current.updateGraph(nodes, edges);
 
-        // Update oscilloscope and numeric-meter nodes with analysers
+        // Update oscilloscope, numeric-meter, and fft-analyzer nodes with analysers
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
-            if (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter") {
+            if (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter" || node.data.blockType === "fft-analyzer") {
               const analyser = engineRef.current.getAnalyser(node.id);
               return {
                 ...node,
@@ -272,11 +272,11 @@ export function SignalFlowApp() {
     } else {
       engineRef.current.stop();
 
-      // Clear analysers from oscilloscope and numeric-meter nodes
+      // Clear analysers from oscilloscope, numeric-meter, and fft-analyzer nodes
       isInternalNodeUpdate.current = true;
       setNodes((nds) =>
         nds.map((node) => {
-          if (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter") {
+          if (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter" || node.data.blockType === "fft-analyzer") {
             return {
               ...node,
               data: {
@@ -346,16 +346,16 @@ export function SignalFlowApp() {
     ) {
       engineRef.current.updateGraph(nodes, edges);
 
-      // Attach analysers to any new oscilloscope or numeric-meter nodes that don't have them yet
+      // Attach analysers to any new oscilloscope, numeric-meter, or fft-analyzer nodes that don't have them yet
       const needsAnalyserUpdate = nodes.some(
-        (node) => (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter") && !node.data.analyser,
+        (node) => (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter" || node.data.blockType === "fft-analyzer") && !node.data.analyser,
       );
 
       if (needsAnalyserUpdate) {
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
-            if ((node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter") && !node.data.analyser) {
+            if ((node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter" || node.data.blockType === "fft-analyzer") && !node.data.analyser) {
               const analyser = engineRef.current.getAnalyser(node.id);
               if (analyser) {
                 return {
