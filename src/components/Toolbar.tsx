@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 import {
-  Play,
-  Square,
   Waves,
   Box,
   Triangle,
@@ -92,10 +90,7 @@ const BLOCK_ICONS: Record<
   clamp: Shrink,
 };
 
-interface ToolbarProps {
-  isPlaying: boolean;
-  onTogglePlayback: () => void;
-}
+interface ToolbarProps {}
 
 const blockGroups = [
   {
@@ -154,7 +149,7 @@ const blockGroups = [
   },
 ];
 
-export function Toolbar({ isPlaying, onTogglePlayback }: ToolbarProps) {
+export function Toolbar({}: ToolbarProps) {
   // Initialize from localStorage
   const [showLabels, setShowLabels] = useState(() => {
     const saved = localStorage.getItem("toolbar-show-labels");
@@ -194,26 +189,9 @@ export function Toolbar({ isPlaying, onTogglePlayback }: ToolbarProps) {
   };
 
   return (
-    <div className="w-64 bg-card border-r border-border flex flex-col">
-      {/* Playback Controls */}
-      <div className="p-3 space-y-2">
-        <Button
-          onClick={onTogglePlayback}
-          className="w-full"
-          variant={isPlaying ? "destructive" : "default"}
-        >
-          {isPlaying ? (
-            <>
-              <Square className="w-4 h-4 mr-2" />
-              Stop
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4 mr-2" />
-              Start
-            </>
-          )}
-        </Button>
+    <div className="w-64 flex flex-col">
+      {/* View Toggle */}
+      <div className="p-3">
         <Button
           onClick={() => setShowLabels(!showLabels)}
           className="w-full"

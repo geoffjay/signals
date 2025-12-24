@@ -22,6 +22,7 @@ import {
 } from "@/types/blocks";
 import { SignalBlock, type SignalBlockData } from "./SignalBlock";
 import { Toolbar } from "./Toolbar";
+import { Topbar } from "./Topbar";
 import { ConfigDrawer } from "./ConfigDrawer";
 import { useTheme } from "@/components/theme-provider";
 import { SignalProcessingEngine } from "@/engine/SignalProcessingEngine";
@@ -386,45 +387,53 @@ export function SignalFlowApp() {
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
-      {/* Left Toolbar */}
-      <Toolbar isPlaying={isPlaying} onTogglePlayback={togglePlayback} />
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-radial-gradient">
+      {/* Top Bar */}
+      <Topbar isPlaying={isPlaying} onTogglePlayback={togglePlayback} />
 
-      {/* Center Canvas */}
-      <div className="flex-1 relative" ref={reactFlowWrapper}>
-        <ReactFlow
-          nodes={nodes}
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Toolbar */}
+        <Toolbar />
+
+        {/* Center Canvas with margin and rounded corners */}
+        <div className="flex-1 relative pb-4 pr-4">
+          <div className="h-full w-full rounded-3xl overflow-hidden border border-border shadow-lg bg-card" ref={reactFlowWrapper}>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              colorMode={theme}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={onNodeClick}
+              onPaneClick={onPaneClick}
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              onInit={(instance) => {
+                reactFlowInstanceRef.current = instance;
+              }}
+              nodeTypes={nodeTypes}
+              fitView
+            >
+              <Background />
+              <Controls />
+              <MiniMap />
+            </ReactFlow>
+          </div>
+        </div>
+
+        {/* Right Configuration Drawer */}
+        <ConfigDrawer
+          node={selectedNode as Node<SignalBlockData> | undefined}
           edges={edges}
-          colorMode={theme}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          onPaneClick={onPaneClick}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onInit={(instance) => {
-            reactFlowInstanceRef.current = instance;
-          }}
-          nodeTypes={nodeTypes}
-          fitView
-        >
-          <Background />
-          <Controls />
-          <MiniMap />
-        </ReactFlow>
+          onConfigChange={(config) =>
+            selectedNode && updateNodeConfig(selectedNode.id, config)
+          }
+          onDelete={deleteSelectedNode}
+          onClose={() => setSelectedNodeId(null)}
+        />
       </div>
-
-      {/* Right Configuration Drawer */}
-      <ConfigDrawer
-        node={selectedNode as Node<SignalBlockData> | undefined}
-        edges={edges}
-        onConfigChange={(config) =>
-          selectedNode && updateNodeConfig(selectedNode.id, config)
-        }
-        onDelete={deleteSelectedNode}
-        onClose={() => setSelectedNodeId(null)}
-      />
     </div>
   );
 }
