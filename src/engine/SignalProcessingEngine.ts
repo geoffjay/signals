@@ -8,6 +8,7 @@ export class SignalProcessingEngine {
   private analysers: Map<string, AnalyserNode> = new Map();
   private constantSources: Map<string, ConstantSourceNode> = new Map();
   private reactFlowNodes: Node[] = [];
+  private reactFlowEdges: Edge[] = [];
   private isRunning = false;
 
   async start() {
@@ -75,8 +76,9 @@ export class SignalProcessingEngine {
   updateGraph(nodes: Node[], edges: Edge[]) {
     if (!this.isRunning || !this.audioContext) return;
 
-    // Store nodes for connection routing logic
+    // Store nodes and edges for connection routing logic
     this.reactFlowNodes = nodes;
+    this.reactFlowEdges = edges;
 
     // Get current node IDs
     const currentNodeIds = new Set(Array.from(this.nodes.keys()));
