@@ -23,6 +23,7 @@ import {
   Minus,
   X as MultiplyIcon,
   Divide,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -54,6 +55,7 @@ const BLOCK_ICONS: Record<
   subtract: Minus,
   multiply: MultiplyIcon,
   divide: Divide,
+  "fft-analyzer": BarChart3,
 };
 
 interface ToolbarProps {
@@ -95,7 +97,7 @@ const blockGroups = [
   },
   {
     title: "Outputs",
-    blocks: ["oscilloscope", "numeric-meter", "audio-output"] as BlockType[],
+    blocks: ["oscilloscope", "numeric-meter", "fft-analyzer", "audio-output"] as BlockType[],
   },
 ];
 

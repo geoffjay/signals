@@ -412,6 +412,111 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
     </>
   );
 
+  const renderFFTAnalyzerConfig = () => (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="fftMode">Mode</Label>
+        <Select
+          value={config.fftMode || 'spectrum'}
+          onValueChange={(value) => value && updateConfig({ fftMode: value as 'spectrum' | 'frequency-output' | 'peak-detection' | 'spectral-processing' })}
+        >
+          <SelectTrigger id="fftMode">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="spectrum">Spectrum Analyzer</SelectItem>
+            <SelectItem value="frequency-output">Frequency Output</SelectItem>
+            <SelectItem value="peak-detection">Peak Detection</SelectItem>
+            <SelectItem value="spectral-processing">Spectral Processing</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Common FFT Settings */}
+      <div className="space-y-2">
+        <Label htmlFor="fftSize">FFT Size</Label>
+        <Select
+          value={String(config.fftSize || 2048)}
+          onValueChange={(value) => value && updateConfig({ fftSize: parseInt(value) })}
+        >
+          <SelectTrigger id="fftSize">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="256">256</SelectItem>
+            <SelectItem value="512">512</SelectItem>
+            <SelectItem value="1024">1024</SelectItem>
+            <SelectItem value="2048">2048</SelectItem>
+            <SelectItem value="4096">4096</SelectItem>
+            <SelectItem value="8192">8192</SelectItem>
+            <SelectItem value="16384">16384</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Mode-specific settings */}
+      {(config.fftMode === 'spectrum' || config.fftMode === 'peak-detection' || !config.fftMode) && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="smoothingTimeConstant">Smoothing (0-1)</Label>
+            <Input
+              id="smoothingTimeConstant"
+              type="number"
+              min="0"
+              max="1"
+              step="0.1"
+              value={config.smoothingTimeConstant ?? 0.8}
+              onChange={(e) => updateConfig({ smoothingTimeConstant: parseFloat(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="minDecibels">Min Decibels</Label>
+            <Input
+              id="minDecibels"
+              type="number"
+              min="-100"
+              max="-30"
+              step="1"
+              value={config.minDecibels ?? -90}
+              onChange={(e) => updateConfig({ minDecibels: parseFloat(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxDecibels">Max Decibels</Label>
+            <Input
+              id="maxDecibels"
+              type="number"
+              min="-30"
+              max="0"
+              step="1"
+              value={config.maxDecibels ?? -10}
+              onChange={(e) => updateConfig({ maxDecibels: parseFloat(e.target.value) })}
+            />
+          </div>
+        </>
+      )}
+
+      {config.fftMode === 'frequency-output' && (
+        <div className="space-y-2">
+          <Label htmlFor="numFrequencyOutputs">Number of Outputs</Label>
+          <Select
+            value={String(config.numFrequencyOutputs || 4)}
+            onValueChange={(value) => value && updateConfig({ numFrequencyOutputs: parseInt(value) })}
+          >
+            <SelectTrigger id="numFrequencyOutputs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2">2</SelectItem>
+              <SelectItem value="4">4</SelectItem>
+              <SelectItem value="8">8</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+    </>
+  );
+
   const renderConfig = () => {
     switch (blockType) {
       case 'sine-wave':
@@ -445,6 +550,8 @@ export function ConfigDrawer({ node, edges, onConfigChange, onDelete, onClose }:
         return renderPulseConfig();
       case 'numeric-meter':
         return renderNumericMeterConfig();
+      case 'fft-analyzer':
+        return renderFFTAnalyzerConfig();
       default:
         return null;
     }

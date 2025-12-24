@@ -326,6 +326,23 @@ export class SignalProcessingEngine {
         this.createDivideNode(nodeId);
         break;
 
+      case 'fft-analyzer': {
+        const mode = config.fftMode || 'spectrum';
+        switch (mode) {
+          case 'spectrum':
+          case 'peak-detection':
+            this.createFFTAnalyzer(nodeId, config);
+            break;
+          case 'frequency-output':
+            this.createFFTFrequencyOutput(nodeId, config);
+            break;
+          case 'spectral-processing':
+            this.createFFTSpectralProcessor(nodeId, config);
+            break;
+        }
+        break;
+      }
+
       // Note: Multiplexer is complex and would need custom processing
       // For now, we'll skip it or implement a simplified version
     }
@@ -535,8 +552,121 @@ export class SignalProcessingEngine {
     }
   }
 
-  private connectNodes(sourceId: string, _sourceHandle: string, targetId: string, targetHandle: string) {
-    const sourceNode = this.nodes.get(sourceId);
+  private createFFTAnalyzer(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const analyser = this.audioContext.createAnalyser();
+    analyser.fftSize = config.fftSize || 2048;
+    analyser.smoothingTimeConstant = config.smoothingTimeConstant || 0.8;
+    analyser.minDecibels = config.minDecibels || -90;
+    analyser.maxDecibels = config.maxDecibels || -10;
+
+    this.analysers.set(nodeId, analyser);
+    this.nodes.set(nodeId, analyser);
+  }
+
+  private createFFTFrequencyOutput(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const numOutputs = config.numFrequencyOutputs || 4;
+    const bins = config.frequencyBins || [];
+
+    // Create input splitter
+    const inputGain = this.audioContext.createGain();
+    inputGain.gain.value = 1.0;
+
+    // Create band-pass filters for each output
+    for (let i = 0; i < numOutputs; i++) {
+      const bin = bins[i];
+      if (!bin) continue;
+
+      const filter = this.audioContext.createBiquadFilter();
+      filter.type = 'bandpass';
+
+      // Calculate center frequency from bin indices
+      const nyquist = this.audioContext.sampleRate / 2;
+      const fftSize = config.fftSize || 2048;
+      const binWidth = nyquist / (fftSize / 2);
+      const startFreq = bin.start * binWidth;
+      const endFreq = bin.end * binWidth;
+      const centerFreq = (startFreq + endFreq) / 2;
+      const bandwidth = endFreq - startFreq;
+
+      filter.frequency.value = centerFreq;
+      filter.Q.value = bandwidth > 0 ? centerFreq / bandwidth : 1.0;
+
+      inputGain.connect(filter);
+
+      // Store filter node with output ID
+      this.nodes.set(`${nodeId}-freq_out${i}`, filter);
+    }
+
+    // Store main input node
+    this.nodes.set(nodeId, inputGain);
+
+    // Also create analyser for potential visualization
+    const analyser = this.audioContext.createAnalyser();
+    analyser.fftSize = config.fftSize || 2048;
+    inputGain.connect(analyser);
+    this.analysers.set(nodeId, analyser);
+  }
+
+  private createFFTSpectralProcessor(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const operation = config.spectralOperation || 'passthrough';
+    const frequency = config.operationFrequency || 1000;
+    const gain = config.operationGain || 0;
+
+    // Create filter chain based on operation
+    const filter = this.audioContext.createBiquadFilter();
+
+    switch (operation) {
+      case 'low-shelf':
+        filter.type = 'lowshelf';
+        filter.frequency.value = frequency;
+        filter.gain.value = gain;
+        break;
+
+      case 'high-shelf':
+        filter.type = 'highshelf';
+        filter.frequency.value = frequency;
+        filter.gain.value = gain;
+        break;
+
+      case 'notch-band':
+        filter.type = 'notch';
+        filter.frequency.value = frequency;
+        filter.Q.value = 10; // Narrow notch
+        break;
+
+      case 'passthrough':
+      default:
+        filter.type = 'allpass';
+        filter.frequency.value = frequency;
+        break;
+    }
+
+    this.nodes.set(nodeId, filter);
+
+    // Also create analyser for visualization
+    const analyser = this.audioContext.createAnalyser();
+    analyser.fftSize = config.fftSize || 2048;
+    filter.connect(analyser);
+    this.analysers.set(nodeId, analyser);
+  }
+
+  private connectNodes(sourceId: string, sourceHandle: string, targetId: string, targetHandle: string) {
+    // Special case: FFT analyzer frequency output mode
+    // Source handles like 'freq_out0', 'freq_out1' route from filter nodes
+    let sourceNode = this.nodes.get(sourceId);
+    if (sourceHandle.startsWith('freq_out')) {
+      const filterNode = this.nodes.get(`${sourceId}-${sourceHandle}`);
+      if (filterNode) {
+        sourceNode = filterNode;
+      }
+    }
+
     const targetNode = this.nodes.get(targetId);
 
     if (!sourceNode || !targetNode) return;
@@ -635,6 +765,11 @@ export class SignalProcessingEngine {
             // Connect to second input (channel 1)
             sourceNode.connect(targetNode, 0, 1);
           }
+          break;
+
+        case 'fft-analyzer':
+          // FFT analyzer: normal audio connection to input
+          sourceNode.connect(targetNode);
           break;
 
         default:
@@ -742,6 +877,78 @@ export class SignalProcessingEngine {
           }
 
           analyser.fftSize = Math.min(fftSize, 32768);
+        }
+        break;
+      }
+
+      case 'fft-analyzer': {
+        const mode = config.fftMode || 'spectrum';
+
+        // Update analyser parameters for modes that use it
+        if (mode === 'spectrum' || mode === 'peak-detection') {
+          const analyser = this.analysers.get(nodeId);
+          if (analyser instanceof AnalyserNode) {
+            analyser.fftSize = config.fftSize || 2048;
+            analyser.smoothingTimeConstant = config.smoothingTimeConstant ?? 0.8;
+            analyser.minDecibels = config.minDecibels ?? -90;
+            analyser.maxDecibels = config.maxDecibels ?? -10;
+          }
+        } else if (mode === 'frequency-output') {
+          // Update bandpass filter parameters
+          const numOutputs = config.numFrequencyOutputs || 4;
+          const bins = config.frequencyBins || [];
+          const nyquist = this.audioContext!.sampleRate / 2;
+          const fftSize = config.fftSize || 2048;
+          const binWidth = nyquist / (fftSize / 2);
+
+          for (let i = 0; i < numOutputs; i++) {
+            const bin = bins[i];
+            if (!bin) continue;
+
+            const filter = this.nodes.get(`${nodeId}-freq_out${i}`);
+            if (filter instanceof BiquadFilterNode) {
+              const startFreq = bin.start * binWidth;
+              const endFreq = bin.end * binWidth;
+              const centerFreq = (startFreq + endFreq) / 2;
+              const bandwidth = endFreq - startFreq;
+
+              filter.frequency.value = centerFreq;
+              filter.Q.value = bandwidth > 0 ? centerFreq / bandwidth : 1.0;
+            }
+          }
+        } else if (mode === 'spectral-processing') {
+          // Update filter parameters
+          if (node instanceof BiquadFilterNode) {
+            const operation = config.spectralOperation || 'passthrough';
+            const frequency = config.operationFrequency || 1000;
+            const gain = config.operationGain || 0;
+
+            switch (operation) {
+              case 'low-shelf':
+                node.type = 'lowshelf';
+                node.frequency.value = frequency;
+                node.gain.value = gain;
+                break;
+
+              case 'high-shelf':
+                node.type = 'highshelf';
+                node.frequency.value = frequency;
+                node.gain.value = gain;
+                break;
+
+              case 'notch-band':
+                node.type = 'notch';
+                node.frequency.value = frequency;
+                node.Q.value = 10;
+                break;
+
+              case 'passthrough':
+              default:
+                node.type = 'allpass';
+                node.frequency.value = frequency;
+                break;
+            }
+          }
         }
         break;
       }

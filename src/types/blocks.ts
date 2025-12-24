@@ -20,7 +20,8 @@ export type BlockType =
   | 'add'
   | 'subtract'
   | 'multiply'
-  | 'divide';
+  | 'divide'
+  | 'fft-analyzer';
 
 export interface BlockConfig {
   // Wave generators
@@ -64,6 +65,27 @@ export interface BlockConfig {
   // Numeric meter
   decimals?: number;
   unit?: string;
+
+  // FFT Analyzer
+  fftMode?: 'spectrum' | 'frequency-output' | 'peak-detection' | 'spectral-processing';
+  fftSize?: number; // 32-32768, power of 2
+  smoothingTimeConstant?: number; // 0-1
+  minDecibels?: number; // -100 to -30
+  maxDecibels?: number; // -30 to 0
+
+  // Mode 2: Frequency Output
+  frequencyBins?: Array<{ start: number; end: number; label: string }>;
+  numFrequencyOutputs?: number; // 2, 4, 8
+
+  // Mode 3: Peak Detection
+  numPeaks?: number; // 1-10
+  peakThreshold?: number; // -100 to 0 dB
+  peakVisualization?: 'list' | 'graph';
+
+  // Mode 4: Spectral Processing
+  spectralOperation?: 'passthrough' | 'low-shelf' | 'high-shelf' | 'notch-band';
+  operationFrequency?: number;
+  operationGain?: number;
 }
 
 export interface BlockDefinition {
@@ -331,6 +353,32 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
       decimals: 3,
       unit: ''
     }
+  },
+  'fft-analyzer': {
+    type: 'fft-analyzer',
+    label: 'FFT Analyzer',
+    inputs: [{ id: 'in', label: 'In' }],
+    outputs: [], // Dynamic based on mode
+    defaultConfig: {
+      fftMode: 'spectrum',
+      fftSize: 2048,
+      smoothingTimeConstant: 0.8,
+      minDecibels: -90,
+      maxDecibels: -10,
+      numFrequencyOutputs: 4,
+      frequencyBins: [
+        { start: 0, end: 10, label: 'Sub-Bass' },
+        { start: 10, end: 50, label: 'Bass' },
+        { start: 50, end: 100, label: 'Mids' },
+        { start: 100, end: 200, label: 'Highs' }
+      ],
+      numPeaks: 5,
+      peakThreshold: -40,
+      peakVisualization: 'list',
+      spectralOperation: 'passthrough',
+      operationFrequency: 1000,
+      operationGain: 0
+    }
   }
 };
 
@@ -361,6 +409,33 @@ export function getBlockOutputs(type: BlockType, config: BlockConfig): Array<{ i
       outputs.push({ id: `out${i}`, label: `Out ${i}` });
     }
     return outputs;
+  }
+
+  if (type === 'fft-analyzer') {
+    const mode = config.fftMode || 'spectrum';
+
+    switch (mode) {
+      case 'spectrum':
+      case 'peak-detection':
+        // No audio outputs, visualization only
+        return [];
+
+      case 'frequency-output': {
+        const numOutputs = config.numFrequencyOutputs || 4;
+        const bins = config.frequencyBins || [];
+        return bins.slice(0, numOutputs).map((bin, i) => ({
+          id: `freq_out${i}`,
+          label: bin.label || `Bin ${i}`
+        }));
+      }
+
+      case 'spectral-processing':
+        // One processed audio output
+        return [{ id: 'out', label: 'Out' }];
+
+      default:
+        return [];
+    }
   }
 
   return definition.outputs;

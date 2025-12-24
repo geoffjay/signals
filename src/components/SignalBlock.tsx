@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
 import { type BlockType, type BlockConfig, getBlockInputs, getBlockOutputs } from '@/types/blocks';
 import { OscilloscopeDisplay } from './OscilloscopeDisplay';
 import { NumericMeterDisplay } from './NumericMeterDisplay';
+import { SpectrumDisplay } from './SpectrumDisplay';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 
@@ -179,6 +180,20 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
             timeWindow={blockData.config.timeWindow}
             minAmplitude={blockData.config.minAmplitude}
             maxAmplitude={blockData.config.maxAmplitude}
+          />
+        </div>
+      )}
+
+      {/* FFT Analyzer Display */}
+      {blockData.blockType === 'fft-analyzer' && blockData.config.fftMode === 'spectrum' && (
+        <div className="mb-2">
+          <SpectrumDisplay
+            analyser={blockData.analyser}
+            width={240}
+            height={140}
+            refreshRate={blockData.config.refreshRate ?? 60}
+            minDecibels={blockData.config.minDecibels}
+            maxDecibels={blockData.config.maxDecibels}
           />
         </div>
       )}
