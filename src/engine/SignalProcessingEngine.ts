@@ -166,11 +166,9 @@ export class SignalProcessingEngine {
           // Only set frequency if NOT connected
           if (oscillator && !isInputConnected('freq')) {
             oscillator.frequency.value = config.frequency || 440;
-            console.log(`[${node.id}] Freq NOT connected, set to config:`, config.frequency || 440);
           } else if (oscillator && isInputConnected('freq')) {
             // If connected, set base to 0 so signal directly controls it
             oscillator.frequency.value = 0;
-            console.log(`[${node.id}] Freq IS connected, set base to 0`);
           }
 
           // Only set amplitude if NOT connected
@@ -468,8 +466,6 @@ export class SignalProcessingEngine {
     constantSource.offset.value = config.value || 0;
     constantSource.start();
 
-    console.log(`[${nodeId}] ConstantSource created with value:`, config.value || 0);
-
     this.constantSources.set(nodeId, constantSource);
     this.nodes.set(nodeId, constantSource);
   }
@@ -559,7 +555,6 @@ export class SignalProcessingEngine {
             if (oscillator) {
               // Base value already set to 0 in updateGraph reset loop
               sourceNode.connect(oscillator.frequency);
-              console.log(`[${sourceId}] -> [${targetId}].frequency, current base:`, oscillator.frequency.value);
             }
           } else if (targetHandle === 'amp') {
             // targetNode is the gain node
@@ -662,7 +657,6 @@ export class SignalProcessingEngine {
     const source = this.constantSources.get(nodeId);
     if (source) {
       source.offset.value = value;
-      console.log(`[${nodeId}] Slider value updated to:`, value);
     }
   }
 
