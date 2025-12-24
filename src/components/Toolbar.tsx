@@ -190,24 +190,21 @@ export function Toolbar({}: ToolbarProps) {
 
   return (
     <div className="w-64 flex flex-col">
-      {/* View Toggle */}
-      <div className="p-3">
+      {/* Header */}
+      <div className="p-3 flex items-center justify-between">
+        <span className="text-sm font-semibold">Tools</span>
         <Button
           onClick={() => setShowLabels(!showLabels)}
-          className="w-full"
-          variant="outline"
+          variant="ghost"
           size="sm"
+          className="h-8 w-8 p-0"
+          data-tooltip-id="view-toggle-tooltip"
+          data-tooltip-content={showLabels ? "Icons Only" : "Show Labels"}
         >
           {showLabels ? (
-            <>
-              <LayoutGrid className="w-3 h-3 mr-2" />
-              <span className="text-xs">Icons Only</span>
-            </>
+            <LayoutGrid className="w-4 h-4" />
           ) : (
-            <>
-              <LayoutList className="w-3 h-3 mr-2" />
-              <span className="text-xs">Show Labels</span>
-            </>
+            <LayoutList className="w-4 h-4" />
           )}
         </Button>
       </div>
@@ -281,6 +278,16 @@ export function Toolbar({}: ToolbarProps) {
       <Tooltip
         id="block-tooltip"
         place="top"
+        delayShow={300}
+        style={{
+          fontSize: "11px",
+          padding: "4px 8px",
+          zIndex: 9999,
+        }}
+      />
+      <Tooltip
+        id="view-toggle-tooltip"
+        place="bottom"
         delayShow={300}
         style={{
           fontSize: "11px",

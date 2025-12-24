@@ -252,7 +252,11 @@ export function SignalFlowApp() {
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
-            if (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter" || node.data.blockType === "fft-analyzer") {
+            if (
+              node.data.blockType === "oscilloscope" ||
+              node.data.blockType === "numeric-meter" ||
+              node.data.blockType === "fft-analyzer"
+            ) {
               const analyser = engineRef.current.getAnalyser(node.id);
               return {
                 ...node,
@@ -277,7 +281,11 @@ export function SignalFlowApp() {
       isInternalNodeUpdate.current = true;
       setNodes((nds) =>
         nds.map((node) => {
-          if (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter" || node.data.blockType === "fft-analyzer") {
+          if (
+            node.data.blockType === "oscilloscope" ||
+            node.data.blockType === "numeric-meter" ||
+            node.data.blockType === "fft-analyzer"
+          ) {
             return {
               ...node,
               data: {
@@ -310,7 +318,7 @@ export function SignalFlowApp() {
       const config = node.data.config as BlockConfig;
 
       // Check if this is an input control block
-      if (['slider', 'button', 'toggle', 'pulse'].includes(blockType)) {
+      if (["slider", "button", "toggle", "pulse"].includes(blockType)) {
         const currentValue = config.value ?? 0;
         const prevValue = prevInputValuesRef.current.get(node.id);
 
@@ -349,14 +357,23 @@ export function SignalFlowApp() {
 
       // Attach analysers to any new oscilloscope, numeric-meter, or fft-analyzer nodes that don't have them yet
       const needsAnalyserUpdate = nodes.some(
-        (node) => (node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter" || node.data.blockType === "fft-analyzer") && !node.data.analyser,
+        (node) =>
+          (node.data.blockType === "oscilloscope" ||
+            node.data.blockType === "numeric-meter" ||
+            node.data.blockType === "fft-analyzer") &&
+          !node.data.analyser,
       );
 
       if (needsAnalyserUpdate) {
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
-            if ((node.data.blockType === "oscilloscope" || node.data.blockType === "numeric-meter" || node.data.blockType === "fft-analyzer") && !node.data.analyser) {
+            if (
+              (node.data.blockType === "oscilloscope" ||
+                node.data.blockType === "numeric-meter" ||
+                node.data.blockType === "fft-analyzer") &&
+              !node.data.analyser
+            ) {
               const analyser = engineRef.current.getAnalyser(node.id);
               if (analyser) {
                 return {
@@ -386,6 +403,8 @@ export function SignalFlowApp() {
 
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 
+  const proOptions = { hideAttribution: true };
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-radial-gradient">
       {/* Top Bar */}
@@ -398,7 +417,10 @@ export function SignalFlowApp() {
 
         {/* Center Canvas with margin and rounded corners */}
         <div className="flex-1 relative pb-4 pr-4">
-          <div className="h-full w-full rounded-3xl overflow-hidden border border-border shadow-lg bg-card" ref={reactFlowWrapper}>
+          <div
+            className="h-full w-full rounded-3xl overflow-hidden border border-border shadow-lg bg-card"
+            ref={reactFlowWrapper}
+          >
             <ReactFlow
               nodes={nodes}
               edges={edges}
@@ -414,6 +436,7 @@ export function SignalFlowApp() {
                 reactFlowInstanceRef.current = instance;
               }}
               nodeTypes={nodeTypes}
+              proOptions={proOptions}
               fitView
             >
               <Background />
