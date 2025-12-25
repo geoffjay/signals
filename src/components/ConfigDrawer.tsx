@@ -29,7 +29,11 @@ export function ConfigDrawer({
   onDelete,
   onClose,
 }: ConfigDrawerProps) {
-  if (!node) return null;
+  if (!node) {
+    return (
+      <div className="w-80 h-full bg-card border border-border rounded-3xl shadow-lg flex flex-col transition-transform duration-300 ease-in-out transform translate-x-full pointer-events-auto" />
+    );
+  }
 
   const { blockType, label, config } = node.data;
 
@@ -646,7 +650,7 @@ export function ConfigDrawer({
   };
 
   return (
-    <div className="w-80 bg-card border-l border-border flex flex-col">
+    <div className="w-80 h-full bg-card border border-border rounded-3xl shadow-lg flex flex-col transition-transform duration-300 ease-in-out transform translate-x-0 pointer-events-auto">
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-border">
         <h2 className="text-lg font-semibold">{label}</h2>

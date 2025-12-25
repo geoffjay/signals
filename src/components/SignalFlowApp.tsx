@@ -444,18 +444,20 @@ export function SignalFlowApp() {
               <MiniMap />
             </ReactFlow>
           </div>
-        </div>
 
-        {/* Right Configuration Drawer */}
-        <ConfigDrawer
-          node={selectedNode as Node<SignalBlockData> | undefined}
-          edges={edges}
-          onConfigChange={(config) =>
-            selectedNode && updateNodeConfig(selectedNode.id, config)
-          }
-          onDelete={deleteSelectedNode}
-          onClose={() => setSelectedNodeId(null)}
-        />
+          {/* Right Configuration Drawer - Absolutely positioned overlay */}
+          <div className="absolute top-0 right-4 bottom-4 pointer-events-none overflow-hidden">
+            <ConfigDrawer
+              node={selectedNode as Node<SignalBlockData> | undefined}
+              edges={edges}
+              onConfigChange={(config) =>
+                selectedNode && updateNodeConfig(selectedNode.id, config)
+              }
+              onDelete={deleteSelectedNode}
+              onClose={() => setSelectedNodeId(null)}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
