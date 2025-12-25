@@ -1,6 +1,6 @@
 import { Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { TopbarMenu } from "@/components/TopbarMenu";
 
 interface TopbarProps {
   isPlaying: boolean;
@@ -22,7 +22,7 @@ export function Topbar({ isPlaying, onTogglePlayback }: TopbarProps) {
           <Play className="w-4 h-4" />
         )}
       </Button>
-      <ThemeToggle />
+      <TopbarMenu />
     </div>
   );
 }
