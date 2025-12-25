@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
-import { afterEach, vi } from "vitest";
+import { afterEach, vi, beforeAll } from "vitest";
 
 // Cleanup after each test
 afterEach(() => {
@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 // Mock Web Audio API
-global.AudioContext = class MockAudioContext {
+const MockAudioContext = class MockAudioContext {
   destination = {};
   sampleRate = 48000;
   currentTime = 0;
@@ -99,14 +99,18 @@ global.AudioContext = class MockAudioContext {
   }
 } as unknown as typeof AudioContext;
 
+global.AudioContext = MockAudioContext;
+window.AudioContext = MockAudioContext as unknown as typeof AudioContext;
+vi.stubGlobal("AudioContext", MockAudioContext);
+
 // Mock GainNode and BiquadFilterNode types for instanceof checks
-global.GainNode = class MockGainNode {
+const MockGainNode = class MockGainNode {
   gain = { value: 1 };
   connect = vi.fn();
   disconnect = vi.fn();
 } as unknown as typeof GainNode;
 
-global.BiquadFilterNode = class MockBiquadFilterNode {
+const MockBiquadFilterNode = class MockBiquadFilterNode {
   type = "lowpass";
   frequency = { value: 1000 };
   Q = { value: 1 };
@@ -115,7 +119,7 @@ global.BiquadFilterNode = class MockBiquadFilterNode {
 } as unknown as typeof BiquadFilterNode;
 
 // Mock AudioWorkletNode
-global.AudioWorkletNode = class MockAudioWorkletNode {
+const MockAudioWorkletNode = class MockAudioWorkletNode {
   connect = vi.fn();
   disconnect = vi.fn();
   port = {
@@ -128,6 +132,15 @@ global.AudioWorkletNode = class MockAudioWorkletNode {
     public options?: Record<string, unknown>,
   ) {}
 } as unknown as typeof AudioWorkletNode;
+
+global.GainNode = MockGainNode;
+window.GainNode = MockGainNode as unknown as typeof GainNode;
+
+global.BiquadFilterNode = MockBiquadFilterNode;
+window.BiquadFilterNode = MockBiquadFilterNode as unknown as typeof BiquadFilterNode;
+
+global.AudioWorkletNode = MockAudioWorkletNode;
+window.AudioWorkletNode = MockAudioWorkletNode as unknown as typeof AudioWorkletNode;
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -150,6 +163,12 @@ const localStorageMock = (() => {
 Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
 });
+
+Object.defineProperty(global, "localStorage", {
+  value: localStorageMock,
+});
+
+vi.stubGlobal("localStorage", localStorageMock);
 
 // Mock requestAnimationFrame
 global.requestAnimationFrame = vi.fn((cb) => {

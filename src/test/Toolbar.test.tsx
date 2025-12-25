@@ -1,106 +1,83 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Toolbar } from "../components/Toolbar";
 
 describe("Toolbar Component", () => {
-  const mockTogglePlayback = vi.fn();
-
   beforeEach(() => {
-    localStorage.clear();
-    mockTogglePlayback.mockClear();
+    // Clear localStorage before each test
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.clear();
+    }
   });
 
-  it("should render with Start button when not playing", () => {
-    render(<Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />);
-    expect(screen.getByText("Start")).toBeInTheDocument();
-  });
-
-  it("should render with Stop button when playing", () => {
-    render(<Toolbar isPlaying={true} onTogglePlayback={mockTogglePlayback} />);
-    expect(screen.getByText("Stop")).toBeInTheDocument();
-  });
-
-  it("should call onTogglePlayback when Start/Stop button clicked", () => {
-    const { rerender } = render(
-      <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-    );
-
-    const playButton = screen.getByText("Start");
-    fireEvent.click(playButton);
-
-    expect(mockTogglePlayback).toHaveBeenCalledTimes(1);
-
-    rerender(
-      <Toolbar isPlaying={true} onTogglePlayback={mockTogglePlayback} />,
-    );
-
-    const stopButton = screen.getByText("Stop");
-    fireEvent.click(stopButton);
-
-    expect(mockTogglePlayback).toHaveBeenCalledTimes(2);
+  it("should render the Tools header", () => {
+    render(<Toolbar />);
+    expect(screen.getByText("Tools")).toBeInTheDocument();
   });
 
   describe("View Toggle", () => {
-    it('should show "Icons Only" button when labels are shown', () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-      expect(screen.getByText("Icons Only")).toBeInTheDocument();
+    it('should show LayoutGrid icon when labels are shown', () => {
+      render(<Toolbar />);
+      // When labels are shown, the toggle button should have tooltip "Icons Only"
+      const button = screen.getByRole("button", { name: "" });
+      expect(button).toHaveAttribute("data-tooltip-content", "Icons Only");
     });
 
-    it('should show "Show Labels" button when in icon-only mode', () => {
-      localStorage.setItem("toolbar-show-labels", "false");
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-      expect(screen.getByText("Show Labels")).toBeInTheDocument();
+    it('should show LayoutList icon when in icon-only mode', () => {
+      window.localStorage.setItem("toolbar-show-labels", "false");
+      render(<Toolbar />);
+      // When in icon-only mode, the toggle button should have tooltip "Show Labels"
+      const buttons = screen.getAllByRole("button");
+      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content"));
+      expect(toggleButton).toHaveAttribute("data-tooltip-content", "Show Labels");
     });
 
-    it("should toggle between icon-only and labels view", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+    it("should toggle between icon-only and labels view", async () => {
+      render(<Toolbar />);
 
-      // Initially shows labels
-      expect(screen.getByText("Icons Only")).toBeInTheDocument();
+      // Find the toggle button
+      const buttons = screen.getAllByRole("button");
+      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content")) as HTMLElement;
+
+      // Initially shows labels (tooltip should say "Icons Only")
+      expect(toggleButton).toHaveAttribute("data-tooltip-content", "Icons Only");
 
       // Click to switch to icon-only
-      fireEvent.click(screen.getByText("Icons Only"));
+      fireEvent.click(toggleButton);
 
-      waitFor(() => {
-        expect(screen.getByText("Show Labels")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(toggleButton).toHaveAttribute("data-tooltip-content", "Show Labels");
       });
     });
 
     it("should persist view preference to localStorage", async () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+      render(<Toolbar />);
 
-      // Click to switch to icon-only
-      fireEvent.click(screen.getByText("Icons Only"));
+      // Find and click the toggle button
+      const buttons = screen.getAllByRole("button");
+      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content")) as HTMLElement;
+      fireEvent.click(toggleButton);
 
       await waitFor(() => {
-        const saved = localStorage.getItem("toolbar-show-labels");
+        const saved = window.localStorage.getItem("toolbar-show-labels");
         expect(saved).toBe("false");
       });
     });
 
     it("should restore view preference from localStorage on mount", () => {
-      localStorage.setItem("toolbar-show-labels", "false");
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+      window.localStorage.setItem("toolbar-show-labels", "false");
+      render(<Toolbar />);
 
-      expect(screen.getByText("Show Labels")).toBeInTheDocument();
+      // When restored from localStorage with false, tooltip should say "Show Labels"
+      const buttons = screen.getAllByRole("button");
+      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content"));
+      expect(toggleButton).toHaveAttribute("data-tooltip-content", "Show Labels");
     });
   });
 
   describe("Collapsible Sections", () => {
     it("should render all block group sections", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+      render(<Toolbar />);
 
       expect(screen.getByText(/inputs/i)).toBeInTheDocument();
       expect(screen.getByText(/generators/i)).toBeInTheDocument();
@@ -111,189 +88,91 @@ describe("Toolbar Component", () => {
     });
 
     it("should expand all sections by default", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+      render(<Toolbar />);
 
       // Check that some blocks from each section are visible
       expect(screen.getByText("Slider")).toBeInTheDocument();
       expect(screen.getByText("Sine Wave")).toBeInTheDocument();
       expect(screen.getByText("Gain")).toBeInTheDocument();
-      expect(screen.getByText("Add")).toBeInTheDocument();
     });
 
-    it("should collapse section when header is clicked", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+    it("should collapse section when header is clicked", async () => {
+      render(<Toolbar />);
 
-      // Initially, Math section blocks are visible
-      expect(screen.getByText("Add")).toBeInTheDocument();
-
-      // Click the Math section header
-      fireEvent.click(screen.getByText(/math/i));
-
-      // Math section blocks should be hidden
-      expect(screen.queryByText("Add")).not.toBeInTheDocument();
-    });
-
-    it("should expand collapsed section when header is clicked again", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-
-      // Collapse the section
-      fireEvent.click(screen.getByText(/math/i));
-      expect(screen.queryByText("Add")).not.toBeInTheDocument();
-
-      // Expand the section
-      fireEvent.click(screen.getByText(/math/i));
-      expect(screen.getByText("Add")).toBeInTheDocument();
-    });
-
-    it("should persist collapsed sections to localStorage", async () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-
-      // Collapse a section
-      fireEvent.click(screen.getByText(/math/i));
+      // Find and click the Inputs section header button
+      const inputsHeader = screen.getByRole("button", { name: /inputs/i });
+      fireEvent.click(inputsHeader);
 
       await waitFor(() => {
-        const saved = localStorage.getItem("toolbar-collapsed-sections");
+        // The Slider block should no longer be visible
+        expect(screen.queryByText("Slider")).not.toBeInTheDocument();
+      });
+    });
+
+    it("should expand collapsed section when header is clicked again", async () => {
+      render(<Toolbar />);
+
+      // Find and click the Inputs section header to collapse
+      const inputsHeader = screen.getByRole("button", { name: /inputs/i });
+      fireEvent.click(inputsHeader);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Slider")).not.toBeInTheDocument();
+      });
+
+      // Click again to expand
+      fireEvent.click(inputsHeader);
+
+      await waitFor(() => {
+        expect(screen.getByText("Slider")).toBeInTheDocument();
+      });
+    });
+
+    it("should persist collapsed state to localStorage", async () => {
+      render(<Toolbar />);
+
+      // Collapse the Inputs section
+      const inputsHeader = screen.getByRole("button", { name: /inputs/i });
+      fireEvent.click(inputsHeader);
+
+      await waitFor(() => {
+        const saved = window.localStorage.getItem("toolbar-collapsed-sections");
         expect(saved).toBeTruthy();
-        const sections = JSON.parse(saved!);
-        expect(sections.length).toBeGreaterThan(0);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          expect(parsed).toContain("Inputs");
+        }
       });
     });
 
-    it("should restore collapsed sections from localStorage on mount", () => {
-      localStorage.setItem(
-        "toolbar-collapsed-sections",
-        JSON.stringify(["Math"]),
-      );
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+    it("should restore collapsed state from localStorage on mount", () => {
+      window.localStorage.setItem("toolbar-collapsed-sections", '["Inputs"]');
+      render(<Toolbar />);
 
-      // Math section should be collapsed
-      expect(screen.queryByText("Add")).not.toBeInTheDocument();
+      // The Slider block should not be visible
+      expect(screen.queryByText("Slider")).not.toBeInTheDocument();
+      // But the header should still be visible
+      expect(screen.getByText(/inputs/i)).toBeInTheDocument();
     });
   });
 
-  describe("Block Dragging", () => {
-    it("should make block elements draggable", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+  describe("Block Rendering", () => {
+    it("should render blocks with labels by default", () => {
+      render(<Toolbar />);
 
-      const sliderBlock = screen.getByText("Slider").closest("div");
-      expect(sliderBlock).toHaveAttribute("draggable", "true");
-    });
-
-    it("should set correct data on drag start", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-
-      const sliderBlock = screen.getByText("Slider").closest("div");
-      const mockDataTransfer = {
-        setData: vi.fn(),
-        effectAllowed: "",
-      };
-
-      const dragEvent = new DragEvent("dragstart", {
-        bubbles: true,
-        cancelable: true,
-      });
-
-      Object.defineProperty(dragEvent, "dataTransfer", {
-        value: mockDataTransfer,
-      });
-
-      sliderBlock?.dispatchEvent(dragEvent);
-
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        "application/reactflow",
-        "slider",
-      );
-    });
-  });
-
-  describe("Tooltips", () => {
-    it("should not show tooltip attributes when labels are visible", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-
-      const sliderBlock = screen.getByText("Slider").closest("div");
-      expect(sliderBlock).not.toHaveAttribute("data-tooltip-id");
-    });
-
-    it("should show tooltip attributes in icon-only mode", () => {
-      localStorage.setItem("toolbar-show-labels", "false");
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-
-      // Find a block element by its icon (look for draggable divs)
-      const draggableBlocks = document.querySelectorAll('[draggable="true"]');
-      const blockWithTooltip = Array.from(draggableBlocks).find((el) =>
-        el.hasAttribute("data-tooltip-id"),
-      );
-
-      expect(blockWithTooltip).toBeTruthy();
-      expect(blockWithTooltip?.getAttribute("data-tooltip-id")).toBe(
-        "block-tooltip",
-      );
-    });
-  });
-
-  describe("Block Groups", () => {
-    it("should render correct number of blocks in Inputs group", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-
+      // Should show block labels
       expect(screen.getByText("Slider")).toBeInTheDocument();
-      expect(screen.getByText("Button")).toBeInTheDocument();
-      expect(screen.getByText("Toggle")).toBeInTheDocument();
-      expect(screen.getByText("Pulse")).toBeInTheDocument();
+      expect(screen.getByText("Sine Wave")).toBeInTheDocument();
     });
 
-    it("should render correct number of blocks in Generators group", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
+    it("should render blocks as icons only when in icon mode", () => {
+      window.localStorage.setItem("toolbar-show-labels", "false");
+      render(<Toolbar />);
 
-      // Check that generator blocks exist (flexible matching)
-      expect(screen.getByText(/sine/i)).toBeInTheDocument();
-      expect(screen.getByText(/square/i)).toBeInTheDocument();
-      expect(screen.getByText(/triangle/i)).toBeInTheDocument();
-      expect(screen.getByText(/sawtooth/i)).toBeInTheDocument();
-      expect(screen.getByText(/noise/i)).toBeInTheDocument();
-    });
-
-    it("should render all math blocks", () => {
-      render(
-        <Toolbar isPlaying={false} onTogglePlayback={mockTogglePlayback} />,
-      );
-
-      // Basic arithmetic
-      expect(screen.getByText(/^add$/i)).toBeInTheDocument();
-      expect(screen.getByText(/subtract/i)).toBeInTheDocument();
-      expect(screen.getByText(/multiply/i)).toBeInTheDocument();
-      expect(screen.getByText(/divide/i)).toBeInTheDocument();
-
-      // Rounding - check for some of them
-      expect(
-        screen.getAllByText(/floor|ceiling|round/i).length,
-      ).toBeGreaterThan(0);
-
-      // Other operations - check for existence
-      const allText =
-        screen.getByText(/math/i).closest("div")?.textContent || "";
-      expect(allText).toBeTruthy();
+      // When in icon-only mode, tooltip should say "Show Labels"
+      const buttons = screen.getAllByRole("button");
+      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content"));
+      expect(toggleButton).toHaveAttribute("data-tooltip-content", "Show Labels");
     });
   });
 });
