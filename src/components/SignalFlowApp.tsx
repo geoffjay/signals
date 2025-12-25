@@ -418,7 +418,7 @@ export function SignalFlowApp() {
         {/* Center Canvas with margin and rounded corners */}
         <div className="flex-1 relative pb-4 pr-4">
           <div
-            className="h-full w-full rounded-3xl overflow-hidden border border-border shadow-lg bg-card"
+            className="h-full w-full rounded-3xl overflow-hidden border border-border shadow-canvas bg-card"
             ref={reactFlowWrapper}
           >
             <ReactFlow
