@@ -355,6 +355,26 @@ export class SignalProcessingEngine {
         this.createFilter(nodeId, "bandpass", config);
         break;
 
+      case "notch-filter":
+        this.createFilter(nodeId, "notch", config);
+        break;
+
+      case "allpass-filter":
+        this.createFilter(nodeId, "allpass", config);
+        break;
+
+      case "peaking-eq":
+        this.createFilter(nodeId, "peaking", config);
+        break;
+
+      case "lowshelf-filter":
+        this.createFilter(nodeId, "lowshelf", config);
+        break;
+
+      case "highshelf-filter":
+        this.createFilter(nodeId, "highshelf", config);
+        break;
+
       case "splitter":
         this.createSplitter(nodeId);
         break;
@@ -560,6 +580,11 @@ export class SignalProcessingEngine {
     filter.type = type;
     filter.frequency.value = config.cutoffFrequency || 1000;
     filter.Q.value = config.qFactor || 1.0;
+
+    // Set gain for peaking, lowshelf, and highshelf filters
+    if (type === "peaking" || type === "lowshelf" || type === "highshelf") {
+      filter.gain.value = config.filterGain || 0;
+    }
 
     this.nodes.set(nodeId, filter);
   }
@@ -1091,10 +1116,25 @@ export class SignalProcessingEngine {
 
       case "low-pass-filter":
       case "high-pass-filter":
-      case "band-pass-filter": {
+      case "band-pass-filter":
+      case "notch-filter":
+      case "allpass-filter": {
         if (node instanceof BiquadFilterNode) {
           node.frequency.value = config.cutoffFrequency || 1000;
           node.Q.value = config.qFactor || 1.0;
+        }
+        break;
+      }
+
+      case "peaking-eq":
+      case "lowshelf-filter":
+      case "highshelf-filter": {
+        if (node instanceof BiquadFilterNode) {
+          node.frequency.value = config.cutoffFrequency || 1000;
+          if (config.qFactor !== undefined) {
+            node.Q.value = config.qFactor;
+          }
+          node.gain.value = config.filterGain || 0;
         }
         break;
       }

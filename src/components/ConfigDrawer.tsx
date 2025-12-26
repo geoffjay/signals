@@ -209,6 +209,67 @@ export function ConfigDrawer({
     );
   };
 
+  const renderEQFilterConfig = () => {
+    const frequencyConnected = isInputConnected("frequency") || isInputConnected("cutoff");
+    const showQFactor = blockType === "peaking-eq";
+
+    return (
+      <>
+        <div className="space-y-2">
+          <Label
+            htmlFor="cutoffFrequency"
+            className={frequencyConnected ? "text-muted-foreground" : ""}
+          >
+            Frequency (Hz) {frequencyConnected && "(Connected)"}
+          </Label>
+          <Input
+            id="cutoffFrequency"
+            type="number"
+            min="20"
+            max="20000"
+            step="1"
+            value={config.cutoffFrequency || 1000}
+            onChange={(e) =>
+              updateConfig({ cutoffFrequency: parseFloat(e.target.value) })
+            }
+            disabled={frequencyConnected}
+            className={frequencyConnected ? "opacity-50 cursor-not-allowed" : ""}
+          />
+        </div>
+        {showQFactor && (
+          <div className="space-y-2">
+            <Label htmlFor="qFactor">Q Factor</Label>
+            <Input
+              id="qFactor"
+              type="number"
+              min="0.1"
+              max="20"
+              step="0.1"
+              value={config.qFactor || 1.0}
+              onChange={(e) =>
+                updateConfig({ qFactor: parseFloat(e.target.value) })
+              }
+            />
+          </div>
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="filterGain">Gain (dB)</Label>
+          <Input
+            id="filterGain"
+            type="number"
+            min="-40"
+            max="40"
+            step="0.5"
+            value={config.filterGain || 0}
+            onChange={(e) =>
+              updateConfig({ filterGain: parseFloat(e.target.value) })
+            }
+          />
+        </div>
+      </>
+    );
+  };
+
   const renderMultiplexerConfig = () => (
     <>
       <div className="space-y-2">
@@ -623,7 +684,13 @@ export function ConfigDrawer({
       case "low-pass-filter":
       case "high-pass-filter":
       case "band-pass-filter":
+      case "notch-filter":
+      case "allpass-filter":
         return renderFilterConfig();
+      case "peaking-eq":
+      case "lowshelf-filter":
+      case "highshelf-filter":
+        return renderEQFilterConfig();
       case "multiplexer":
         return renderMultiplexerConfig();
       case "splitter":

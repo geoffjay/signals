@@ -5,7 +5,7 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/signals/",
+  base: "/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -16,7 +16,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, "index.html"),
-        "divide-processor": path.resolve(__dirname, "src/engine/divide-processor.ts"),
+        "divide-processor": path.resolve(
+          __dirname,
+          "src/engine/divide-processor.ts",
+        ),
       },
       output: {
         entryFileNames: (chunkInfo) => {
@@ -28,11 +31,17 @@ export default defineConfig({
         },
         manualChunks: (id) => {
           // React core and related libraries
-          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
+          if (
+            id.includes("node_modules/react") ||
+            id.includes("node_modules/react-dom")
+          ) {
             return "react-vendor";
           }
           // ReactFlow and its dependencies
-          if (id.includes("node_modules/@xyflow") || id.includes("node_modules/@reactflow")) {
+          if (
+            id.includes("node_modules/@xyflow") ||
+            id.includes("node_modules/@reactflow")
+          ) {
             return "reactflow-vendor";
           }
           // State management
@@ -40,7 +49,10 @@ export default defineConfig({
             return "state-vendor";
           }
           // UI component libraries
-          if (id.includes("node_modules/lucide-react") || id.includes("node_modules/@radix-ui")) {
+          if (
+            id.includes("node_modules/lucide-react") ||
+            id.includes("node_modules/@radix-ui")
+          ) {
             return "ui-vendor";
           }
         },
