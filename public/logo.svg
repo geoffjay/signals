@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="800px"
+   height="800px"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="logo.svg"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient21"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#9e1818;stop-opacity:1;"
+         offset="0"
+         id="stop22" />
+      <stop
+         style="stop-color:#7c7c7c;stop-opacity:0;"
+         offset="1"
+         id="stop23" />
+    </linearGradient>
+    <linearGradient
+       id="swatch21"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#7c7c7c;stop-opacity:1;"
+         offset="0"
+         id="stop21" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient21"
+       id="linearGradient23"
+       x1="213.33333"
+       y1="-4.7878451"
+       x2="213.33333"
+       y2="431.45444"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.2399372"
+     inkscape:cx="531.38905"
+     inkscape:cy="318.83343"
+     inkscape:window-width="1352"
+     inkscape:window-height="704"
+     inkscape:window-x="0"
+     inkscape:window-y="32"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="icon" />
+  <title
+     id="title1">waveform</title>
+  <g
+     id="Page-1"
+     stroke="none"
+     stroke-width="1"
+     fill="none"
+     fill-rule="evenodd">
+    <g
+       id="icon"
+       fill="#000000"
+       transform="translate(42.666667, 42.666667)">
+      <path
+         d="M384,170.666667 L426.666667,170.666667 L426.666667,256 L384,256 L384,170.666667 Z M320,106.666667 L362.666667,106.666667 L362.666667,320 L320,320 L320,106.666667 Z M256,128 L298.666667,128 L298.666667,298.666667 L256,298.666667 L256,128 Z M192,64 L234.666667,64 L234.666667,362.666667 L192,362.666667 L192,64 Z M7.10542736e-15,170.666667 L42.6666667,170.666667 L42.6666667,256 L7.10542736e-15,256 L7.10542736e-15,170.666667 Z M64,106.666667 L106.666667,106.666667 L106.666667,320 L64,320 L64,106.666667 Z M128,7.10542736e-15 L170.666667,7.10542736e-15 L170.666667,426.666667 L128,426.666667 L128,7.10542736e-15 Z"
+         id="Combined-Shape"
+         style="stroke:#a30f00;stroke-opacity:1;stroke-width:9.57568;stroke-dasharray:none;paint-order:normal;stroke-linecap:round;stroke-linejoin:round;fill:url(#linearGradient23);fill-opacity:1" />
+    </g>
+  </g>
+</svg>

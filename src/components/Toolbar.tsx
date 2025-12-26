@@ -226,7 +226,7 @@ export function Toolbar() {
         {blockGroups.map((group) => {
           const isCollapsed = collapsedSections.has(group.title);
           return (
-            <div key={group.title} className="space-y-1">
+            <div key={group.title} className="space-y-2">
               <button
                 onClick={() => toggleSection(group.title)}
                 className="flex items-center gap-1 w-full hover:bg-accent/50 rounded px-1 py-0.5 transition-colors"
@@ -242,9 +242,7 @@ export function Toolbar() {
               </button>
               {!isCollapsed && (
                 <div
-                  className={
-                    showLabels ? "space-y-0.5" : "flex flex-wrap gap-1"
-                  }
+                  className={showLabels ? "space-y-2" : "flex flex-wrap gap-2"}
                 >
                   {group.blocks.map((blockType) => {
                     const definition = BLOCK_DEFINITIONS[blockType];
