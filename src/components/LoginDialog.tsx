@@ -18,7 +18,7 @@ interface LoginDialogProps {
 }
 
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
-  const { loginWithEmail, loginWithOAuth, isLoading, error, clearError } = useAuthStore();
+  const { loginWithEmail, loginWithOAuth, isLoading, error, clearError, isAuthenticated } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -28,6 +28,15 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       clearError();
     }
   }, [open, clearError]);
+
+  // Auto-close dialog when authentication succeeds
+  useEffect(() => {
+    if (isAuthenticated && open) {
+      onOpenChange(false);
+      setEmail("");
+      setPassword("");
+    }
+  }, [isAuthenticated, open, onOpenChange]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();

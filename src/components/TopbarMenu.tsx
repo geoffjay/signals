@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthStore } from "@/store/authStore";
 import { LoginDialog } from "./LoginDialog";
@@ -25,6 +26,16 @@ export function TopbarMenu() {
     await logout();
   };
 
+  // Get user initials for avatar fallback
+  const getUserInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -36,11 +47,21 @@ export function TopbarMenu() {
             <>
               <DropdownMenuGroup>
                 <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      {user.avatar && (
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                      )}
+                      <AvatarFallback>
+                        {getUserInitials(user.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
