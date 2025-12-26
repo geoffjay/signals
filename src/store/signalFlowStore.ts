@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { type Node, type Edge } from "@xyflow/react";
 import { type SignalBlockData } from "@/components/SignalBlock";
+import { projectApi, type ProjectMetadata } from "@/lib/projectApi";
 
 interface SignalFlowState {
   nodes: Node[];
@@ -9,6 +10,11 @@ interface SignalFlowState {
   selectedNodeId: string | null;
   isPlaying: boolean;
   nodeIdCounter: number;
+
+  // Project management
+  currentProjectId: string | null;
+  currentProjectName: string;
+  isDirty: boolean;
 
   // Actions
   setNodes: (nodes: Node[] | ((nodes: Node[]) => Node[])) => void;
@@ -20,6 +26,15 @@ interface SignalFlowState {
   updateNodeConfig: (nodeId: string, updates: Partial<SignalBlockData>) => void;
   deleteNode: (nodeId: string) => void;
   updateNodeData: (nodeId: string, data: Partial<SignalBlockData>) => void;
+
+  // Project persistence
+  saveProject: (name: string, description?: string) => Promise<void>;
+  loadProject: (projectId: string) => Promise<void>;
+  createNewProject: () => void;
+  deleteProject: (projectId: string) => Promise<void>;
+  listUserProjects: () => Promise<ProjectMetadata[]>;
+  markDirty: () => void;
+  markClean: () => void;
 }
 
 export const useSignalFlowStore = create<SignalFlowState>()(
@@ -31,12 +46,18 @@ export const useSignalFlowStore = create<SignalFlowState>()(
       isPlaying: false,
       nodeIdCounter: 0,
 
+      // Project management state
+      currentProjectId: null,
+      currentProjectName: "Untitled Project",
+      isDirty: false,
+
       setNodes: (nodesOrUpdater) => {
         set((state) => ({
           nodes:
             typeof nodesOrUpdater === "function"
               ? nodesOrUpdater(state.nodes)
               : nodesOrUpdater,
+          isDirty: true, // Mark as dirty when nodes change
         }));
       },
 
@@ -46,6 +67,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
             typeof edgesOrUpdater === "function"
               ? edgesOrUpdater(state.edges)
               : edgesOrUpdater,
+          isDirty: true, // Mark as dirty when edges change
         }));
       },
 
@@ -62,6 +84,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
       addNode: (node) => {
         set((state) => ({
           nodes: [...state.nodes, node],
+          isDirty: true, // Mark as dirty when nodes are added
         }));
       },
 
@@ -78,6 +101,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
                 }
               : node,
           ),
+          isDirty: true, // Mark as dirty when node config changes
         }));
       },
 
@@ -89,6 +113,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
           ),
           selectedNodeId:
             state.selectedNodeId === nodeId ? null : state.selectedNodeId,
+          isDirty: true, // Mark as dirty when nodes are deleted
         }));
       },
 
@@ -105,7 +130,106 @@ export const useSignalFlowStore = create<SignalFlowState>()(
                 }
               : node,
           ),
+          isDirty: true, // Mark as dirty when node data changes
         }));
+      },
+
+      // Project persistence methods
+      saveProject: async (name, description) => {
+        const state = get();
+        const projectData = {
+          nodes: state.nodes,
+          edges: state.edges,
+          nodeIdCounter: state.nodeIdCounter,
+          selectedNodeId: state.selectedNodeId,
+        };
+
+        try {
+          if (state.currentProjectId) {
+            // Update existing project
+            await projectApi.update(
+              state.currentProjectId,
+              name,
+              projectData,
+              description,
+            );
+          } else {
+            // Create new project
+            const projectId = await projectApi.save(name, projectData, description);
+            set({ currentProjectId: projectId });
+          }
+
+          set({
+            currentProjectName: name,
+            isDirty: false,
+          });
+        } catch (error) {
+          console.error("Failed to save project:", error);
+          throw error;
+        }
+      },
+
+      loadProject: async (projectId) => {
+        try {
+          const project = await projectApi.load(projectId);
+
+          set({
+            nodes: project.projectData.nodes,
+            edges: project.projectData.edges,
+            nodeIdCounter: project.projectData.nodeIdCounter,
+            selectedNodeId: project.projectData.selectedNodeId,
+            currentProjectId: project.id,
+            currentProjectName: project.name,
+            isDirty: false,
+          });
+        } catch (error) {
+          console.error("Failed to load project:", error);
+          throw error;
+        }
+      },
+
+      createNewProject: () => {
+        set({
+          nodes: [],
+          edges: [],
+          selectedNodeId: null,
+          nodeIdCounter: 0,
+          currentProjectId: null,
+          currentProjectName: "Untitled Project",
+          isDirty: false,
+        });
+      },
+
+      deleteProject: async (projectId) => {
+        try {
+          await projectApi.delete(projectId);
+
+          // If deleting current project, reset to new project
+          const state = get();
+          if (state.currentProjectId === projectId) {
+            state.createNewProject();
+          }
+        } catch (error) {
+          console.error("Failed to delete project:", error);
+          throw error;
+        }
+      },
+
+      listUserProjects: async () => {
+        try {
+          return await projectApi.list();
+        } catch (error) {
+          console.error("Failed to list projects:", error);
+          throw error;
+        }
+      },
+
+      markDirty: () => {
+        set({ isDirty: true });
+      },
+
+      markClean: () => {
+        set({ isDirty: false });
       },
     }),
     {

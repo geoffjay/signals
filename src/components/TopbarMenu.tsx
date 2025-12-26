@@ -12,11 +12,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthStore } from "@/store/authStore";
+import { useSignalFlowStore } from "@/store/signalFlowStore";
 import { LoginDialog } from "./LoginDialog";
+import { SaveProjectDialog } from "./SaveProjectDialog";
+import { LoadProjectDialog } from "./LoadProjectDialog";
 
 export function TopbarMenu() {
   const { isAuthenticated, user, logout } = useAuthStore();
+  const { isDirty } = useSignalFlowStore();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showLoadDialog, setShowLoadDialog] = useState(false);
 
   const handleLoginClick = () => {
     setShowLoginDialog(true);
@@ -71,11 +77,12 @@ export function TopbarMenu() {
 
           {isAuthenticated && (
             <>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowSaveDialog(true)}>
                 <Save className="mr-2 h-4 w-4" />
                 <span>Save Project</span>
+                {isDirty && <span className="ml-auto text-xs text-muted-foreground">•</span>}
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowLoadDialog(true)}>
                 <FolderOpen className="mr-2 h-4 w-4" />
                 <span>Load Project</span>
               </DropdownMenuItem>
@@ -107,6 +114,16 @@ export function TopbarMenu() {
       <LoginDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
+      />
+
+      <SaveProjectDialog
+        open={showSaveDialog}
+        onOpenChange={setShowSaveDialog}
+      />
+
+      <LoadProjectDialog
+        open={showLoadDialog}
+        onOpenChange={setShowLoadDialog}
       />
     </>
   );
