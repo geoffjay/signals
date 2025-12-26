@@ -15,10 +15,6 @@ dist-ssr
 # Environment files
 .env*.local
 
-# PocketBase backend
-pocketbase/
-!pocketbase/Dockerfile
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
