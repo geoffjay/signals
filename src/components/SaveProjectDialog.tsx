@@ -20,9 +20,13 @@ interface SaveProjectDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function SaveProjectDialog({ open, onOpenChange }: SaveProjectDialogProps) {
+export function SaveProjectDialog({
+  open,
+  onOpenChange,
+}: SaveProjectDialogProps) {
   const { isAuthenticated } = useAuthStore();
-  const { currentProjectName, currentProjectId, saveProject } = useSignalFlowStore();
+  const { currentProjectName, currentProjectId, saveProject } =
+    useSignalFlowStore();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -81,7 +85,9 @@ export function SaveProjectDialog({ open, onOpenChange }: SaveProjectDialogProps
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{isUpdate ? "Update Project" : "Save Project"}</DialogTitle>
+          <DialogTitle>
+            {isUpdate ? "Update Project" : "Save Project"}
+          </DialogTitle>
           <DialogDescription>
             {isUpdate
               ? "Update your project with the current state."
@@ -137,8 +143,10 @@ export function SaveProjectDialog({ open, onOpenChange }: SaveProjectDialogProps
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
+              ) : isUpdate ? (
+                "Update"
               ) : (
-                isUpdate ? "Update" : "Save"
+                "Save"
               )}
             </Button>
           </DialogFooter>

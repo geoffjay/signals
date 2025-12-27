@@ -210,7 +210,8 @@ export function ConfigDrawer({
   };
 
   const renderEQFilterConfig = () => {
-    const frequencyConnected = isInputConnected("frequency") || isInputConnected("cutoff");
+    const frequencyConnected =
+      isInputConnected("frequency") || isInputConnected("cutoff");
     const showQFactor = blockType === "peaking-eq";
 
     return (
@@ -233,7 +234,9 @@ export function ConfigDrawer({
               updateConfig({ cutoffFrequency: parseFloat(e.target.value) })
             }
             disabled={frequencyConnected}
-            className={frequencyConnected ? "opacity-50 cursor-not-allowed" : ""}
+            className={
+              frequencyConnected ? "opacity-50 cursor-not-allowed" : ""
+            }
           />
         </div>
         {showQFactor && (

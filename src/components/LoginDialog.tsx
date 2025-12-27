@@ -18,7 +18,14 @@ interface LoginDialogProps {
 }
 
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
-  const { loginWithEmail, loginWithOAuth, isLoading, error, clearError, isAuthenticated } = useAuthStore();
+  const {
+    loginWithEmail,
+    loginWithOAuth,
+    isLoading,
+    error,
+    clearError,
+    isAuthenticated,
+  } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -48,7 +55,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       setPassword("");
     } catch (error) {
       // Error displayed via store
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
     }
   };
 
@@ -56,7 +63,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     try {
       await loginWithOAuth(provider);
     } catch (error) {
-      console.error('OAuth login failed:', error);
+      console.error("OAuth login failed:", error);
     }
   };
 
@@ -118,7 +125,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                   Logging in...
                 </>
               ) : (
-                'Login with Email'
+                "Login with Email"
               )}
             </Button>
           </form>

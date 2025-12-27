@@ -40,12 +40,15 @@ interface SignalFlowState {
   markClean: () => void;
 
   // Import/Export
-  importProject: (name: string, projectData: {
-    nodes: Node[];
-    edges: Edge[];
-    nodeIdCounter: number;
-    selectedNodeId: string | null;
-  }) => void;
+  importProject: (
+    name: string,
+    projectData: {
+      nodes: Node[];
+      edges: Edge[];
+      nodeIdCounter: number;
+      selectedNodeId: string | null;
+    },
+  ) => void;
 }
 
 export const useSignalFlowStore = create<SignalFlowState>()(
@@ -167,7 +170,11 @@ export const useSignalFlowStore = create<SignalFlowState>()(
             );
           } else {
             // Create new project
-            const projectId = await projectApi.save(name, projectData, description);
+            const projectId = await projectApi.save(
+              name,
+              projectData,
+              description,
+            );
             set({ currentProjectId: projectId });
           }
 

@@ -513,8 +513,16 @@ describe("SignalProcessingEngine", () => {
       defaultFreq: number;
     }> = [
       { blockType: "peaking-eq", expectedType: "peaking", defaultFreq: 1000 },
-      { blockType: "lowshelf-filter", expectedType: "lowshelf", defaultFreq: 200 },
-      { blockType: "highshelf-filter", expectedType: "highshelf", defaultFreq: 3000 },
+      {
+        blockType: "lowshelf-filter",
+        expectedType: "lowshelf",
+        defaultFreq: 200,
+      },
+      {
+        blockType: "highshelf-filter",
+        expectedType: "highshelf",
+        defaultFreq: 3000,
+      },
     ];
 
     describe("Filter Creation", () => {

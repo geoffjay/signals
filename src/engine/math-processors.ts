@@ -270,8 +270,7 @@ class ModProcessor extends AudioWorkletProcessor {
       const b = inputB[i] || 0;
       // Handle mod by zero
       const EPSILON = 0.0001;
-      const divisor =
-        Math.abs(b) < EPSILON ? (b >= 0 ? EPSILON : -EPSILON) : b;
+      const divisor = Math.abs(b) < EPSILON ? (b >= 0 ? EPSILON : -EPSILON) : b;
       outputChannel[i] = a % divisor;
     }
 

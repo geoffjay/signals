@@ -1,12 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SignalFlowAppWithProvider } from "@/components/SignalFlowApp";
 import { useAuthStore } from "@/store/authStore";
 import { useSignalFlowStore } from "@/store/signalFlowStore";
 
 export function App() {
-  const checkAuth = useAuthStore(state => state.checkAuth);
-  const isDirty = useSignalFlowStore(state => state.isDirty);
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const isDirty = useSignalFlowStore((state) => state.isDirty);
 
   useEffect(() => {
     // Check if user is authenticated on mount
@@ -18,12 +18,12 @@ export function App() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = "";
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
 
   return (

@@ -1,5 +1,5 @@
-import { pb } from './pocketbase';
-import type { Node, Edge } from '@xyflow/react';
+import { pb } from "./pocketbase";
+import type { Node, Edge } from "@xyflow/react";
 
 export interface ProjectData {
   nodes: Node[];
@@ -25,14 +25,18 @@ export const projectApi = {
   /**
    * Save a new project
    */
-  async save(name: string, data: ProjectData, description?: string): Promise<string> {
+  async save(
+    name: string,
+    data: ProjectData,
+    description?: string,
+  ): Promise<string> {
     const userId = pb.authStore.model?.id;
-    if (!userId) throw new Error('Not authenticated');
+    if (!userId) throw new Error("Not authenticated");
 
-    const result = await pb.collection('projects').create({
+    const result = await pb.collection("projects").create({
       userId,
       name,
-      description: description || '',
+      description: description || "",
       projectData: data,
       isPublic: false,
     });
@@ -47,11 +51,11 @@ export const projectApi = {
     projectId: string,
     name: string,
     data: ProjectData,
-    description?: string
+    description?: string,
   ): Promise<void> {
-    await pb.collection('projects').update(projectId, {
+    await pb.collection("projects").update(projectId, {
       name,
-      description: description || '',
+      description: description || "",
       projectData: data,
     });
   },
@@ -60,12 +64,12 @@ export const projectApi = {
    * Load a project by ID
    */
   async load(projectId: string): Promise<Project> {
-    const project = await pb.collection('projects').getOne(projectId);
+    const project = await pb.collection("projects").getOne(projectId);
 
     return {
       id: project.id,
       name: project.name,
-      description: project.description || '',
+      description: project.description || "",
       thumbnail: project.thumbnail,
       createdAt: project.created,
       updatedAt: project.updated,
@@ -80,15 +84,15 @@ export const projectApi = {
     const userId = pb.authStore.model?.id;
     if (!userId) return [];
 
-    const result = await pb.collection('projects').getList(1, 50, {
+    const result = await pb.collection("projects").getList(1, 50, {
       filter: `userId = "${userId}"`,
-      sort: '-updated',
+      sort: "-updated",
     });
 
     return result.items.map((p) => ({
       id: p.id,
       name: p.name,
-      description: p.description || '',
+      description: p.description || "",
       thumbnail: p.thumbnail,
       createdAt: p.created,
       updatedAt: p.updated,
@@ -99,7 +103,7 @@ export const projectApi = {
    * Delete a project
    */
   async delete(projectId: string): Promise<void> {
-    await pb.collection('projects').delete(projectId);
+    await pb.collection("projects").delete(projectId);
   },
 
   /**
@@ -110,7 +114,7 @@ export const projectApi = {
     if (!userId) return false;
 
     try {
-      const project = await pb.collection('projects').getOne(projectId);
+      const project = await pb.collection("projects").getOne(projectId);
       return project.userId === userId;
     } catch {
       return false;

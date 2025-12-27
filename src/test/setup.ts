@@ -133,10 +133,12 @@ global.GainNode = MockGainNode;
 window.GainNode = MockGainNode as unknown as typeof GainNode;
 
 global.BiquadFilterNode = MockBiquadFilterNode;
-window.BiquadFilterNode = MockBiquadFilterNode as unknown as typeof BiquadFilterNode;
+window.BiquadFilterNode =
+  MockBiquadFilterNode as unknown as typeof BiquadFilterNode;
 
 global.AudioWorkletNode = MockAudioWorkletNode;
-window.AudioWorkletNode = MockAudioWorkletNode as unknown as typeof AudioWorkletNode;
+window.AudioWorkletNode =
+  MockAudioWorkletNode as unknown as typeof AudioWorkletNode;
 
 // Mock localStorage
 const localStorageMock = (() => {

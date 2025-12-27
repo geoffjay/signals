@@ -1,7 +1,7 @@
-import PocketBase from 'pocketbase';
+import PocketBase from "pocketbase";
 
 // Environment variable with fallback for development
-const PB_URL = import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090';
+const PB_URL = import.meta.env.VITE_POCKETBASE_URL || "http://127.0.0.1:8090";
 
 // Create singleton instance
 export const pb = new PocketBase(PB_URL);

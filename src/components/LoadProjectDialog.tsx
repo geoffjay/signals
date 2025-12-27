@@ -29,19 +29,28 @@ interface LoadProjectDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps) {
+export function LoadProjectDialog({
+  open,
+  onOpenChange,
+}: LoadProjectDialogProps) {
   const { isAuthenticated } = useAuthStore();
-  const { loadProject, deleteProject, listUserProjects, currentProjectId, isDirty } =
-    useSignalFlowStore();
+  const {
+    loadProject,
+    deleteProject,
+    listUserProjects,
+    currentProjectId,
+    isDirty,
+  } = useSignalFlowStore();
 
   const [projects, setProjects] = useState<ProjectMetadata[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<ProjectMetadata[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<ProjectMetadata[]>(
+    [],
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deleteConfirmProject, setDeleteConfirmProject] = useState<ProjectMetadata | null>(
-    null,
-  );
+  const [deleteConfirmProject, setDeleteConfirmProject] =
+    useState<ProjectMetadata | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Load projects when dialog opens
@@ -111,7 +120,9 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
 
     try {
       await deleteProject(deleteConfirmProject.id);
-      setProjects((prev) => prev.filter((p) => p.id !== deleteConfirmProject.id));
+      setProjects((prev) =>
+        prev.filter((p) => p.id !== deleteConfirmProject.id),
+      );
       setDeleteConfirmProject(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete project");
@@ -190,7 +201,9 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
                   {filteredProjects.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                       <Search className="h-8 w-8 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">No projects found</p>
+                      <p className="text-sm text-muted-foreground">
+                        No projects found
+                      </p>
                     </div>
                   ) : (
                     <div className="p-4 space-y-2">
@@ -213,7 +226,9 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
                                 {project.name}
                               </h4>
                               {currentProjectId === project.id && (
-                                <span className="text-xs text-primary">(Current)</span>
+                                <span className="text-xs text-primary">
+                                  (Current)
+                                </span>
                               )}
                             </div>
                             {project.description && (
@@ -257,8 +272,8 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deleteConfirmProject?.name}"? This action
-              cannot be undone.
+              Are you sure you want to delete "{deleteConfirmProject?.name}"?
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

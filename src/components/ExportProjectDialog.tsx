@@ -17,8 +17,12 @@ interface ExportProjectDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function ExportProjectDialog({ open, onOpenChange }: ExportProjectDialogProps) {
-  const { nodes, edges, nodeIdCounter, selectedNodeId, currentProjectName } = useSignalFlowStore();
+export function ExportProjectDialog({
+  open,
+  onOpenChange,
+}: ExportProjectDialogProps) {
+  const { nodes, edges, nodeIdCounter, selectedNodeId, currentProjectName } =
+    useSignalFlowStore();
   const [copied, setCopied] = useState(false);
 
   // Generate export JSON
@@ -65,7 +69,8 @@ export function ExportProjectDialog({ open, onOpenChange }: ExportProjectDialogP
         <DialogHeader>
           <DialogTitle>Export Project</DialogTitle>
           <DialogDescription>
-            Copy the JSON below to save your project locally or share it with others.
+            Copy the JSON below to save your project locally or share it with
+            others.
           </DialogDescription>
         </DialogHeader>
 

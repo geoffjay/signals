@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Menu, LogIn, LogOut, Save, FolderOpen, Download, Upload, FilePlus } from "lucide-react";
+import {
+  Menu,
+  LogIn,
+  LogOut,
+  Save,
+  FolderOpen,
+  Download,
+  Upload,
+  FilePlus,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,9 +74,9 @@ export function TopbarMenu() {
   // Get user initials for avatar fallback
   const getUserInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
@@ -93,7 +102,9 @@ export function TopbarMenu() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-sm font-medium leading-none">
+                        {user.name}
+                      </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
                       </p>
@@ -115,7 +126,11 @@ export function TopbarMenu() {
               <DropdownMenuItem onClick={() => setShowSaveDialog(true)}>
                 <Save className="mr-2 h-4 w-4" />
                 <span>Save Project</span>
-                {isDirty && <span className="ml-auto text-xs text-muted-foreground">•</span>}
+                {isDirty && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    •
+                  </span>
+                )}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowLoadDialog(true)}>
                 <FolderOpen className="mr-2 h-4 w-4" />
@@ -158,10 +173,7 @@ export function TopbarMenu() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <LoginDialog
-        open={showLoginDialog}
-        onOpenChange={setShowLoginDialog}
-      />
+      <LoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} />
 
       <SaveProjectDialog
         open={showSaveDialog}
@@ -183,14 +195,17 @@ export function TopbarMenu() {
         onOpenChange={setShowImportDialog}
       />
 
-      <AlertDialog open={showNewProjectDialog} onOpenChange={setShowNewProjectDialog}>
+      <AlertDialog
+        open={showNewProjectDialog}
+        onOpenChange={setShowNewProjectDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Create New Project?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have an existing project with {nodes.length} block{nodes.length !== 1 ? "s" : ""}.
-              Creating a new project will clear all current blocks and connections.
-              This action cannot be undone.
+              You have an existing project with {nodes.length} block
+              {nodes.length !== 1 ? "s" : ""}. Creating a new project will clear
+              all current blocks and connections. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

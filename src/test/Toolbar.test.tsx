@@ -5,7 +5,7 @@ import { Toolbar } from "../components/Toolbar";
 describe("Toolbar Component", () => {
   beforeEach(() => {
     // Clear localStorage before each test
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       window.localStorage.clear();
     }
   });
@@ -16,20 +16,25 @@ describe("Toolbar Component", () => {
   });
 
   describe("View Toggle", () => {
-    it('should show LayoutGrid icon when labels are shown', () => {
+    it("should show LayoutGrid icon when labels are shown", () => {
       render(<Toolbar />);
       // When labels are shown, the toggle button should have tooltip "Icons Only"
       const button = screen.getByRole("button", { name: "" });
       expect(button).toHaveAttribute("data-tooltip-content", "Icons Only");
     });
 
-    it('should show LayoutList icon when in icon-only mode', () => {
+    it("should show LayoutList icon when in icon-only mode", () => {
       window.localStorage.setItem("toolbar-show-labels", "false");
       render(<Toolbar />);
       // When in icon-only mode, the toggle button should have tooltip "Show Labels"
       const buttons = screen.getAllByRole("button");
-      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content"));
-      expect(toggleButton).toHaveAttribute("data-tooltip-content", "Show Labels");
+      const toggleButton = buttons.find((btn) =>
+        btn.getAttribute("data-tooltip-content"),
+      );
+      expect(toggleButton).toHaveAttribute(
+        "data-tooltip-content",
+        "Show Labels",
+      );
     });
 
     it("should toggle between icon-only and labels view", async () => {
@@ -37,16 +42,24 @@ describe("Toolbar Component", () => {
 
       // Find the toggle button
       const buttons = screen.getAllByRole("button");
-      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content")) as HTMLElement;
+      const toggleButton = buttons.find((btn) =>
+        btn.getAttribute("data-tooltip-content"),
+      ) as HTMLElement;
 
       // Initially shows labels (tooltip should say "Icons Only")
-      expect(toggleButton).toHaveAttribute("data-tooltip-content", "Icons Only");
+      expect(toggleButton).toHaveAttribute(
+        "data-tooltip-content",
+        "Icons Only",
+      );
 
       // Click to switch to icon-only
       fireEvent.click(toggleButton);
 
       await waitFor(() => {
-        expect(toggleButton).toHaveAttribute("data-tooltip-content", "Show Labels");
+        expect(toggleButton).toHaveAttribute(
+          "data-tooltip-content",
+          "Show Labels",
+        );
       });
     });
 
@@ -55,7 +68,9 @@ describe("Toolbar Component", () => {
 
       // Find and click the toggle button
       const buttons = screen.getAllByRole("button");
-      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content")) as HTMLElement;
+      const toggleButton = buttons.find((btn) =>
+        btn.getAttribute("data-tooltip-content"),
+      ) as HTMLElement;
       fireEvent.click(toggleButton);
 
       await waitFor(() => {
@@ -70,8 +85,13 @@ describe("Toolbar Component", () => {
 
       // When restored from localStorage with false, tooltip should say "Show Labels"
       const buttons = screen.getAllByRole("button");
-      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content"));
-      expect(toggleButton).toHaveAttribute("data-tooltip-content", "Show Labels");
+      const toggleButton = buttons.find((btn) =>
+        btn.getAttribute("data-tooltip-content"),
+      );
+      expect(toggleButton).toHaveAttribute(
+        "data-tooltip-content",
+        "Show Labels",
+      );
     });
   });
 
@@ -171,8 +191,13 @@ describe("Toolbar Component", () => {
 
       // When in icon-only mode, tooltip should say "Show Labels"
       const buttons = screen.getAllByRole("button");
-      const toggleButton = buttons.find(btn => btn.getAttribute("data-tooltip-content"));
-      expect(toggleButton).toHaveAttribute("data-tooltip-content", "Show Labels");
+      const toggleButton = buttons.find((btn) =>
+        btn.getAttribute("data-tooltip-content"),
+      );
+      expect(toggleButton).toHaveAttribute(
+        "data-tooltip-content",
+        "Show Labels",
+      );
     });
   });
 });

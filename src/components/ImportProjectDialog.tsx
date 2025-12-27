@@ -38,12 +38,17 @@ interface ParsedProject {
   };
 }
 
-export function ImportProjectDialog({ open, onOpenChange }: ImportProjectDialogProps) {
+export function ImportProjectDialog({
+  open,
+  onOpenChange,
+}: ImportProjectDialogProps) {
   const { importProject, nodes } = useSignalFlowStore();
   const [jsonInput, setJsonInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingImport, setPendingImport] = useState<ParsedProject | null>(null);
+  const [pendingImport, setPendingImport] = useState<ParsedProject | null>(
+    null,
+  );
 
   const hasExistingProject = nodes.length > 0;
 
@@ -73,27 +78,37 @@ export function ImportProjectDialog({ open, onOpenChange }: ImportProjectDialogP
     const projectData = parsed.projectData || parsed;
 
     if (!projectData.nodes || !Array.isArray(projectData.nodes)) {
-      throw new Error("Invalid project format: missing or invalid 'nodes' array");
+      throw new Error(
+        "Invalid project format: missing or invalid 'nodes' array",
+      );
     }
 
     if (!projectData.edges || !Array.isArray(projectData.edges)) {
-      throw new Error("Invalid project format: missing or invalid 'edges' array");
+      throw new Error(
+        "Invalid project format: missing or invalid 'edges' array",
+      );
     }
 
     // Validate nodes have required fields
     for (const node of projectData.nodes) {
       if (!node.id || !node.position || !node.data) {
-        throw new Error("Invalid project format: nodes missing required fields (id, position, data)");
+        throw new Error(
+          "Invalid project format: nodes missing required fields (id, position, data)",
+        );
       }
       if (!node.data.blockType) {
-        throw new Error("Invalid project format: node data missing 'blockType'");
+        throw new Error(
+          "Invalid project format: node data missing 'blockType'",
+        );
       }
     }
 
     // Validate edges have required fields
     for (const edge of projectData.edges) {
       if (!edge.id || !edge.source || !edge.target) {
-        throw new Error("Invalid project format: edges missing required fields (id, source, target)");
+        throw new Error(
+          "Invalid project format: edges missing required fields (id, source, target)",
+        );
       }
     }
 
@@ -200,9 +215,10 @@ export function ImportProjectDialog({ open, onOpenChange }: ImportProjectDialogP
           <AlertDialogHeader>
             <AlertDialogTitle>Replace Current Project?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have an existing project with {nodes.length} block{nodes.length !== 1 ? "s" : ""}.
-              Importing will create a new project and replace your current work.
-              This action cannot be undone.
+              You have an existing project with {nodes.length} block
+              {nodes.length !== 1 ? "s" : ""}. Importing will create a new
+              project and replace your current work. This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
