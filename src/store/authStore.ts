@@ -102,9 +102,13 @@ export const useAuthStore = create<AuthState>()(
       loginWithOAuth: async (provider: "google" | "github") => {
         set({ isLoading: true, error: null });
         try {
-          const authData = await pb
-            .collection("users")
-            .authWithOAuth2({ provider });
+          const authData = await pb.collection("users").authWithOAuth2({
+            provider,
+            // Use redirect instead of popup to avoid COOP issues in production
+            urlCallback: (url) => {
+              window.location.href = url;
+            },
+          });
           const user = transformPBUser(authData.record as unknown as PBUser);
 
           if (user) {
