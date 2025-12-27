@@ -29,9 +29,7 @@ function hexToRgba(hex: string): string {
  * Converts rgba format to hex color (#RRGGBBAA)
  */
 function rgbaToHex(rgba: string): string {
-  const match = rgba.match(
-    /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/,
-  );
+  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
   if (!match) return rgba;
 
   const r = parseInt(match[1]).toString(16).padStart(2, "0");

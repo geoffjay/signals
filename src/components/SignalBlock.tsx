@@ -195,9 +195,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
       <div
         className={`px-3 py-2 rounded-t-md border-b border-border ${!customColor ? "bg-muted/50" : ""}`}
         style={{
-          backgroundColor: customColor
-            ? "rgba(0, 0, 0, 0.15)"
-            : undefined,
+          backgroundColor: customColor ? "rgba(0, 0, 0, 0.15)" : undefined,
         }}
       >
         <div className="text-sm font-medium text-foreground">
