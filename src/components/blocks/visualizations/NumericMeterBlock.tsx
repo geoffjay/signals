@@ -9,7 +9,10 @@ interface NumericMeterBlockProps {
 /**
  * Numeric meter visualization block - displays numeric value
  */
-export function NumericMeterBlock({ analyser, config }: NumericMeterBlockProps) {
+export function NumericMeterBlock({
+  analyser,
+  config,
+}: NumericMeterBlockProps) {
   return (
     <div className="mb-2 px-2">
       <NumericMeterDisplay

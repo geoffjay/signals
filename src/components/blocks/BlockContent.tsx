@@ -48,7 +48,10 @@ export function BlockContent({
     // Controls
     case "slider":
       return (
-        <SliderControl config={config} onValueChange={handlers.onSliderChange} />
+        <SliderControl
+          config={config}
+          onValueChange={handlers.onSliderChange}
+        />
       );
 
     case "button":

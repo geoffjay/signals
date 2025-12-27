@@ -311,7 +311,7 @@ class MultiplexerProcessor extends AudioWorkletProcessor {
   private numInputs: number;
   private configSelector: number;
 
-  constructor(options: AudioWorkletNodeOptions) {
+  constructor(options?: AudioWorkletNodeOptions) {
     super();
     // Number of signal inputs (excluding selector) from processor options
     const procOpts = options && options.processorOptions;

@@ -13,6 +13,7 @@ function stripTypeScript(content: string): string {
     .replace(/\/\/\/\s*<reference.*?\/>/g, "") // Remove triple-slash directives
     .replace(/^\s*(private|public|protected)\s+\w+\s*:\s*\w+(\[\])*\s*;?\s*$/gm, "") // Remove class property declarations
     .replace(/:\s*Float32Array\[\]\[\]/g, "") // Remove type annotations
+    .replace(/(\w+)\?(?=\s*[,):])/g, "$1") // Remove optional parameter marker (e.g., options? -> options)
     .replace(/:\s*\w+(\[\])*(\s*\|\s*\w+(\[\])*)*(?=\s*[,)={])/g, "") // Remove other type annotations
     .replace(/\s+as\s+unknown\s+as\s+\{[^}]+\}/g, ""); // Remove type assertions like "as unknown as { prop: type }"
 }

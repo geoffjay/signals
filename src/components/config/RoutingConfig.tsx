@@ -54,7 +54,10 @@ export function MultiplexerConfig({
 /**
  * Configuration for splitter block
  */
-export function SplitterConfig({ config, onConfigChange }: ConfigComponentProps) {
+export function SplitterConfig({
+  config,
+  onConfigChange,
+}: ConfigComponentProps) {
   return (
     <div className="space-y-2">
       <Label htmlFor="numOutputs">Number of Outputs</Label>

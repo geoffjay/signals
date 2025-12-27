@@ -9,7 +9,10 @@ interface OscilloscopeBlockProps {
 /**
  * Oscilloscope visualization block - displays waveform from analyser
  */
-export function OscilloscopeBlock({ analyser, config }: OscilloscopeBlockProps) {
+export function OscilloscopeBlock({
+  analyser,
+  config,
+}: OscilloscopeBlockProps) {
   return (
     <div className="mb-2">
       <OscilloscopeDisplay
