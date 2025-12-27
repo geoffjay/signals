@@ -7,6 +7,23 @@ afterEach(() => {
   cleanup();
 });
 
+// Mock GainNode and BiquadFilterNode types for instanceof checks
+// These must be defined before MockAudioContext since it uses them
+const MockGainNode = class MockGainNode {
+  gain = { value: 1 };
+  connect = vi.fn();
+  disconnect = vi.fn();
+} as unknown as typeof GainNode;
+
+const MockBiquadFilterNode = class MockBiquadFilterNode {
+  type: BiquadFilterType = "lowpass";
+  frequency = { value: 1000 };
+  Q = { value: 1 };
+  gain = { value: 0 };
+  connect = vi.fn();
+  disconnect = vi.fn();
+} as unknown as typeof BiquadFilterNode;
+
 // Mock Web Audio API
 const MockAudioContext = class MockAudioContext {
   destination = {};
@@ -38,13 +55,7 @@ const MockAudioContext = class MockAudioContext {
   }
 
   createBiquadFilter() {
-    return {
-      type: "lowpass",
-      frequency: { value: 1000 },
-      Q: { value: 1 },
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-    };
+    return new MockBiquadFilterNode();
   }
 
   createAnalyser() {
@@ -102,21 +113,6 @@ const MockAudioContext = class MockAudioContext {
 global.AudioContext = MockAudioContext;
 window.AudioContext = MockAudioContext as unknown as typeof AudioContext;
 vi.stubGlobal("AudioContext", MockAudioContext);
-
-// Mock GainNode and BiquadFilterNode types for instanceof checks
-const MockGainNode = class MockGainNode {
-  gain = { value: 1 };
-  connect = vi.fn();
-  disconnect = vi.fn();
-} as unknown as typeof GainNode;
-
-const MockBiquadFilterNode = class MockBiquadFilterNode {
-  type = "lowpass";
-  frequency = { value: 1000 };
-  Q = { value: 1 };
-  connect = vi.fn();
-  disconnect = vi.fn();
-} as unknown as typeof BiquadFilterNode;
 
 // Mock AudioWorkletNode
 const MockAudioWorkletNode = class MockAudioWorkletNode {

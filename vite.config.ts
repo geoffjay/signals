@@ -1,12 +1,47 @@
+import fs from "fs";
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
+
+// AudioWorklet processor files - single source of truth
+const WORKLET_PROCESSORS = ["divide-processor", "math-processors"] as const;
+
+// Strip TypeScript syntax for dev serving
+function stripTypeScript(content: string): string {
+  return content
+    .replace(/\/\/\/\s*<reference.*?\/>/g, "") // Remove triple-slash directives
+    .replace(/:\s*Float32Array\[\]\[\]/g, "") // Remove type annotations
+    .replace(/:\s*\w+(\[\])*(\s*\|\s*\w+(\[\])*)*(?=\s*[,)={])/g, ""); // Remove other type annotations
+}
+
+// Plugin to serve AudioWorklet processors during development
+// In production, these are bundled via rollupOptions.input
+function audioWorkletPlugin(): Plugin {
+  return {
+    name: "audio-worklet-dev",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        for (const processor of WORKLET_PROCESSORS) {
+          if (req.url === `/${processor}.js`) {
+            const tsPath = path.resolve(__dirname, `src/engine/${processor}.ts`);
+            const tsContent = fs.readFileSync(tsPath, "utf-8");
+            const jsContent = stripTypeScript(tsContent);
+            res.setHeader("Content-Type", "application/javascript");
+            res.end(jsContent);
+            return;
+          }
+        }
+        next();
+      });
+    },
+  };
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   base: "/",
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), audioWorkletPlugin()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -16,16 +51,15 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, "index.html"),
-        "divide-processor": path.resolve(
-          __dirname,
-          "src/engine/divide-processor.ts",
+        ...Object.fromEntries(
+          WORKLET_PROCESSORS.map((p) => [p, path.resolve(__dirname, `src/engine/${p}.ts`)])
         ),
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          // Output divide-processor directly to root, not in assets/
-          if (chunkInfo.name === "divide-processor") {
-            return "divide-processor.js";
+          // Output AudioWorklet processors directly to root, not in assets/
+          if (WORKLET_PROCESSORS.includes(chunkInfo.name as typeof WORKLET_PROCESSORS[number])) {
+            return `${chunkInfo.name}.js`;
           }
           return "assets/[name]-[hash].js";
         },

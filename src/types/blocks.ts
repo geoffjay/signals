@@ -321,7 +321,10 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   "lowshelf-filter": {
     type: "lowshelf-filter",
     label: "Low-Shelf Filter",
-    inputs: [{ id: "in", label: "In" }],
+    inputs: [
+      { id: "in", label: "In" },
+      { id: "cutoff", label: "Cutoff" },
+    ],
     outputs: [{ id: "out", label: "Out" }],
     defaultConfig: {
       cutoffFrequency: 200,
@@ -331,7 +334,10 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   "highshelf-filter": {
     type: "highshelf-filter",
     label: "High-Shelf Filter",
-    inputs: [{ id: "in", label: "In" }],
+    inputs: [
+      { id: "in", label: "In" },
+      { id: "cutoff", label: "Cutoff" },
+    ],
     outputs: [{ id: "out", label: "Out" }],
     defaultConfig: {
       cutoffFrequency: 3000,

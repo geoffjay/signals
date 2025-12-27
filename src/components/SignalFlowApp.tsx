@@ -44,6 +44,7 @@ export function SignalFlowApp() {
     setSelectedNodeId,
     setIsPlaying,
     incrementNodeIdCounter,
+    lastExternalUpdate,
   } = useSignalFlowStore();
   const { theme } = useTheme();
 
@@ -56,6 +57,7 @@ export function SignalFlowApp() {
   const engineRef = useRef(new SignalProcessingEngine());
   const isInternalNodeUpdate = useRef(false);
   const hasInitialized = useRef(false);
+  const lastProcessedExternalUpdate = useRef(0);
 
   // Sync ReactFlow state to Zustand store
   useEffect(() => {
@@ -67,6 +69,20 @@ export function SignalFlowApp() {
   useEffect(() => {
     setStoreEdges(edges);
   }, [edges, setStoreEdges]);
+
+  // Sync from store when external update occurs (import/load)
+  useEffect(() => {
+    if (lastExternalUpdate > lastProcessedExternalUpdate.current) {
+      isInternalNodeUpdate.current = true;
+      setNodes(storeNodes);
+      setEdges(storeEdges);
+      lastProcessedExternalUpdate.current = lastExternalUpdate;
+      // Reset the flag after the state update
+      setTimeout(() => {
+        isInternalNodeUpdate.current = false;
+      }, 0);
+    }
+  }, [lastExternalUpdate, storeNodes, storeEdges, setNodes, setEdges]);
 
   // Initialize from store on mount
   useEffect(() => {

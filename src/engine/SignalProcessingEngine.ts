@@ -224,7 +224,44 @@ export class SignalProcessingEngine {
 
         case "low-pass-filter":
         case "high-pass-filter":
-        case "band-pass-filter": {
+        case "band-pass-filter":
+        case "notch-filter":
+        case "allpass-filter": {
+          // Only set cutoff if NOT connected
+          if (
+            audioNode instanceof BiquadFilterNode &&
+            !isInputConnected("cutoff")
+          ) {
+            audioNode.frequency.value = config.cutoffFrequency || 1000;
+          } else if (
+            audioNode instanceof BiquadFilterNode &&
+            isInputConnected("cutoff")
+          ) {
+            // If connected, set base to 0 so signal directly controls it
+            audioNode.frequency.value = 0;
+          }
+          break;
+        }
+
+        case "peaking-eq": {
+          // Only set frequency if NOT connected
+          if (
+            audioNode instanceof BiquadFilterNode &&
+            !isInputConnected("frequency")
+          ) {
+            audioNode.frequency.value = config.cutoffFrequency || 1000;
+          } else if (
+            audioNode instanceof BiquadFilterNode &&
+            isInputConnected("frequency")
+          ) {
+            // If connected, set base to 0 so signal directly controls it
+            audioNode.frequency.value = 0;
+          }
+          break;
+        }
+
+        case "lowshelf-filter":
+        case "highshelf-filter": {
           // Only set cutoff if NOT connected
           if (
             audioNode instanceof BiquadFilterNode &&
@@ -992,7 +1029,38 @@ export class SignalProcessingEngine {
 
         case "low-pass-filter":
         case "high-pass-filter":
-        case "band-pass-filter": {
+        case "band-pass-filter":
+        case "notch-filter":
+        case "allpass-filter": {
+          if (targetHandle === "in") {
+            // Normal audio connection
+            sourceNode.connect(targetNode);
+          } else if (targetHandle === "cutoff") {
+            // Connect to filter frequency parameter
+            if (targetNode instanceof BiquadFilterNode) {
+              // Base value already set to 0 in updateGraph reset loop
+              sourceNode.connect(targetNode.frequency);
+            }
+          }
+          break;
+        }
+
+        case "peaking-eq": {
+          if (targetHandle === "in") {
+            // Normal audio connection
+            sourceNode.connect(targetNode);
+          } else if (targetHandle === "frequency") {
+            // Connect to filter frequency parameter
+            if (targetNode instanceof BiquadFilterNode) {
+              // Base value already set to 0 in updateGraph reset loop
+              sourceNode.connect(targetNode.frequency);
+            }
+          }
+          break;
+        }
+
+        case "lowshelf-filter":
+        case "highshelf-filter": {
           if (targetHandle === "in") {
             // Normal audio connection
             sourceNode.connect(targetNode);

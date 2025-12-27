@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SignalProcessingEngine } from "../engine/SignalProcessingEngine";
 import type { Node, Edge } from "@xyflow/react";
-import type { SignalBlockData } from "../types/blocks";
+import type { SignalBlockData, BlockType } from "../types/blocks";
 
 describe("SignalProcessingEngine", () => {
   let engine: SignalProcessingEngine;
@@ -499,6 +499,434 @@ describe("SignalProcessingEngine", () => {
 
       // Second node should be removed
       expect(engine["nodes"].has("2")).toBe(false);
+    });
+  });
+
+  describe("EQ Filter Processors", () => {
+    beforeEach(async () => {
+      await engine.start();
+    });
+
+    const eqFilterTypes: Array<{
+      blockType: BlockType;
+      expectedType: string;
+      defaultFreq: number;
+    }> = [
+      { blockType: "peaking-eq", expectedType: "peaking", defaultFreq: 1000 },
+      { blockType: "lowshelf-filter", expectedType: "lowshelf", defaultFreq: 200 },
+      { blockType: "highshelf-filter", expectedType: "highshelf", defaultFreq: 3000 },
+    ];
+
+    describe("Filter Creation", () => {
+      eqFilterTypes.forEach(({ blockType, expectedType, defaultFreq }) => {
+        it(`should create ${blockType} with correct type`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType,
+                config: {
+                  cutoffFrequency: defaultFreq,
+                  filterGain: 6,
+                },
+              },
+            },
+          ];
+
+          await engine.updateGraph(nodes, []);
+
+          const filterNode = engine["nodes"].get("1");
+          expect(filterNode).toBeDefined();
+          expect((filterNode as BiquadFilterNode).type).toBe(expectedType);
+        });
+
+        it(`should set frequency for ${blockType}`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType,
+                config: {
+                  cutoffFrequency: 2000,
+                  filterGain: 6,
+                },
+              },
+            },
+          ];
+
+          await engine.updateGraph(nodes, []);
+
+          const filterNode = engine["nodes"].get("1") as BiquadFilterNode;
+          expect(filterNode.frequency.value).toBe(2000);
+        });
+
+        it(`should set gain for ${blockType}`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType,
+                config: {
+                  cutoffFrequency: defaultFreq,
+                  filterGain: 12,
+                },
+              },
+            },
+          ];
+
+          await engine.updateGraph(nodes, []);
+
+          const filterNode = engine["nodes"].get("1") as BiquadFilterNode;
+          expect(filterNode.gain.value).toBe(12);
+        });
+
+        it(`should default gain to 0 for ${blockType} when not specified`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType,
+                config: {
+                  cutoffFrequency: defaultFreq,
+                },
+              },
+            },
+          ];
+
+          await engine.updateGraph(nodes, []);
+
+          const filterNode = engine["nodes"].get("1") as BiquadFilterNode;
+          expect(filterNode.gain.value).toBe(0);
+        });
+      });
+    });
+
+    describe("Filter Configuration Updates", () => {
+      eqFilterTypes.forEach(({ blockType, defaultFreq }) => {
+        it(`should update frequency for ${blockType}`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType,
+                config: {
+                  cutoffFrequency: defaultFreq,
+                  filterGain: 0,
+                },
+              },
+            },
+          ];
+
+          await engine.updateGraph(nodes, []);
+
+          engine.updateNodeConfig("1", blockType, {
+            cutoffFrequency: 5000,
+            filterGain: 0,
+          });
+
+          const filterNode = engine["nodes"].get("1") as BiquadFilterNode;
+          expect(filterNode.frequency.value).toBe(5000);
+        });
+
+        it(`should update gain for ${blockType}`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType,
+                config: {
+                  cutoffFrequency: defaultFreq,
+                  filterGain: 0,
+                },
+              },
+            },
+          ];
+
+          await engine.updateGraph(nodes, []);
+
+          engine.updateNodeConfig("1", blockType, {
+            cutoffFrequency: defaultFreq,
+            filterGain: -6,
+          });
+
+          const filterNode = engine["nodes"].get("1") as BiquadFilterNode;
+          expect(filterNode.gain.value).toBe(-6);
+        });
+
+        it(`should update both frequency and gain for ${blockType}`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType,
+                config: {
+                  cutoffFrequency: defaultFreq,
+                  filterGain: 0,
+                },
+              },
+            },
+          ];
+
+          await engine.updateGraph(nodes, []);
+
+          engine.updateNodeConfig("1", blockType, {
+            cutoffFrequency: 8000,
+            filterGain: 15,
+          });
+
+          const filterNode = engine["nodes"].get("1") as BiquadFilterNode;
+          expect(filterNode.frequency.value).toBe(8000);
+          expect(filterNode.gain.value).toBe(15);
+        });
+      });
+    });
+
+    describe("Filter Signal Input Connections", () => {
+      it("should set frequency to 0 when cutoff input is connected for lowshelf-filter", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "slider1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "slider",
+              config: { value: 1000, min: 20, max: 20000 },
+            },
+          },
+          {
+            id: "filter1",
+            type: "signal-block",
+            position: { x: 200, y: 0 },
+            data: {
+              blockType: "lowshelf-filter",
+              config: { cutoffFrequency: 200, filterGain: 6 },
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "slider1",
+            target: "filter1",
+            sourceHandle: "out",
+            targetHandle: "cutoff",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const filterNode = engine["nodes"].get("filter1") as BiquadFilterNode;
+        // When cutoff is connected, base frequency should be 0
+        expect(filterNode.frequency.value).toBe(0);
+      });
+
+      it("should set frequency to 0 when cutoff input is connected for highshelf-filter", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "slider1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "slider",
+              config: { value: 1000, min: 20, max: 20000 },
+            },
+          },
+          {
+            id: "filter1",
+            type: "signal-block",
+            position: { x: 200, y: 0 },
+            data: {
+              blockType: "highshelf-filter",
+              config: { cutoffFrequency: 3000, filterGain: 6 },
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "slider1",
+            target: "filter1",
+            sourceHandle: "out",
+            targetHandle: "cutoff",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const filterNode = engine["nodes"].get("filter1") as BiquadFilterNode;
+        expect(filterNode.frequency.value).toBe(0);
+      });
+
+      it("should set frequency to 0 when frequency input is connected for peaking-eq", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "slider1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "slider",
+              config: { value: 1000, min: 20, max: 20000 },
+            },
+          },
+          {
+            id: "filter1",
+            type: "signal-block",
+            position: { x: 200, y: 0 },
+            data: {
+              blockType: "peaking-eq",
+              config: { cutoffFrequency: 1000, filterGain: 6 },
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "slider1",
+            target: "filter1",
+            sourceHandle: "out",
+            targetHandle: "frequency",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const filterNode = engine["nodes"].get("filter1") as BiquadFilterNode;
+        expect(filterNode.frequency.value).toBe(0);
+      });
+
+      it("should connect slider output to filter frequency AudioParam", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "slider1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "slider",
+              config: { value: 1000, min: 20, max: 20000 },
+            },
+          },
+          {
+            id: "filter1",
+            type: "signal-block",
+            position: { x: 200, y: 0 },
+            data: {
+              blockType: "lowshelf-filter",
+              config: { cutoffFrequency: 200, filterGain: 6 },
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "slider1",
+            target: "filter1",
+            sourceHandle: "out",
+            targetHandle: "cutoff",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const sliderNode = engine["nodes"].get("slider1");
+        const filterNode = engine["nodes"].get("filter1") as BiquadFilterNode;
+
+        // Verify the connection was made to the frequency AudioParam
+        expect(sliderNode?.connect).toHaveBeenCalledWith(filterNode.frequency);
+      });
+    });
+
+    describe("Standard Filter Types", () => {
+      const standardFilterTypes: Array<{
+        blockType: BlockType;
+        expectedType: string;
+      }> = [
+        { blockType: "low-pass-filter", expectedType: "lowpass" },
+        { blockType: "high-pass-filter", expectedType: "highpass" },
+        { blockType: "band-pass-filter", expectedType: "bandpass" },
+        { blockType: "notch-filter", expectedType: "notch" },
+        { blockType: "allpass-filter", expectedType: "allpass" },
+      ];
+
+      standardFilterTypes.forEach(({ blockType, expectedType }) => {
+        it(`should create ${blockType} with correct type`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType,
+                config: {
+                  cutoffFrequency: 1000,
+                  qFactor: 1.0,
+                },
+              },
+            },
+          ];
+
+          await engine.updateGraph(nodes, []);
+
+          const filterNode = engine["nodes"].get("1");
+          expect(filterNode).toBeDefined();
+          expect((filterNode as BiquadFilterNode).type).toBe(expectedType);
+        });
+
+        it(`should set frequency to 0 when cutoff is connected for ${blockType}`, async () => {
+          const nodes: Node<SignalBlockData>[] = [
+            {
+              id: "slider1",
+              type: "signal-block",
+              position: { x: 0, y: 0 },
+              data: {
+                blockType: "slider",
+                config: { value: 1000 },
+              },
+            },
+            {
+              id: "filter1",
+              type: "signal-block",
+              position: { x: 200, y: 0 },
+              data: {
+                blockType,
+                config: { cutoffFrequency: 1000 },
+              },
+            },
+          ];
+
+          const edges: Edge[] = [
+            {
+              id: "e1",
+              source: "slider1",
+              target: "filter1",
+              sourceHandle: "out",
+              targetHandle: "cutoff",
+            },
+          ];
+
+          await engine.updateGraph(nodes, edges);
+
+          const filterNode = engine["nodes"].get("filter1") as BiquadFilterNode;
+          expect(filterNode.frequency.value).toBe(0);
+        });
+      });
     });
   });
 });

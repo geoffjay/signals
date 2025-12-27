@@ -1,3 +1,5 @@
+/// <reference path="./audioworklet.d.ts" />
+
 // AudioWorklet processors for math operations
 // Single-input operations: ceil, floor, round, abs, sign, sqrt, sin, cos
 // Two-input operations: min, max, pow, mod
@@ -5,7 +7,7 @@
 
 // Ceil - Round up to nearest integer
 class CeilProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -26,7 +28,7 @@ class CeilProcessor extends AudioWorkletProcessor {
 
 // Floor - Round down to nearest integer
 class FloorProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -47,7 +49,7 @@ class FloorProcessor extends AudioWorkletProcessor {
 
 // Round - Round to nearest integer
 class RoundProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -68,7 +70,7 @@ class RoundProcessor extends AudioWorkletProcessor {
 
 // Abs - Absolute value
 class AbsProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -89,7 +91,7 @@ class AbsProcessor extends AudioWorkletProcessor {
 
 // Sign - Return -1, 0, or 1 based on sign
 class SignProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -110,7 +112,7 @@ class SignProcessor extends AudioWorkletProcessor {
 
 // Sqrt - Square root
 class SqrtProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -133,7 +135,7 @@ class SqrtProcessor extends AudioWorkletProcessor {
 
 // Sin - Sine function
 class SinProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -154,7 +156,7 @@ class SinProcessor extends AudioWorkletProcessor {
 
 // Cos - Cosine function
 class CosProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -175,7 +177,7 @@ class CosProcessor extends AudioWorkletProcessor {
 
 // Min - Minimum of two inputs
 class MinProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -199,7 +201,7 @@ class MinProcessor extends AudioWorkletProcessor {
 
 // Max - Maximum of two inputs
 class MaxProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -223,7 +225,7 @@ class MaxProcessor extends AudioWorkletProcessor {
 
 // Pow - Raise A to power B
 class PowProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -240,7 +242,9 @@ class PowProcessor extends AudioWorkletProcessor {
       const b = inputB[i] || 0;
       // Clamp output to prevent extreme values
       const result = Math.pow(a, b);
-      outputChannel[i] = isFinite(result) ? Math.max(-100, Math.min(100, result)) : 0;
+      outputChannel[i] = isFinite(result)
+        ? Math.max(-100, Math.min(100, result))
+        : 0;
     }
 
     return true;
@@ -249,7 +253,7 @@ class PowProcessor extends AudioWorkletProcessor {
 
 // Mod - Modulo operation
 class ModProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -266,7 +270,8 @@ class ModProcessor extends AudioWorkletProcessor {
       const b = inputB[i] || 0;
       // Handle mod by zero
       const EPSILON = 0.0001;
-      const divisor = Math.abs(b) < EPSILON ? (b >= 0 ? EPSILON : -EPSILON) : b;
+      const divisor =
+        Math.abs(b) < EPSILON ? (b >= 0 ? EPSILON : -EPSILON) : b;
       outputChannel[i] = a % divisor;
     }
 
@@ -276,7 +281,7 @@ class ModProcessor extends AudioWorkletProcessor {
 
 // Clamp - Constrain value between min and max (3 inputs)
 class ClampProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs) {
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
     const input = inputs[0];
     const output = outputs[0];
 
@@ -301,16 +306,16 @@ class ClampProcessor extends AudioWorkletProcessor {
 }
 
 // Register all processors
-registerProcessor('ceil-processor', CeilProcessor);
-registerProcessor('floor-processor', FloorProcessor);
-registerProcessor('round-processor', RoundProcessor);
-registerProcessor('abs-processor', AbsProcessor);
-registerProcessor('sign-processor', SignProcessor);
-registerProcessor('sqrt-processor', SqrtProcessor);
-registerProcessor('sin-processor', SinProcessor);
-registerProcessor('cos-processor', CosProcessor);
-registerProcessor('min-processor', MinProcessor);
-registerProcessor('max-processor', MaxProcessor);
-registerProcessor('pow-processor', PowProcessor);
-registerProcessor('mod-processor', ModProcessor);
-registerProcessor('clamp-processor', ClampProcessor);
+registerProcessor("ceil-processor", CeilProcessor);
+registerProcessor("floor-processor", FloorProcessor);
+registerProcessor("round-processor", RoundProcessor);
+registerProcessor("abs-processor", AbsProcessor);
+registerProcessor("sign-processor", SignProcessor);
+registerProcessor("sqrt-processor", SqrtProcessor);
+registerProcessor("sin-processor", SinProcessor);
+registerProcessor("cos-processor", CosProcessor);
+registerProcessor("min-processor", MinProcessor);
+registerProcessor("max-processor", MaxProcessor);
+registerProcessor("pow-processor", PowProcessor);
+registerProcessor("mod-processor", ModProcessor);
+registerProcessor("clamp-processor", ClampProcessor);

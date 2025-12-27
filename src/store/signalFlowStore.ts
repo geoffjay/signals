@@ -16,6 +16,9 @@ interface SignalFlowState {
   currentProjectName: string;
   isDirty: boolean;
 
+  // External update tracking (for import/load operations)
+  lastExternalUpdate: number;
+
   // Actions
   setNodes: (nodes: Node[] | ((nodes: Node[]) => Node[])) => void;
   setEdges: (edges: Edge[] | ((edges: Edge[]) => Edge[])) => void;
@@ -35,6 +38,14 @@ interface SignalFlowState {
   listUserProjects: () => Promise<ProjectMetadata[]>;
   markDirty: () => void;
   markClean: () => void;
+
+  // Import/Export
+  importProject: (name: string, projectData: {
+    nodes: Node[];
+    edges: Edge[];
+    nodeIdCounter: number;
+    selectedNodeId: string | null;
+  }) => void;
 }
 
 export const useSignalFlowStore = create<SignalFlowState>()(
@@ -50,6 +61,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
       currentProjectId: null,
       currentProjectName: "Untitled Project",
       isDirty: false,
+      lastExternalUpdate: 0,
 
       setNodes: (nodesOrUpdater) => {
         set((state) => ({
@@ -181,6 +193,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
             currentProjectId: project.id,
             currentProjectName: project.name,
             isDirty: false,
+            lastExternalUpdate: Date.now(),
           });
         } catch (error) {
           console.error("Failed to load project:", error);
@@ -197,6 +210,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
           currentProjectId: null,
           currentProjectName: "Untitled Project",
           isDirty: false,
+          lastExternalUpdate: Date.now(),
         });
       },
 
@@ -230,6 +244,19 @@ export const useSignalFlowStore = create<SignalFlowState>()(
 
       markClean: () => {
         set({ isDirty: false });
+      },
+
+      importProject: (name, projectData) => {
+        set({
+          nodes: projectData.nodes,
+          edges: projectData.edges,
+          nodeIdCounter: projectData.nodeIdCounter,
+          selectedNodeId: projectData.selectedNodeId,
+          currentProjectId: null, // Imported projects are not linked to cloud storage
+          currentProjectName: name,
+          isDirty: true, // Mark as dirty since it's not saved to cloud
+          lastExternalUpdate: Date.now(),
+        });
       },
     }),
     {
