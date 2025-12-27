@@ -104,9 +104,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           const authData = await pb.collection("users").authWithOAuth2({
             provider,
-            // Use redirect instead of popup to avoid COOP issues in production
+            // Open in new tab to avoid COOP issues and keep app context
             urlCallback: (url) => {
-              window.location.href = url;
+              window.open(url, "_blank");
             },
           });
           const user = transformPBUser(authData.record as unknown as PBUser);
