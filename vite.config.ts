@@ -11,8 +11,10 @@ const WORKLET_PROCESSORS = ["divide-processor", "math-processors"] as const;
 function stripTypeScript(content: string): string {
   return content
     .replace(/\/\/\/\s*<reference.*?\/>/g, "") // Remove triple-slash directives
+    .replace(/^\s*(private|public|protected)\s+\w+\s*:\s*\w+(\[\])*\s*;?\s*$/gm, "") // Remove class property declarations
     .replace(/:\s*Float32Array\[\]\[\]/g, "") // Remove type annotations
-    .replace(/:\s*\w+(\[\])*(\s*\|\s*\w+(\[\])*)*(?=\s*[,)={])/g, ""); // Remove other type annotations
+    .replace(/:\s*\w+(\[\])*(\s*\|\s*\w+(\[\])*)*(?=\s*[,)={])/g, "") // Remove other type annotations
+    .replace(/\s+as\s+unknown\s+as\s+\{[^}]+\}/g, ""); // Remove type assertions like "as unknown as { prop: type }"
 }
 
 // Plugin to serve AudioWorklet processors during development

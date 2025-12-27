@@ -304,6 +304,87 @@ class ClampProcessor extends AudioWorkletProcessor {
   }
 }
 
+// Multiplexer - Select one of N inputs based on selector signal or config value
+// Input 0: selector signal (optional - if not connected, uses config value)
+// Inputs 1 to N: signal inputs
+class MultiplexerProcessor extends AudioWorkletProcessor {
+  private numInputs: number;
+  private configSelector: number;
+
+  constructor(options: AudioWorkletNodeOptions) {
+    super();
+    // Number of signal inputs (excluding selector) from processor options
+    const procOpts = options && options.processorOptions;
+    this.numInputs = (procOpts && procOpts.numInputs) || 2;
+    this.configSelector =
+      procOpts && procOpts.selectorValue !== undefined
+        ? procOpts.selectorValue
+        : 0;
+
+    // Listen for config updates
+    this.port.onmessage = (event) => {
+      if (event.data.type === "setSelector") {
+        this.configSelector = event.data.value;
+      }
+    };
+  }
+
+  process(inputs: Float32Array[][], outputs: Float32Array[][]) {
+    const output = outputs[0];
+    if (!output || output.length === 0) return true;
+
+    const outputChannel = output[0];
+    if (!outputChannel) return true;
+
+    // Input 0 is selector signal, inputs 1+ are signal inputs
+    const selectorInputArr = inputs[0];
+    const selectorInput = selectorInputArr && selectorInputArr[0];
+    const hasSelectorSignal =
+      selectorInput &&
+      selectorInput.length > 0 &&
+      selectorInput.some((v) => v !== 0);
+    const numSignalInputs = this.numInputs;
+
+    for (let i = 0; i < outputChannel.length; i++) {
+      // Use signal selector if connected, otherwise use config value
+      const selectorValue = hasSelectorSignal
+        ? selectorInput[i]
+        : this.configSelector;
+
+      // Clamp selector to valid range [0, numInputs-1]
+      const clampedSelector = Math.max(
+        0,
+        Math.min(numSignalInputs - 1, selectorValue),
+      );
+
+      // Get integer and fractional parts for blending
+      const lowerIndex = Math.floor(clampedSelector);
+      const upperIndex = Math.min(lowerIndex + 1, numSignalInputs - 1);
+      const blend = clampedSelector - lowerIndex;
+
+      // Get values from the two nearest inputs (offset by 1 since input 0 is selector)
+      const lowerInputArr = inputs[lowerIndex + 1];
+      const lowerInputChannel = lowerInputArr && lowerInputArr[0];
+      const upperInputArr = inputs[upperIndex + 1];
+      const upperInputChannel = upperInputArr && upperInputArr[0];
+
+      const lowerValue =
+        lowerInputChannel && lowerInputChannel[i] !== undefined
+          ? lowerInputChannel[i]
+          : 0;
+      const upperValue =
+        upperInputChannel && upperInputChannel[i] !== undefined
+          ? upperInputChannel[i]
+          : 0;
+
+      // Linear interpolation between inputs
+      outputChannel[i] = lowerValue * (1 - blend) + upperValue * blend;
+    }
+
+    return true;
+  }
+}
+
 // Register all processors
 registerProcessor("ceil-processor", CeilProcessor);
 registerProcessor("floor-processor", FloorProcessor);
@@ -318,3 +399,4 @@ registerProcessor("max-processor", MaxProcessor);
 registerProcessor("pow-processor", PowProcessor);
 registerProcessor("mod-processor", ModProcessor);
 registerProcessor("clamp-processor", ClampProcessor);
+registerProcessor("multiplexer-processor", MultiplexerProcessor);

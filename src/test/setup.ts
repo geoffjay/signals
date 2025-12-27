@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
-import { afterEach, vi, beforeAll } from "vitest";
+import { afterEach, vi } from "vitest";
 
 // Cleanup after each test
 afterEach(() => {
@@ -47,11 +47,7 @@ const MockAudioContext = class MockAudioContext {
   }
 
   createGain() {
-    return {
-      gain: { value: 1 },
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-    };
+    return new MockGainNode();
   }
 
   createBiquadFilter() {

@@ -524,8 +524,9 @@ export class SignalProcessingEngine {
         this.createThreeInputMathNode(nodeId, "clamp-processor");
         break;
 
-      // Note: Multiplexer is complex and would need custom processing
-      // For now, we'll skip it or implement a simplified version
+      case "multiplexer":
+        this.createMultiplexer(nodeId, config);
+        break;
     }
   }
 
@@ -630,10 +631,47 @@ export class SignalProcessingEngine {
     if (!this.audioContext) return;
 
     // A splitter is just a gain node with gain = 1
+    // One input fans out to multiple outputs
     const gainNode = this.audioContext.createGain();
     gainNode.gain.value = 1.0;
 
     this.nodes.set(nodeId, gainNode);
+  }
+
+  private createMultiplexer(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const numInputs = config.numInputs || 2;
+    const selectorValue = config.selectorValue ?? 0;
+
+    try {
+      // Create AudioWorkletNode for multiplexer
+      // Input 0: selector signal, Inputs 1-N: signal inputs
+      const muxNode = new AudioWorkletNode(
+        this.audioContext,
+        "multiplexer-processor",
+        {
+          numberOfInputs: numInputs + 1, // +1 for selector signal input
+          numberOfOutputs: 1,
+          outputChannelCount: [1],
+          channelCount: 1,
+          channelCountMode: "explicit",
+          channelInterpretation: "speakers",
+          processorOptions: {
+            numInputs: numInputs,
+            selectorValue: selectorValue,
+          },
+        },
+      );
+
+      this.nodes.set(nodeId, muxNode);
+    } catch (e) {
+      console.error("Failed to create multiplexer AudioWorkletNode:", e);
+      // Fallback to a simple gain node if worklet fails
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 1.0;
+      this.nodes.set(nodeId, gainNode);
+    }
   }
 
   private createAnalyser(nodeId: string, config: BlockConfig) {
@@ -1123,6 +1161,37 @@ export class SignalProcessingEngine {
           console.log(`[FFT] Input connected successfully`);
           break;
 
+        case "splitter":
+          // Splitter: single input fans out to multiple outputs
+          // All connections go to/from the same gain node
+          if (targetHandle === "in") {
+            sourceNode.connect(targetNode);
+          }
+          break;
+
+        case "multiplexer": {
+          // Multiplexer: multiple inputs selected by selector
+          // AudioWorklet has N+1 inputs: input 0 = selector, inputs 1-N = signal inputs
+          // Handle format: "selector" for selector, "in0", "in1", etc. for signal inputs
+          if (targetHandle === "selector") {
+            // Selector connects to input 0
+            console.log(`[MUX] Connecting selector signal to input 0`);
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (targetHandle.startsWith("in")) {
+            // Parse input number from handle (e.g., "in0" -> 0, "in1" -> 1)
+            const inputNum = parseInt(targetHandle.slice(2), 10);
+            if (!isNaN(inputNum)) {
+              // Signal inputs connect to inputs 1, 2, 3, etc. (offset by 1 for selector)
+              const destInput = inputNum + 1;
+              console.log(
+                `[MUX] Connecting ${sourceId}(${sourceHandle}) to mux input ${destInput} (handle: ${targetHandle})`,
+              );
+              sourceNode.connect(targetNode, 0, destInput);
+            }
+          }
+          break;
+        }
+
         default:
           // Default connection for all other block types
           console.log(
@@ -1228,6 +1297,23 @@ export class SignalProcessingEngine {
         const source = this.constantSources.get(nodeId);
         if (source instanceof ConstantSourceNode) {
           source.offset.value = config.pulseValue || 1.0;
+        }
+        break;
+      }
+
+      case "multiplexer": {
+        // Send selector value to AudioWorklet via postMessage
+        console.log(
+          `[MUX Config] Updating selector to ${config.selectorValue}, node type: ${node.constructor.name}`,
+        );
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({
+            type: "setSelector",
+            value: config.selectorValue ?? 0,
+          });
+          console.log(`[MUX Config] Sent setSelector message`);
+        } else {
+          console.warn(`[MUX Config] Node is not AudioWorkletNode`);
         }
         break;
       }

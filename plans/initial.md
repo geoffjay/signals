@@ -37,20 +37,24 @@ The application consists of three main areas:
 ### 1. Wave Generator Blocks
 
 Four separate block types for different waveforms:
+
 - **Sine Wave Generator**
 - **Square Wave Generator**
 - **Triangle Wave Generator**
 - **Sawtooth Wave Generator**
 
 **Outputs:**
+
 - 1 output port: the generated waveform signal
 
 **Inputs:**
+
 - Frequency input (can override default frequency setting)
 - Amplitude input (can override default amplitude setting)
 - Phase input (can override default phase setting)
 
 **Configuration Options:**
+
 - Default Frequency (Hz)
 - Default Amplitude (0-1 range)
 - Default Phase (0-360 degrees)
@@ -60,55 +64,68 @@ Four separate block types for different waveforms:
 ### 2. Noise Generator Block
 
 **Outputs:**
+
 - 1 output port: noise signal
 
 **Inputs:**
+
 - Amplitude input (optional, can override default)
 
 **Configuration Options:**
+
 - Default Amplitude (0-1 range)
 - Noise type (White noise initially; can be simple random values)
 
 ### 3. Gain Block
 
 **Inputs:**
+
 - 1 input port: signal input
 
 **Outputs:**
+
 - 1 output port: amplified/attenuated signal
 
 **Configuration Options:**
+
 - Gain amount (can be > 1 for amplification or < 1 for attenuation)
 - Display as multiplier (e.g., 0.5x, 2x) or dB
 
 ### 4. Filter Blocks
 
 Three separate block types:
+
 - **Low-Pass Filter**
 - **High-Pass Filter**
 - **Band-Pass Filter**
 
 **Inputs:**
+
 - Signal input
 - Frequency/Cutoff input (optional, can override default cutoff frequency)
 
 **Outputs:**
+
 - 1 output port: filtered signal
 
 **Configuration Options:**
+
 - Default cutoff frequency (Hz)
 - Roll-off/Q factor (can start with reasonable defaults)
 
 ### 5. Multiplexer (Mux) Block
 
 **Inputs:**
+
 - 2, 4, or 8 signal inputs (configurable)
 - 1 selector input (determines which input passes through)
 
 **Outputs:**
+
 - 1 output port: selected signal
 
 **Configuration Options:**
+
 - Number of inputs (2, 4, or 8)
 - Default selector value (0 to N-1, used when no selector signal connected)
 
@@ -117,12 +134,15 @@ Three separate block types:
 ### 6. Signal Splitter Block
 
 **Inputs:**
+
 - 1 input port: signal input
 
 **Outputs:**
+
 - 2, 4, or 8 output ports (configurable)
 
 **Configuration Options:**
+
 - Number of outputs (2, 4, or 8)
 
 **Notes:** All outputs carry the exact same signal (fanout/distribution)
@@ -130,16 +150,20 @@ Three separate block types:
 ### 7. Waveform Display Block (Oscilloscope)
 
 **Inputs:**
+
 - 1 input port: signal input to visualize
 
 **Outputs:**
+
 - None (this is a visualization endpoint)
 
 **Configuration Options:**
+
 - Display refresh rate (optional)
 - Time window/scale (optional)
 
 **Visual Display:**
+
 - Show real-time animated visualization of the signal waveform
 - Single trace display (like an oscilloscope)
 - No need for scales, grid, or frequency markers
@@ -148,12 +172,15 @@ Three separate block types:
 ### 8. Audio Output Block
 
 **Inputs:**
+
 - 1 input port: signal input to play as audio
 
 **Outputs:**
+
 - None (this is an audio endpoint)
 
 **Configuration Options:**
+
 - Volume control (0-1 range)
 - Mute toggle
 - May need sample rate setting (44.1kHz standard)
@@ -173,10 +200,12 @@ Three separate block types:
 ## Toolbar Functionality
 
 **Playback Controls:**
+
 - Start button - begins signal processing and animation
 - Stop button - halts signal processing and animation
 
 **Block Buttons:**
+
 - One button for each block type listed above
 - Draggable onto the canvas
 - When dragged from toolbar and dropped onto canvas, create new instance of that block
@@ -185,15 +214,18 @@ Three separate block types:
 ## ReactFlow Canvas Behavior
 
 **Drag and Drop:**
+
 - Blocks can be dragged from the toolbar and dropped onto the canvas
 - Once on canvas, blocks can be repositioned by dragging
 - Implement using ReactFlow's custom node system
 
 **Block Deletion:**
+
 - Support deleting blocks (via Delete/Backspace key when selected, or delete button in config drawer)
 - When a block is deleted, remove all its connections
 
 **Connections:**
+
 - Click and drag from an output port to an input port to create a connection
 - Connections should snap to ports (not free-form)
 - Cannot connect output to output or input to input
@@ -202,12 +234,14 @@ Three separate block types:
 - An output port can connect to multiple input ports (up to 8 total)
 
 **Connection Animation:**
+
 - When the system is playing (Start button pressed), animate the connection lines
 - Animation can be simple (e.g., dashed line with moving dashes, or dots/particles flowing along the line)
 - Animation should indicate signal is flowing through the connection
 - No animation when stopped
 
 **Selection:**
+
 - Clicking on a block selects it
 - Selected block should show visual indication (highlight, border, etc.)
 - Selecting a block opens the configuration drawer on the right
@@ -215,12 +249,14 @@ Three separate block types:
 ## Configuration Drawer
 
 **Behavior:**
+
 - Slides in from the right when a block is selected
 - Shows configuration options specific to the selected block type
 - Changes are applied immediately (live editing)
 - Drawer should close or show empty state when clicking canvas background (deselecting)
 
 **Content Structure:**
+
 - Block type name as header
 - Form controls for each configuration option
 - Use appropriate input types (sliders, number inputs, dropdowns, etc.)
@@ -229,22 +265,26 @@ Three separate block types:
 ## Signal Processing Implementation
 
 **Real Signal Data:**
+
 - Generate actual signal data using Web Audio API or custom signal generation
 - Signals should be real numeric values representing amplitude over time
 - When blocks are connected, data should actually flow through the system
 - Each block should process incoming signals according to its function
 
 **Sample Rate:**
+
 - Use standard audio sample rate (44.1kHz recommended)
 - Signals should be processed as continuous streams
 
 **Processing Pipeline:**
+
 - When Start is pressed, begin generating signals from source blocks (wave generators, noise)
 - Process signals through connected blocks in the correct order
 - Update visualization blocks (oscilloscope) with processed signals
 - Output to audio blocks for playback
 
 **Frequency Modulation:**
+
 - When a signal is connected to a frequency input (or amplitude/phase), use the signal's value to modulate that parameter
 - Signal values should map to reasonable ranges (this can be implementation-specific)
 

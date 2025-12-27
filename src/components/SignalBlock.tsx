@@ -6,11 +6,7 @@ import {
   getBlockInputs,
   getBlockOutputs,
 } from "@/types/blocks";
-import { OscilloscopeDisplay } from "./OscilloscopeDisplay";
-import { NumericMeterDisplay } from "./NumericMeterDisplay";
-import { SpectrumDisplay } from "./SpectrumDisplay";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
+import { BlockContent } from "./blocks";
 
 export interface SignalBlockData extends Record<string, unknown> {
   blockType: BlockType;
@@ -30,17 +26,9 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   const hasInputs = inputs.length > 0;
   const hasOutputs = outputs.length > 0;
 
-  // Prevent node selection when clicking on interactive controls
-  const stopPropagation = useCallback(
-    (e: React.MouseEvent | React.PointerEvent) => {
-      e.stopPropagation();
-    },
-    [],
-  );
-
+  // Handler for slider value changes
   const handleSliderChange = useCallback(
-    (values: readonly number[] | number) => {
-      const newValue = Array.isArray(values) ? values[0] : values;
+    (newValue: number) => {
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === id) {
@@ -60,6 +48,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     [id, setNodes],
   );
 
+  // Handler for button press
   const handleButtonPress = useCallback(() => {
     setNodes((nds) =>
       nds.map((node) => {
@@ -81,6 +70,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     );
   }, [id, setNodes]);
 
+  // Handler for button release
   const handleButtonRelease = useCallback(() => {
     setNodes((nds) =>
       nds.map((node) => {
@@ -99,6 +89,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     );
   }, [id, setNodes]);
 
+  // Handler for toggle clicks
   const handleToggle = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -124,6 +115,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     [id, setNodes],
   );
 
+  // Handler for pulse clicks
   const handlePulse = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -175,6 +167,15 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     [id, blockData.config.pulseDuration, setNodes],
   );
 
+  // Collected handlers for BlockContent
+  const handlers = {
+    onSliderChange: handleSliderChange,
+    onButtonPress: handleButtonPress,
+    onButtonRelease: handleButtonRelease,
+    onToggle: handleToggle,
+    onPulse: handlePulse,
+  };
+
   return (
     <div
       className={`
@@ -192,118 +193,13 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
 
       {/* Block Content */}
       <div className="px-4 py-3 relative">
-        {/* Content wrapper for proper positioning */}
-
-        {/* Oscilloscope Display */}
-        {blockData.blockType === "oscilloscope" && (
-          <div className="mb-2">
-            <OscilloscopeDisplay
-              analyser={blockData.analyser}
-              width={200}
-              height={100}
-              refreshRate={blockData.config.refreshRate}
-              timeWindow={blockData.config.timeWindow}
-              minAmplitude={blockData.config.minAmplitude}
-              maxAmplitude={blockData.config.maxAmplitude}
-            />
-          </div>
-        )}
-
-        {/* FFT Analyzer Display */}
-        {blockData.blockType === "fft-analyzer" &&
-          blockData.config.fftMode === "spectrum" && (
-            <div className="mb-2">
-              <SpectrumDisplay
-                analyser={blockData.analyser}
-                width={240}
-                height={140}
-                refreshRate={blockData.config.refreshRate ?? 60}
-                minDecibels={blockData.config.minDecibels}
-                maxDecibels={blockData.config.maxDecibels}
-              />
-            </div>
-          )}
-
-        {/* Slider Control */}
-        {blockData.blockType === "slider" && (
-          <div className="mb-3 px-2 nodrag nowheel">
-            <div className="text-xs text-center text-muted-foreground mb-1">
-              {(blockData.config.value ?? 0.5).toFixed(3)}
-            </div>
-            <div onClick={stopPropagation}>
-              <Slider
-                min={blockData.config.min ?? 0}
-                max={blockData.config.max ?? 1}
-                step={blockData.config.step ?? 0.01}
-                value={[blockData.config.value ?? 0.5]}
-                onValueChange={handleSliderChange}
-                className="w-full"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Button Control */}
-        {blockData.blockType === "button" && (
-          <div className="mb-2 nodrag nowheel">
-            <Button
-              onMouseDown={handleButtonPress}
-              onMouseUp={handleButtonRelease}
-              onMouseLeave={handleButtonRelease}
-              onPointerDown={stopPropagation}
-              onClick={stopPropagation}
-              className="w-full"
-              size="sm"
-            >
-              Press
-            </Button>
-            <div className="text-xs text-center text-muted-foreground mt-1">
-              {(blockData.config.value ?? 0).toFixed(2)}
-            </div>
-          </div>
-        )}
-
-        {/* Toggle Control */}
-        {blockData.blockType === "toggle" && (
-          <div className="mb-2 nodrag nowheel">
-            <Button
-              onClick={handleToggle}
-              variant={
-                (blockData.config.value ?? 0) === 0 ? "outline" : "default"
-              }
-              className="w-full"
-              size="sm"
-            >
-              {(blockData.config.value ?? 0) === 0 ? "Off" : "On"}
-            </Button>
-            <div className="text-xs text-center text-muted-foreground mt-1">
-              {(blockData.config.value ?? 0).toFixed(2)}
-            </div>
-          </div>
-        )}
-
-        {/* Pulse Control */}
-        {blockData.blockType === "pulse" && (
-          <div className="mb-2 nodrag nowheel">
-            <Button onClick={handlePulse} className="w-full" size="sm">
-              Pulse
-            </Button>
-            <div className="text-xs text-center text-muted-foreground mt-1">
-              {(blockData.config.value ?? 0).toFixed(2)}
-            </div>
-          </div>
-        )}
-
-        {/* Numeric Meter Display */}
-        {blockData.blockType === "numeric-meter" && (
-          <div className="mb-2 px-2">
-            <NumericMeterDisplay
-              analyser={blockData.analyser}
-              decimals={blockData.config.decimals ?? 3}
-              unit={blockData.config.unit ?? ""}
-            />
-          </div>
-        )}
+        {/* Block-specific content (controls, visualizations) */}
+        <BlockContent
+          blockType={blockData.blockType}
+          config={blockData.config}
+          analyser={blockData.analyser}
+          handlers={handlers}
+        />
 
         {/* Input Ports */}
         {hasInputs && (
@@ -364,7 +260,6 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
           </div>
         )}
       </div>
-      {/* Close content wrapper */}
     </div>
   );
 });

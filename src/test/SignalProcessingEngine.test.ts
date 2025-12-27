@@ -937,4 +937,453 @@ describe("SignalProcessingEngine", () => {
       });
     });
   });
+
+  describe("Routing Blocks", () => {
+    beforeEach(async () => {
+      await engine.start();
+    });
+
+    describe("Splitter", () => {
+      it("should create splitter as a gain node with gain = 1", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "splitter1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "splitter",
+              config: { numOutputs: 2 },
+            },
+          },
+        ];
+
+        await engine.updateGraph(nodes, []);
+
+        const splitterNode = engine["nodes"].get("splitter1");
+        expect(splitterNode).toBeDefined();
+        expect(splitterNode).toBeInstanceOf(GainNode);
+        expect((splitterNode as GainNode).gain.value).toBe(1.0);
+      });
+
+      it("should connect input to splitter", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "osc1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "sine-wave",
+              config: { frequency: 440 },
+            },
+          },
+          {
+            id: "splitter1",
+            type: "signal-block",
+            position: { x: 200, y: 0 },
+            data: {
+              blockType: "splitter",
+              config: { numOutputs: 2 },
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "osc1",
+            target: "splitter1",
+            sourceHandle: "out",
+            targetHandle: "in",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const oscNode = engine["nodes"].get("osc1");
+        const splitterNode = engine["nodes"].get("splitter1");
+
+        expect(oscNode?.connect).toHaveBeenCalledWith(splitterNode);
+      });
+
+      it("should connect splitter output to multiple targets", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "osc1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "sine-wave",
+              config: { frequency: 440 },
+            },
+          },
+          {
+            id: "splitter1",
+            type: "signal-block",
+            position: { x: 200, y: 0 },
+            data: {
+              blockType: "splitter",
+              config: { numOutputs: 2 },
+            },
+          },
+          {
+            id: "scope1",
+            type: "signal-block",
+            position: { x: 400, y: 0 },
+            data: {
+              blockType: "oscilloscope",
+              config: {},
+            },
+          },
+          {
+            id: "scope2",
+            type: "signal-block",
+            position: { x: 400, y: 100 },
+            data: {
+              blockType: "oscilloscope",
+              config: {},
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "osc1",
+            target: "splitter1",
+            sourceHandle: "out",
+            targetHandle: "in",
+          },
+          {
+            id: "e2",
+            source: "splitter1",
+            target: "scope1",
+            sourceHandle: "out0",
+            targetHandle: "in",
+          },
+          {
+            id: "e3",
+            source: "splitter1",
+            target: "scope2",
+            sourceHandle: "out1",
+            targetHandle: "in",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const splitterNode = engine["nodes"].get("splitter1");
+        const scope1Node = engine["nodes"].get("scope1");
+        const scope2Node = engine["nodes"].get("scope2");
+
+        // Splitter should connect to both scopes
+        expect(splitterNode?.connect).toHaveBeenCalledWith(scope1Node);
+        expect(splitterNode?.connect).toHaveBeenCalledWith(scope2Node);
+      });
+
+      it("should support configurable number of outputs", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "splitter1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "splitter",
+              config: { numOutputs: 4 },
+            },
+          },
+        ];
+
+        await engine.updateGraph(nodes, []);
+
+        const splitterNode = engine["nodes"].get("splitter1");
+        expect(splitterNode).toBeDefined();
+        // The splitter is just a gain node, numOutputs is handled at UI level
+        expect(splitterNode).toBeInstanceOf(GainNode);
+      });
+    });
+
+    describe("Multiplexer", () => {
+      it("should create multiplexer node", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "mux1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "multiplexer",
+              config: { numInputs: 2, selectorValue: 0 },
+            },
+          },
+        ];
+
+        await engine.updateGraph(nodes, []);
+
+        const muxNode = engine["nodes"].get("mux1");
+        expect(muxNode).toBeDefined();
+      });
+
+      it("should connect signal inputs to multiplexer", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "osc1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "sine-wave",
+              config: { frequency: 440 },
+            },
+          },
+          {
+            id: "osc2",
+            type: "signal-block",
+            position: { x: 0, y: 100 },
+            data: {
+              blockType: "sine-wave",
+              config: { frequency: 880 },
+            },
+          },
+          {
+            id: "mux1",
+            type: "signal-block",
+            position: { x: 200, y: 50 },
+            data: {
+              blockType: "multiplexer",
+              config: { numInputs: 2, selectorValue: 0 },
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "osc1",
+            target: "mux1",
+            sourceHandle: "out",
+            targetHandle: "in0",
+          },
+          {
+            id: "e2",
+            source: "osc2",
+            target: "mux1",
+            sourceHandle: "out",
+            targetHandle: "in1",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const osc1Node = engine["nodes"].get("osc1");
+        const osc2Node = engine["nodes"].get("osc2");
+        const muxNode = engine["nodes"].get("mux1");
+
+        // Each oscillator should connect to its respective mux input
+        // in0 connects to input 1 (offset by 1 for selector)
+        // in1 connects to input 2
+        expect(osc1Node?.connect).toHaveBeenCalledWith(muxNode, 0, 1);
+        expect(osc2Node?.connect).toHaveBeenCalledWith(muxNode, 0, 2);
+      });
+
+      it("should connect selector to multiplexer", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "slider1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "slider",
+              config: { value: 0, min: 0, max: 1 },
+            },
+          },
+          {
+            id: "mux1",
+            type: "signal-block",
+            position: { x: 200, y: 0 },
+            data: {
+              blockType: "multiplexer",
+              config: { numInputs: 2, selectorValue: 0 },
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "slider1",
+            target: "mux1",
+            sourceHandle: "out",
+            targetHandle: "selector",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const sliderNode = engine["nodes"].get("slider1");
+        const muxNode = engine["nodes"].get("mux1");
+
+        // Selector connects to input 0
+        expect(sliderNode?.connect).toHaveBeenCalledWith(muxNode, 0, 0);
+      });
+
+      it("should connect multiplexer output to target", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "mux1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "multiplexer",
+              config: { numInputs: 2, selectorValue: 0 },
+            },
+          },
+          {
+            id: "scope1",
+            type: "signal-block",
+            position: { x: 200, y: 0 },
+            data: {
+              blockType: "oscilloscope",
+              config: {},
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "mux1",
+            target: "scope1",
+            sourceHandle: "out",
+            targetHandle: "in",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        const muxNode = engine["nodes"].get("mux1");
+        const scopeNode = engine["nodes"].get("scope1");
+
+        expect(muxNode?.connect).toHaveBeenCalledWith(scopeNode);
+      });
+
+      it("should support configurable number of inputs", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "mux1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "multiplexer",
+              config: { numInputs: 4, selectorValue: 0 },
+            },
+          },
+        ];
+
+        await engine.updateGraph(nodes, []);
+
+        const muxNode = engine["nodes"].get("mux1");
+        expect(muxNode).toBeDefined();
+      });
+
+      it("should handle full multiplexer signal chain", async () => {
+        const nodes: Node<SignalBlockData>[] = [
+          {
+            id: "osc1",
+            type: "signal-block",
+            position: { x: 0, y: 0 },
+            data: {
+              blockType: "sine-wave",
+              config: { frequency: 440 },
+            },
+          },
+          {
+            id: "osc2",
+            type: "signal-block",
+            position: { x: 0, y: 100 },
+            data: {
+              blockType: "square-wave",
+              config: { frequency: 440 },
+            },
+          },
+          {
+            id: "selector",
+            type: "signal-block",
+            position: { x: 0, y: 200 },
+            data: {
+              blockType: "slider",
+              config: { value: 0, min: 0, max: 1 },
+            },
+          },
+          {
+            id: "mux1",
+            type: "signal-block",
+            position: { x: 200, y: 100 },
+            data: {
+              blockType: "multiplexer",
+              config: { numInputs: 2, selectorValue: 0 },
+            },
+          },
+          {
+            id: "scope1",
+            type: "signal-block",
+            position: { x: 400, y: 100 },
+            data: {
+              blockType: "oscilloscope",
+              config: {},
+            },
+          },
+        ];
+
+        const edges: Edge[] = [
+          {
+            id: "e1",
+            source: "osc1",
+            target: "mux1",
+            sourceHandle: "out",
+            targetHandle: "in0",
+          },
+          {
+            id: "e2",
+            source: "osc2",
+            target: "mux1",
+            sourceHandle: "out",
+            targetHandle: "in1",
+          },
+          {
+            id: "e3",
+            source: "selector",
+            target: "mux1",
+            sourceHandle: "out",
+            targetHandle: "selector",
+          },
+          {
+            id: "e4",
+            source: "mux1",
+            target: "scope1",
+            sourceHandle: "out",
+            targetHandle: "in",
+          },
+        ];
+
+        await engine.updateGraph(nodes, edges);
+
+        // Verify all nodes were created
+        expect(engine["nodes"].has("osc1")).toBe(true);
+        expect(engine["nodes"].has("osc2")).toBe(true);
+        expect(engine["nodes"].has("selector")).toBe(true);
+        expect(engine["nodes"].has("mux1")).toBe(true);
+        expect(engine["nodes"].has("scope1")).toBe(true);
+
+        // Verify connections
+        const osc1Node = engine["nodes"].get("osc1");
+        const osc2Node = engine["nodes"].get("osc2");
+        const selectorNode = engine["nodes"].get("selector");
+        const muxNode = engine["nodes"].get("mux1");
+        const scopeNode = engine["nodes"].get("scope1");
+
+        expect(osc1Node?.connect).toHaveBeenCalledWith(muxNode, 0, 1);
+        expect(osc2Node?.connect).toHaveBeenCalledWith(muxNode, 0, 2);
+        expect(selectorNode?.connect).toHaveBeenCalledWith(muxNode, 0, 0);
+        expect(muxNode?.connect).toHaveBeenCalledWith(scopeNode);
+      });
+    });
+  });
 });

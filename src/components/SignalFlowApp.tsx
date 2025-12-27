@@ -457,7 +457,7 @@ export function SignalFlowApp() {
             >
               <Background />
               <Controls />
-              <MiniMap />
+              <MiniMap pannable zoomable />
             </ReactFlow>
           </div>
 
