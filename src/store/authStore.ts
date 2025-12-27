@@ -86,8 +86,9 @@ export const useAuthStore = create<AuthState>()(
           } else {
             throw new Error("Failed to transform user data");
           }
-        } catch (error: any) {
-          const errorMessage = error?.message || "Login failed";
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Login failed";
           set({
             user: null,
             isAuthenticated: false,
@@ -116,8 +117,9 @@ export const useAuthStore = create<AuthState>()(
           } else {
             throw new Error("Failed to transform user data");
           }
-        } catch (error: any) {
-          const errorMessage = error?.message || "OAuth login failed";
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : "OAuth login failed";
           set({
             user: null,
             isAuthenticated: false,

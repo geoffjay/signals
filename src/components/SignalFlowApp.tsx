@@ -97,7 +97,7 @@ export function SignalFlowApp() {
         setIsPlaying(false);
       }
     }
-  }, []);
+  }, [isPlaying, setIsPlaying, setEdges, setNodes, storeEdges, storeNodes]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -128,7 +128,7 @@ export function SignalFlowApp() {
 
   const onPaneClick = useCallback(() => {
     setSelectedNodeId(null);
-  }, []);
+  }, [setSelectedNodeId]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();

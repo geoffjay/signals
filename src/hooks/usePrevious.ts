@@ -26,6 +26,7 @@ export function usePrevious<T>(value: T): T | undefined {
     ref.current = value;
   }, [value]);
 
+  // eslint-disable-next-line react-hooks/refs -- Intentional: returning previous value is the purpose of this hook
   return ref.current;
 }
 
@@ -44,5 +45,6 @@ export function usePreviousWithInitial<T>(value: T, initialValue: T): T {
     ref.current = value;
   }, [value]);
 
+  // eslint-disable-next-line react-hooks/refs -- Intentional: returning previous value is the purpose of this hook
   return ref.current;
 }
