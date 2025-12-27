@@ -3,6 +3,10 @@ FROM oven/bun:1 AS builder
 
 WORKDIR /app
 
+# Build argument for PocketBase URL (Vite requires env vars at build time)
+ARG VITE_POCKETBASE_URL
+ENV VITE_POCKETBASE_URL=$VITE_POCKETBASE_URL
+
 # Copy package files
 COPY package.json bun.lock* ./
 
