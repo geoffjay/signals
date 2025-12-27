@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import type { BlockConfig, BlockType } from "@/types/blocks";
 import type { SignalBlockData } from "./SignalBlock";
 import { getConfigComponent } from "./config";
+import { CommonBlockConfig } from "./config/shared/CommonBlockConfig";
 import { useConnectionCheck } from "@/hooks";
 
 interface ConfigDrawerProps {
@@ -54,17 +55,20 @@ export function ConfigDrawer({
 
       {/* Configuration Options */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {ConfigComponent ? (
-          <ConfigComponent
-            config={config}
-            blockType={blockType as BlockType}
-            onConfigChange={updateConfig}
-            isInputConnected={isInputConnected}
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            No configuration options for this block.
-          </p>
+        {/* Common configuration (label, color) for all blocks */}
+        <CommonBlockConfig config={config} onConfigChange={updateConfig} />
+
+        {/* Block-specific configuration */}
+        {ConfigComponent && (
+          <>
+            <Separator />
+            <ConfigComponent
+              config={config}
+              blockType={blockType as BlockType}
+              onConfigChange={updateConfig}
+              isInputConnected={isInputConnected}
+            />
+          </>
         )}
       </div>
 

@@ -17,6 +17,10 @@ export type BlockCategory =
  * Different block types use different subsets of these options.
  */
 export interface BlockConfig {
+  // Common settings for all blocks
+  customLabel?: string; // Custom label to display instead of default block name
+  customColor?: string; // Custom background color (RGBA format: "rgba(r,g,b,a)")
+
   // Wave generators
   frequency?: number;
   amplitude?: number;

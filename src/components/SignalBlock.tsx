@@ -176,23 +176,39 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     onPulse: handlePulse,
   };
 
+  // Use custom label if set, otherwise use default block label
+  const displayLabel = blockData.config.customLabel || blockData.label;
+  const customColor = blockData.config.customColor;
+
   return (
     <div
       className={`
-        bg-card border-2 rounded-lg min-w-[180px]
+        border-2 rounded-lg min-w-[180px]
         transition-all duration-200
         ${selected ? "border-primary shadow-lg" : "border-border"}
       `}
+      style={{
+        backgroundColor: customColor || undefined,
+      }}
     >
       {/* Block Header */}
-      <div className="bg-muted/50 px-3 py-2 rounded-t-md border-b border-border">
+      <div
+        className={`px-3 py-2 rounded-t-md border-b border-border ${!customColor ? "bg-muted/50" : ""}`}
+        style={{
+          backgroundColor: customColor
+            ? "rgba(0, 0, 0, 0.15)"
+            : undefined,
+        }}
+      >
         <div className="text-sm font-medium text-foreground">
-          {blockData.label}
+          {displayLabel}
         </div>
       </div>
 
       {/* Block Content */}
-      <div className="px-4 py-3 relative">
+      <div
+        className={`px-4 py-3 relative rounded-b-md ${!customColor ? "bg-card" : ""}`}
+      >
         {/* Block-specific content (controls, visualizations) */}
         <BlockContent
           blockType={blockData.blockType}
