@@ -3,6 +3,7 @@
 ## Current State
 
 The application currently has **4 basic processors**:
+
 - `gain` - Simple amplitude control using GainNode
 - `low-pass-filter` - BiquadFilterNode (lowpass)
 - `high-pass-filter` - BiquadFilterNode (highpass)
@@ -13,6 +14,7 @@ Additional processing is available through 18+ math blocks (add, multiply, sin, 
 ## Architecture Constraints
 
 **Web Audio API Capabilities:**
+
 - BiquadFilterNode supports 8 filter types (currently using 3)
 - WaveShaperNode for distortion/saturation
 - DelayNode for time-based effects
@@ -21,6 +23,7 @@ Additional processing is available through 18+ math blocks (add, multiply, sin, 
 - AudioWorkletProcessor for custom DSP
 
 **Current Implementation Patterns:**
+
 1. Simple processors use native Web Audio nodes (GainNode, BiquadFilterNode)
 2. Complex processors use AudioWorkletProcessor (divide, math ops)
 3. All processors support real-time parameter modulation via additional inputs
@@ -35,6 +38,7 @@ Additional processing is available through 18+ math blocks (add, multiply, sin, 
 #### 1.1 Additional Filters (Using BiquadFilterNode)
 
 **Notch Filter (Band-Reject)**
+
 ```typescript
 type: "notch-filter"
 label: "Notch Filter"
@@ -52,6 +56,7 @@ use_cases: ["Remove specific frequencies", "Hum removal", "Resonance elimination
 ```
 
 **All-Pass Filter**
+
 ```typescript
 type: "allpass-filter"
 label: "All-Pass Filter"
@@ -69,6 +74,7 @@ use_cases: ["Phase shifting", "Phaser effects", "Comb filtering"]
 ```
 
 **Peaking EQ**
+
 ```typescript
 type: "peaking-eq"
 label: "Peaking EQ"
@@ -87,6 +93,7 @@ use_cases: ["Boost/cut specific frequencies", "Tone shaping", "EQ"]
 ```
 
 **Low-Shelf Filter**
+
 ```typescript
 type: "lowshelf-filter"
 label: "Low-Shelf Filter"
@@ -101,6 +108,7 @@ use_cases: ["Bass boost/cut", "Tone control", "Mix shaping"]
 ```
 
 **High-Shelf Filter**
+
 ```typescript
 type: "highshelf-filter"
 label: "High-Shelf Filter"
@@ -115,6 +123,7 @@ use_cases: ["Treble boost/cut", "Presence control", "Air enhancement"]
 ```
 
 **Implementation Complexity**: ⭐ Easy (1-2 hours)
+
 - Uses existing BiquadFilterNode infrastructure
 - Same connection pattern as existing filters
 - Only UI configuration needed
@@ -124,6 +133,7 @@ use_cases: ["Treble boost/cut", "Presence control", "Air enhancement"]
 #### 1.2 Dynamic Range Processors
 
 **Compressor**
+
 ```typescript
 type: "compressor"
 label: "Compressor"
@@ -141,6 +151,7 @@ use_cases: ["Dynamic range control", "Volume leveling", "Limiting peaks"]
 ```
 
 **Implementation Complexity**: ⭐ Easy (1-2 hours)
+
 - Native DynamicsCompressorNode available
 - Similar to filter implementation
 - Exposes standard compressor parameters
@@ -150,6 +161,7 @@ use_cases: ["Dynamic range control", "Volume leveling", "Limiting peaks"]
 #### 1.3 Distortion/Saturation
 
 **Waveshaper (Distortion)**
+
 ```typescript
 type: "waveshaper"
 label: "Waveshaper"
@@ -168,6 +180,7 @@ use_cases: ["Distortion", "Saturation", "Harmonic enhancement", "Fuzz"]
 ```
 
 **Hard Clipper**
+
 ```typescript
 type: "hard-clip"
 label: "Hard Clipper"
@@ -184,6 +197,7 @@ use_cases: ["Digital clipping", "Aggressive distortion", "Limiting"]
 ```
 
 **Soft Clipper**
+
 ```typescript
 type: "soft-clip"
 label: "Soft Clipper"
@@ -201,6 +215,7 @@ use_cases: ["Warm saturation", "Analog-style clipping", "Subtle harmonic enhance
 ```
 
 **Implementation Complexity**: ⭐⭐ Medium (2-4 hours)
+
 - WaveShaperNode requires generating transfer curves
 - Need to implement curve generation functions (tanh, atan, polynomial, etc.)
 - Oversample option adds quality
@@ -212,6 +227,7 @@ use_cases: ["Warm saturation", "Analog-style clipping", "Subtle harmonic enhance
 #### 2.1 Delay
 
 **Simple Delay**
+
 ```typescript
 type: "delay"
 label: "Delay"
@@ -231,6 +247,7 @@ use_cases: ["Echo", "Slapback delay", "Rhythmic delay", "Dub delay"]
 ```
 
 **Implementation Complexity**: ⭐⭐ Medium (3-4 hours)
+
 - DelayNode is native but needs feedback routing
 - Requires careful feedback gain control to prevent runaway
 - Mix control needs separate dry/wet paths
@@ -240,6 +257,7 @@ use_cases: ["Echo", "Slapback delay", "Rhythmic delay", "Dub delay"]
 #### 2.2 Modulation Effects
 
 **Chorus**
+
 ```typescript
 type: "chorus"
 label: "Chorus"
@@ -255,6 +273,7 @@ use_cases: ["Chorus effect", "Doubling", "Thickening", "Detuning"]
 ```
 
 **Flanger**
+
 ```typescript
 type: "flanger"
 label: "Flanger"
@@ -271,6 +290,7 @@ use_cases: ["Jet plane effect", "Sweeping", "Metallic tone"]
 ```
 
 **Phaser**
+
 ```typescript
 type: "phaser"
 label: "Phaser"
@@ -288,6 +308,7 @@ use_cases: ["Phaser sweep", "Spacey effects", "Guitar pedal simulation"]
 ```
 
 **Tremolo**
+
 ```typescript
 type: "tremolo"
 label: "Tremolo"
@@ -303,6 +324,7 @@ use_cases: ["Amplitude modulation", "Tremolo effect", "Rhythmic pulsing"]
 ```
 
 **Vibrato**
+
 ```typescript
 type: "vibrato"
 label: "Vibrato"
@@ -318,6 +340,7 @@ use_cases: ["Pitch vibrato", "Guitar/vocal effect", "Wobble"]
 ```
 
 **Implementation Complexity**: ⭐⭐⭐ Medium-Hard (4-6 hours each)
+
 - Requires internal LFO oscillators (OscillatorNode)
 - Need proper modulation routing
 - Chorus/Flanger share similar architecture
@@ -328,6 +351,7 @@ use_cases: ["Pitch vibrato", "Guitar/vocal effect", "Wobble"]
 #### 2.3 Reverb
 
 **Convolution Reverb**
+
 ```typescript
 type: "reverb"
 label: "Reverb"
@@ -343,6 +367,7 @@ use_cases: ["Room simulation", "Ambience", "Spatial effects"]
 ```
 
 **Implementation Complexity**: ⭐⭐⭐ Medium-Hard (6-8 hours)
+
 - ConvolverNode requires impulse response (IR) files
 - Need to generate or acquire IR samples
 - Loading/decoding audio buffers
@@ -355,6 +380,7 @@ use_cases: ["Room simulation", "Ambience", "Spatial effects"]
 #### 3.1 Envelope Processing
 
 **Envelope Follower**
+
 ```typescript
 type: "envelope-follower"
 label: "Envelope Follower"
@@ -372,6 +398,7 @@ use_cases: ["Envelope extraction", "Sidechain control", "Dynamic modulation"]
 ```
 
 **ADSR Envelope**
+
 ```typescript
 type: "adsr"
 label: "ADSR Envelope"
@@ -391,6 +418,7 @@ use_cases: ["Envelope generation", "Note shaping", "VCA control"]
 ```
 
 **Implementation Complexity**: ⭐⭐⭐⭐ Hard (8-12 hours)
+
 - Requires AudioWorkletProcessor for precise envelope detection
 - RMS calculation or peak detection at sample rate
 - Exponential attack/release curves
@@ -401,6 +429,7 @@ use_cases: ["Envelope generation", "Note shaping", "VCA control"]
 #### 3.2 Bit Manipulation
 
 **Bit Crusher**
+
 ```typescript
 type: "bit-crusher"
 label: "Bit Crusher"
@@ -418,6 +447,7 @@ use_cases: ["Lo-fi effect", "Digital degradation", "Retro sound"]
 ```
 
 **Sample Rate Reducer**
+
 ```typescript
 type: "sample-rate-reducer"
 label: "Sample Rate Reducer"
@@ -435,6 +465,7 @@ use_cases: ["Aliasing", "Lo-fi", "Digital artifacts"]
 ```
 
 **Implementation Complexity**: ⭐⭐⭐ Medium-Hard (4-6 hours)
+
 - AudioWorkletProcessor required
 - Bit reduction: quantization algorithm
 - Sample rate reduction: sample-and-hold algorithm
@@ -444,6 +475,7 @@ use_cases: ["Aliasing", "Lo-fi", "Digital artifacts"]
 #### 3.3 Frequency/Pitch Effects
 
 **Ring Modulator**
+
 ```typescript
 type: "ring-mod"
 label: "Ring Modulator"
@@ -460,6 +492,7 @@ use_cases: ["Ring modulation", "Metallic tones", "Inharmonic spectra"]
 ```
 
 **Frequency Shifter**
+
 ```typescript
 type: "freq-shifter"
 label: "Frequency Shifter"
@@ -474,6 +507,7 @@ use_cases: ["Frequency shifting", "Pitch shifting (without formant)", "Special e
 ```
 
 **Pitch Shifter**
+
 ```typescript
 type: "pitch-shifter"
 label: "Pitch Shifter"
@@ -489,6 +523,7 @@ use_cases: ["Pitch correction", "Harmonization", "Transposition"]
 ```
 
 **Implementation Complexity**: ⭐⭐⭐⭐⭐ Very Hard (20+ hours)
+
 - Ring mod is easy (already have multiply)
 - Frequency shifter requires Hilbert transform (complex DSP)
 - Pitch shifter requires phase vocoder or granular synthesis (very complex)
@@ -498,6 +533,7 @@ use_cases: ["Pitch correction", "Harmonization", "Transposition"]
 #### 3.4 Spectral Processing
 
 **Vocoder**
+
 ```typescript
 type: "vocoder"
 label: "Vocoder"
@@ -515,6 +551,7 @@ use_cases: ["Vocoder effect", "Robot voice", "Talking synthesizer"]
 ```
 
 **Implementation Complexity**: ⭐⭐⭐⭐⭐ Very Hard (20+ hours)
+
 - Requires multiple filter banks (16-32 bands)
 - Envelope followers for each band
 - Complex routing and mixing
@@ -559,65 +596,79 @@ Implement these first for immediate value:
 
 ## Priority Matrix
 
-| Processor | Value | Complexity | Priority |
-|-----------|-------|------------|----------|
-| Notch Filter | High | Low | ⭐⭐⭐⭐⭐ Must Have |
-| All-Pass Filter | Medium | Low | ⭐⭐⭐⭐ Should Have |
-| Peaking EQ | High | Low | ⭐⭐⭐⭐⭐ Must Have |
-| Low/High-Shelf | High | Low | ⭐⭐⭐⭐⭐ Must Have |
-| Compressor | High | Low | ⭐⭐⭐⭐⭐ Must Have |
-| Waveshaper | High | Medium | ⭐⭐⭐⭐⭐ Must Have |
-| Delay | High | Medium | ⭐⭐⭐⭐ Should Have |
-| Tremolo | Medium | Low | ⭐⭐⭐ Nice to Have |
-| Chorus | High | Medium | ⭐⭐⭐⭐ Should Have |
-| Hard/Soft Clip | Medium | Low | ⭐⭐⭐ Nice to Have |
-| Bit Crusher | Medium | Medium | ⭐⭐⭐ Nice to Have |
-| Phaser | Medium | Hard | ⭐⭐ Optional |
-| Flanger | Medium | Hard | ⭐⭐ Optional |
-| Reverb | High | Hard | ⭐⭐⭐ Nice to Have |
-| Envelope Follower | Medium | Very Hard | ⭐ Optional |
-| Pitch Shifter | Low | Very Hard | ⭐ Future |
-| Vocoder | Low | Very Hard | ⭐ Future |
+| Processor         | Value  | Complexity | Priority             |
+| ----------------- | ------ | ---------- | -------------------- |
+| Notch Filter      | High   | Low        | ⭐⭐⭐⭐⭐ Must Have |
+| All-Pass Filter   | Medium | Low        | ⭐⭐⭐⭐ Should Have |
+| Peaking EQ        | High   | Low        | ⭐⭐⭐⭐⭐ Must Have |
+| Low/High-Shelf    | High   | Low        | ⭐⭐⭐⭐⭐ Must Have |
+| Compressor        | High   | Low        | ⭐⭐⭐⭐⭐ Must Have |
+| Waveshaper        | High   | Medium     | ⭐⭐⭐⭐⭐ Must Have |
+| Delay             | High   | Medium     | ⭐⭐⭐⭐ Should Have |
+| Tremolo           | Medium | Low        | ⭐⭐⭐ Nice to Have  |
+| Chorus            | High   | Medium     | ⭐⭐⭐⭐ Should Have |
+| Hard/Soft Clip    | Medium | Low        | ⭐⭐⭐ Nice to Have  |
+| Bit Crusher       | Medium | Medium     | ⭐⭐⭐ Nice to Have  |
+| Phaser            | Medium | Hard       | ⭐⭐ Optional        |
+| Flanger           | Medium | Hard       | ⭐⭐ Optional        |
+| Reverb            | High   | Hard       | ⭐⭐⭐ Nice to Have  |
+| Envelope Follower | Medium | Very Hard  | ⭐ Optional          |
+| Pitch Shifter     | Low    | Very Hard  | ⭐ Future            |
+| Vocoder           | Low    | Very Hard  | ⭐ Future            |
 
 ---
 
 ## Implementation Strategy
 
 ### Phase 1: Complete the Filter Suite (4 hours)
+
 Add all 5 remaining BiquadFilterNode types:
+
 - Notch, All-pass, Peaking EQ, Low-shelf, High-shelf
 - Reuse existing filter infrastructure
 - Only need config UI updates
 
 ### Phase 2: Dynamics (2 hours)
+
 Add DynamicsCompressorNode:
+
 - Native Web Audio node
 - Standard compressor controls
 
 ### Phase 3: Distortion (5 hours)
+
 Implement waveshaping:
+
 - Create curve generation functions
 - WaveShaperNode wrapper
 - Hard/soft clip variants
 
 ### Phase 4: Time-Based (7 hours)
+
 Start with simple effects:
+
 - Delay with feedback
 - Tremolo (amplitude modulation)
 
 ### Phase 5: Modulation (13 hours)
+
 Add complex modulation:
+
 - Chorus (delay + LFO)
 - Phaser (allpass chain + LFO)
 - Flanger (short delay + feedback + LFO)
 
 ### Phase 6: Lo-Fi (6 hours)
+
 Digital degradation:
+
 - Bit crusher
 - Sample rate reducer
 
 ### Phase 7: Advanced (20+ hours)
+
 Complex processors:
+
 - Convolution reverb
 - Envelope follower
 - Pitch shifting (if needed)
@@ -658,7 +709,7 @@ function makeHardClipCurve(threshold) {
 ```javascript
 // Internal oscillator for chorus/flanger/phaser
 const lfo = audioContext.createOscillator();
-lfo.type = 'sine';
+lfo.type = "sine";
 lfo.frequency.value = rate; // Hz
 
 const lfoGain = audioContext.createGain();
@@ -694,13 +745,14 @@ mix.connect(output);
 1. **src/types/blocks.ts** - Add new block definitions
 2. **src/engine/SignalProcessingEngine.ts** - Add creation methods for each processor
 3. **src/components/ConfigDrawer.tsx** - Add UI for new processor configs
-4. **public/*.js** - Add AudioWorklet processors if needed (bit crusher, etc.)
+4. **public/\*.js** - Add AudioWorklet processors if needed (bit crusher, etc.)
 
 ---
 
 ## Summary
 
 **Recommended Priority 1 Additions** (10 hours total):
+
 1. Notch Filter
 2. All-Pass Filter
 3. Peaking EQ
@@ -709,6 +761,7 @@ mix.connect(output);
 6. Waveshaper
 
 These 6 additions would:
+
 - Complete the filter/EQ suite (essential for audio work)
 - Add dynamics processing (compressor)
 - Add distortion/saturation (waveshaper)
@@ -716,4 +769,5 @@ These 6 additions would:
 - Provide high value for users
 
 **Future additions** in order of priority:
+
 - Delay → Tremolo → Chorus → Clipping → Bit Crusher → Phaser/Flanger → Reverb

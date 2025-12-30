@@ -7,6 +7,7 @@ import { NoiseConfig } from "./NoiseConfig";
 import { GainConfig } from "./GainConfig";
 import { FilterConfig } from "./FilterConfig";
 import { EQFilterConfig } from "./EQFilterConfig";
+import { CompressorConfig } from "./CompressorConfig";
 import { MultiplexerConfig, SplitterConfig } from "./RoutingConfig";
 import { OscilloscopeConfig } from "./OscilloscopeConfig";
 import { AudioOutputConfig } from "./AudioOutputConfig";
@@ -32,6 +33,7 @@ export {
   GainConfig,
   FilterConfig,
   EQFilterConfig,
+  CompressorConfig,
   MultiplexerConfig,
   SplitterConfig,
   OscilloscopeConfig,
@@ -74,6 +76,9 @@ export const configComponentMap: Record<
   "peaking-eq": EQFilterConfig,
   "lowshelf-filter": EQFilterConfig,
   "highshelf-filter": EQFilterConfig,
+
+  // Dynamics
+  compressor: CompressorConfig,
 
   // Routing
   multiplexer: MultiplexerConfig,

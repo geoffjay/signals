@@ -34,6 +34,13 @@ export interface BlockConfig {
   qFactor?: number;
   filterGain?: number; // dB, for peaking EQ and shelf filters
 
+  // Dynamics (Compressor)
+  threshold?: number; // dB (-100 to 0)
+  knee?: number; // dB (0 to 40)
+  ratio?: number; // (1 to 20)
+  attack?: number; // seconds (0 to 1)
+  release?: number; // seconds (0 to 1)
+
   // Multiplexer
   numInputs?: number;
   selectorValue?: number;

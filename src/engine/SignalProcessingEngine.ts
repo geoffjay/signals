@@ -412,6 +412,10 @@ export class SignalProcessingEngine {
         this.createFilter(nodeId, "highshelf", config);
         break;
 
+      case "compressor":
+        this.createCompressor(nodeId, config);
+        break;
+
       case "splitter":
         this.createSplitter(nodeId);
         break;
@@ -625,6 +629,19 @@ export class SignalProcessingEngine {
     }
 
     this.nodes.set(nodeId, filter);
+  }
+
+  private createCompressor(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const compressor = this.audioContext.createDynamicsCompressor();
+    compressor.threshold.value = config.threshold ?? -24;
+    compressor.knee.value = config.knee ?? 30;
+    compressor.ratio.value = config.ratio ?? 12;
+    compressor.attack.value = config.attack ?? 0.003;
+    compressor.release.value = config.release ?? 0.25;
+
+    this.nodes.set(nodeId, compressor);
   }
 
   private createSplitter(nodeId: string) {
@@ -1272,6 +1289,17 @@ export class SignalProcessingEngine {
             node.Q.value = config.qFactor;
           }
           node.gain.value = config.filterGain || 0;
+        }
+        break;
+      }
+
+      case "compressor": {
+        if (node instanceof DynamicsCompressorNode) {
+          node.threshold.value = config.threshold ?? -24;
+          node.knee.value = config.knee ?? 30;
+          node.ratio.value = config.ratio ?? 12;
+          node.attack.value = config.attack ?? 0.003;
+          node.release.value = config.release ?? 0.25;
         }
         break;
       }

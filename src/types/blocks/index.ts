@@ -14,6 +14,7 @@ export type {
 import { GENERATOR_DEFINITIONS, type GeneratorBlockType } from "./generators";
 import { FILTER_DEFINITIONS, type FilterBlockType } from "./filters";
 import { PROCESSOR_DEFINITIONS, type ProcessorBlockType } from "./processors";
+import { DYNAMICS_DEFINITIONS, type DynamicsBlockType } from "./dynamics";
 import { INPUT_DEFINITIONS, type InputBlockType } from "./inputs";
 import { OUTPUT_DEFINITIONS, type OutputBlockType } from "./outputs";
 import { ROUTING_DEFINITIONS, type RoutingBlockType } from "./routing";
@@ -24,6 +25,7 @@ import type { BlockConfig, BlockDefinition } from "./common";
 export type { GeneratorBlockType } from "./generators";
 export type { FilterBlockType } from "./filters";
 export type { ProcessorBlockType, MathBlockType } from "./processors";
+export type { DynamicsBlockType } from "./dynamics";
 export type { InputBlockType } from "./inputs";
 export type { OutputBlockType } from "./outputs";
 export type { RoutingBlockType } from "./routing";
@@ -36,6 +38,7 @@ export type BlockType =
   | GeneratorBlockType
   | FilterBlockType
   | ProcessorBlockType
+  | DynamicsBlockType
   | InputBlockType
   | OutputBlockType
   | RoutingBlockType
@@ -48,6 +51,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   ...GENERATOR_DEFINITIONS,
   ...FILTER_DEFINITIONS,
   ...PROCESSOR_DEFINITIONS,
+  ...DYNAMICS_DEFINITIONS,
   ...INPUT_DEFINITIONS,
   ...OUTPUT_DEFINITIONS,
   ...ROUTING_DEFINITIONS,
@@ -131,6 +135,7 @@ export {
   GENERATOR_DEFINITIONS,
   FILTER_DEFINITIONS,
   PROCESSOR_DEFINITIONS,
+  DYNAMICS_DEFINITIONS,
   INPUT_DEFINITIONS,
   OUTPUT_DEFINITIONS,
   ROUTING_DEFINITIONS,

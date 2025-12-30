@@ -1,0 +1,598 @@
+{
+  "name": "Compressor Demo",
+  "description": "Demonstrates the dynamics compressor processor with before/after visualization",
+  "exportedAt": "2025-12-30T20:00:00.000Z",
+  "projectData": {
+    "nodes": [
+      {
+        "id": "node-0",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Input Level",
+          "config": {
+            "min": 0,
+            "max": 2,
+            "step": 0.01,
+            "value": 1.5,
+            "customLabel": "Input Level"
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-1",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Output Level",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.5,
+            "customLabel": "Output Level"
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-2",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "data": {
+          "blockType": "noise",
+          "label": "Noise Generator",
+          "config": {
+            "amplitude": 0.8
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-3",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 220
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Input Gain",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-4",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 220
+        },
+        "data": {
+          "blockType": "splitter",
+          "label": "Pre-Compressor Split",
+          "config": {
+            "numOutputs": 2
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-5",
+        "type": "signalBlock",
+        "position": {
+          "x": 700,
+          "y": 50
+        },
+        "data": {
+          "blockType": "oscilloscope",
+          "label": "Before Compression",
+          "config": {
+            "timeWindow": 0.05,
+            "refreshRate": 60,
+            "minAmplitude": -2,
+            "maxAmplitude": 2,
+            "customLabel": "Before Compression"
+          }
+        },
+        "measured": {
+          "width": 238,
+          "height": 199
+        }
+      },
+      {
+        "id": "node-6",
+        "type": "signalBlock",
+        "position": {
+          "x": 650,
+          "y": 320
+        },
+        "data": {
+          "blockType": "compressor",
+          "label": "Compressor",
+          "config": {
+            "threshold": -24,
+            "knee": 30,
+            "ratio": 12,
+            "attack": 0.003,
+            "release": 0.25
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 200
+        }
+      },
+      {
+        "id": "node-7",
+        "type": "signalBlock",
+        "position": {
+          "x": 850,
+          "y": 320
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Output Gain",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-8",
+        "type": "signalBlock",
+        "position": {
+          "x": 1050,
+          "y": 320
+        },
+        "data": {
+          "blockType": "splitter",
+          "label": "Output Split",
+          "config": {
+            "numOutputs": 4
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 213
+        }
+      },
+      {
+        "id": "node-9",
+        "type": "signalBlock",
+        "position": {
+          "x": 1300,
+          "y": 50
+        },
+        "data": {
+          "blockType": "oscilloscope",
+          "label": "After Compression",
+          "config": {
+            "timeWindow": 0.05,
+            "refreshRate": 60,
+            "minAmplitude": -2,
+            "maxAmplitude": 2,
+            "customLabel": "After Compression"
+          }
+        },
+        "measured": {
+          "width": 238,
+          "height": 199
+        }
+      },
+      {
+        "id": "node-10",
+        "type": "signalBlock",
+        "position": {
+          "x": 1300,
+          "y": 280
+        },
+        "data": {
+          "blockType": "fft-analyzer",
+          "label": "FFT Analyzer",
+          "config": {
+            "fftMode": "spectrum",
+            "fftSize": 2048,
+            "smoothingTimeConstant": 0.8,
+            "minDecibels": -90,
+            "maxDecibels": -10
+          }
+        },
+        "measured": {
+          "width": 278,
+          "height": 239
+        }
+      },
+      {
+        "id": "node-11",
+        "type": "signalBlock",
+        "position": {
+          "x": 1300,
+          "y": 550
+        },
+        "data": {
+          "blockType": "numeric-meter",
+          "label": "Level Meter",
+          "config": {
+            "decimals": 3,
+            "unit": ""
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 153
+        }
+      },
+      {
+        "id": "node-12",
+        "type": "signalBlock",
+        "position": {
+          "x": 1300,
+          "y": 730
+        },
+        "data": {
+          "blockType": "audio-output",
+          "label": "Audio Output",
+          "config": {
+            "volume": 0.3,
+            "muted": true
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 97
+        }
+      },
+      {
+        "id": "node-13",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 450
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "LFO (Amplitude Mod)",
+          "config": {
+            "frequency": 2,
+            "amplitude": 0.5,
+            "phase": 0,
+            "customLabel": "LFO"
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-14",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 450
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Add DC Offset",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-15",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 650
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "DC Offset",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.5,
+            "customLabel": "DC Offset"
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-16",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 450
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "AM Modulation",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-17",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 850
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Tone Generator",
+          "config": {
+            "frequency": 440,
+            "amplitude": 0.8,
+            "phase": 0,
+            "customLabel": "440 Hz Tone"
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-18",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "data": {
+          "blockType": "toggle",
+          "label": "Tone On/Off",
+          "config": {
+            "value": 0,
+            "outputValue": 1,
+            "customLabel": "Tone On/Off"
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 143
+        }
+      },
+      {
+        "id": "node-19",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 850
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Tone Gate",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-20",
+        "type": "signalBlock",
+        "position": {
+          "x": 650,
+          "y": 550
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Mix Sources",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-node-2-node-3",
+        "source": "node-2",
+        "sourceHandle": "out",
+        "target": "node-3",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-0-node-3",
+        "source": "node-0",
+        "sourceHandle": "out",
+        "target": "node-3",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-3-node-4",
+        "source": "node-3",
+        "sourceHandle": "out",
+        "target": "node-4",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-4-node-5",
+        "source": "node-4",
+        "sourceHandle": "out0",
+        "target": "node-5",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-4-node-20",
+        "source": "node-4",
+        "sourceHandle": "out1",
+        "target": "node-20",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-13-node-14",
+        "source": "node-13",
+        "sourceHandle": "out",
+        "target": "node-14",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-15-node-14",
+        "source": "node-15",
+        "sourceHandle": "out",
+        "target": "node-14",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-14-node-16",
+        "source": "node-14",
+        "sourceHandle": "out",
+        "target": "node-16",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-17-node-19",
+        "source": "node-17",
+        "sourceHandle": "out",
+        "target": "node-19",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-18-node-19",
+        "source": "node-18",
+        "sourceHandle": "out",
+        "target": "node-19",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-19-node-16",
+        "source": "node-19",
+        "sourceHandle": "out",
+        "target": "node-16",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-16-node-20",
+        "source": "node-16",
+        "sourceHandle": "out",
+        "target": "node-20",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-20-node-6",
+        "source": "node-20",
+        "sourceHandle": "out",
+        "target": "node-6",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-6-node-7",
+        "source": "node-6",
+        "sourceHandle": "out",
+        "target": "node-7",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-1-node-7",
+        "source": "node-1",
+        "sourceHandle": "out",
+        "target": "node-7",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-7-node-8",
+        "source": "node-7",
+        "sourceHandle": "out",
+        "target": "node-8",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-8-node-9",
+        "source": "node-8",
+        "sourceHandle": "out0",
+        "target": "node-9",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-8-node-10",
+        "source": "node-8",
+        "sourceHandle": "out1",
+        "target": "node-10",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-8-node-11",
+        "source": "node-8",
+        "sourceHandle": "out2",
+        "target": "node-11",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-8-node-12",
+        "source": "node-8",
+        "sourceHandle": "out3",
+        "target": "node-12",
+        "targetHandle": "in",
+        "animated": false
+      }
+    ],
+    "nodeIdCounter": 21,
+    "selectedNodeId": null
+  }
+}

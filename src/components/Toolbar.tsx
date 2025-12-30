@@ -38,6 +38,7 @@ import {
   Superscript,
   Percent,
   Shrink,
+  Minimize2,
   ChevronDown,
   ChevronRight,
   LayoutGrid,
@@ -65,6 +66,7 @@ const BLOCK_ICONS: Record<
   "peaking-eq": Filter,
   "lowshelf-filter": TrendingDown,
   "highshelf-filter": TrendingUp,
+  compressor: Minimize2,
   multiplexer: Combine,
   splitter: Split,
   oscilloscope: LineChart,
@@ -114,6 +116,7 @@ const blockGroups = [
     title: "Processors",
     blocks: [
       "gain",
+      "compressor",
       "low-pass-filter",
       "high-pass-filter",
       "band-pass-filter",
