@@ -1,0 +1,1987 @@
+{
+  "name": "Multi-track Example",
+  "exportedAt": "2025-12-30T17:01:16.458Z",
+  "projectData": {
+    "nodes": [
+      {
+        "id": "node-0",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.7
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-1",
+        "type": "signalBlock",
+        "position": {
+          "x": 200,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.6
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-2",
+        "type": "signalBlock",
+        "position": {
+          "x": 350,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-3",
+        "type": "signalBlock",
+        "position": {
+          "x": 500,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.8
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-4",
+        "type": "signalBlock",
+        "position": {
+          "x": 650,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.4
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-5",
+        "type": "signalBlock",
+        "position": {
+          "x": 800,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-6",
+        "type": "signalBlock",
+        "position": {
+          "x": 950,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.6
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-7",
+        "type": "signalBlock",
+        "position": {
+          "x": 1100,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-8",
+        "type": "signalBlock",
+        "position": {
+          "x": 1400,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.75
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-9",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 180
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 5,
+            "amplitude": 0.3,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-10",
+        "type": "signalBlock",
+        "position": {
+          "x": 200,
+          "y": 180
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 0.5,
+            "amplitude": 0.5,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-11",
+        "type": "signalBlock",
+        "position": {
+          "x": 350,
+          "y": 180
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 4,
+            "amplitude": 0.4,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-12",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.94
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-13",
+        "type": "signalBlock",
+        "position": {
+          "x": 200,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 1
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-14",
+        "type": "signalBlock",
+        "position": {
+          "x": 350,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.6
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-15",
+        "type": "signalBlock",
+        "position": {
+          "x": 500,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.61
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-16",
+        "type": "signalBlock",
+        "position": {
+          "x": 650,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        },
+        "selected": false
+      },
+      {
+        "id": "node-17",
+        "type": "signalBlock",
+        "position": {
+          "x": 800,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-18",
+        "type": "signalBlock",
+        "position": {
+          "x": 950,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.25
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-19",
+        "type": "signalBlock",
+        "position": {
+          "x": 1100,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 0.51
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-20",
+        "type": "signalBlock",
+        "position": {
+          "x": 1400,
+          "y": 50
+        },
+        "data": {
+          "blockType": "slider",
+          "label": "Slider",
+          "config": {
+            "min": 0,
+            "max": 1,
+            "step": 0.01,
+            "value": 1
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 133
+        }
+      },
+      {
+        "id": "node-21",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 180
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 5,
+            "amplitude": 0.3,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-22",
+        "type": "signalBlock",
+        "position": {
+          "x": 200,
+          "y": 180
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 0.5,
+            "amplitude": 0.5,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-23",
+        "type": "signalBlock",
+        "position": {
+          "x": 350,
+          "y": 180
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 4,
+            "amplitude": 0.4,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-24",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 350
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 523,
+            "amplitude": 0.5,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-25",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 350
+        },
+        "data": {
+          "blockType": "low-pass-filter",
+          "label": "Low-Pass Filter",
+          "config": {
+            "cutoffFrequency": 2000,
+            "qFactor": 1.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-26",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 350
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-27",
+        "type": "signalBlock",
+        "position": {
+          "x": 600,
+          "y": 350
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.8
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-28",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 500
+        },
+        "data": {
+          "blockType": "triangle-wave",
+          "label": "Triangle Wave",
+          "config": {
+            "frequency": 392,
+            "amplitude": 0.4,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-29",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 500
+        },
+        "data": {
+          "blockType": "band-pass-filter",
+          "label": "Band-Pass Filter",
+          "config": {
+            "cutoffFrequency": 800,
+            "qFactor": 2
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-30",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 500
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-31",
+        "type": "signalBlock",
+        "position": {
+          "x": 600,
+          "y": 500
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.6
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-32",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 650
+        },
+        "data": {
+          "blockType": "sawtooth-wave",
+          "label": "Sawtooth Wave",
+          "config": {
+            "frequency": 65,
+            "amplitude": 0.6,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-33",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 650
+        },
+        "data": {
+          "blockType": "low-pass-filter",
+          "label": "Low-Pass Filter",
+          "config": {
+            "cutoffFrequency": 300,
+            "qFactor": 2
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-34",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 650
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-35",
+        "type": "signalBlock",
+        "position": {
+          "x": 600,
+          "y": 650
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.7
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-36",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 800
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 55,
+            "amplitude": 0.7,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-37",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 800
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-38",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 800
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.9
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-39",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 950
+        },
+        "data": {
+          "blockType": "noise",
+          "label": "Noise Generator",
+          "config": {
+            "amplitude": 0.3
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-40",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 950
+        },
+        "data": {
+          "blockType": "high-pass-filter",
+          "label": "High-Pass Filter",
+          "config": {
+            "cutoffFrequency": 8000,
+            "qFactor": 1
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-41",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 950
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-42",
+        "type": "signalBlock",
+        "position": {
+          "x": 600,
+          "y": 950
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.4
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-43",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 1100
+        },
+        "data": {
+          "blockType": "noise",
+          "label": "Noise Generator",
+          "config": {
+            "amplitude": 0.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-44",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 1100
+        },
+        "data": {
+          "blockType": "band-pass-filter",
+          "label": "Band-Pass Filter",
+          "config": {
+            "cutoffFrequency": 1200,
+            "qFactor": 3
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-45",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 1100
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-46",
+        "type": "signalBlock",
+        "position": {
+          "x": 600,
+          "y": 1100
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-47",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 1250
+        },
+        "data": {
+          "blockType": "sine-wave",
+          "label": "Sine Wave",
+          "config": {
+            "frequency": 60,
+            "amplitude": 0.8,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        }
+      },
+      {
+        "id": "node-48",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 1250
+        },
+        "data": {
+          "blockType": "low-pass-filter",
+          "label": "Low-Pass Filter",
+          "config": {
+            "cutoffFrequency": 150,
+            "qFactor": 4
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-49",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 1250
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-50",
+        "type": "signalBlock",
+        "position": {
+          "x": 600,
+          "y": 1250
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.8
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-51",
+        "type": "signalBlock",
+        "position": {
+          "x": 50,
+          "y": 1400
+        },
+        "data": {
+          "blockType": "triangle-wave",
+          "label": "Triangle Wave",
+          "config": {
+            "frequency": 330,
+            "amplitude": 0.3,
+            "phase": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 185
+        },
+        "selected": false
+      },
+      {
+        "id": "node-52",
+        "type": "signalBlock",
+        "position": {
+          "x": 250,
+          "y": 1400
+        },
+        "data": {
+          "blockType": "low-pass-filter",
+          "label": "Low-Pass Filter",
+          "config": {
+            "cutoffFrequency": 600,
+            "qFactor": 2
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-53",
+        "type": "signalBlock",
+        "position": {
+          "x": 450,
+          "y": 1400
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-54",
+        "type": "signalBlock",
+        "position": {
+          "x": 600,
+          "y": 1400
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-55",
+        "type": "signalBlock",
+        "position": {
+          "x": 500,
+          "y": 180
+        },
+        "data": {
+          "blockType": "pulse",
+          "label": "Pulse",
+          "config": {
+            "pulseValue": 1,
+            "pulseDuration": 200,
+            "value": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 143
+        }
+      },
+      {
+        "id": "node-56",
+        "type": "signalBlock",
+        "position": {
+          "x": 650,
+          "y": 180
+        },
+        "data": {
+          "blockType": "pulse",
+          "label": "Pulse",
+          "config": {
+            "pulseValue": 1,
+            "pulseDuration": 50,
+            "value": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 143
+        }
+      },
+      {
+        "id": "node-57",
+        "type": "signalBlock",
+        "position": {
+          "x": 800,
+          "y": 180
+        },
+        "data": {
+          "blockType": "pulse",
+          "label": "Pulse",
+          "config": {
+            "pulseValue": 1,
+            "pulseDuration": 100,
+            "value": 0
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 143
+        }
+      },
+      {
+        "id": "node-58",
+        "type": "signalBlock",
+        "position": {
+          "x": 800,
+          "y": 400
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Add",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-59",
+        "type": "signalBlock",
+        "position": {
+          "x": 800,
+          "y": 550
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Add",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-60",
+        "type": "signalBlock",
+        "position": {
+          "x": 800,
+          "y": 700
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Add",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-61",
+        "type": "signalBlock",
+        "position": {
+          "x": 800,
+          "y": 850
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Add",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-62",
+        "type": "signalBlock",
+        "position": {
+          "x": 1000,
+          "y": 475
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Add",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-63",
+        "type": "signalBlock",
+        "position": {
+          "x": 1000,
+          "y": 775
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Add",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-64",
+        "type": "signalBlock",
+        "position": {
+          "x": 1200,
+          "y": 625
+        },
+        "data": {
+          "blockType": "add",
+          "label": "Add",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-65",
+        "type": "signalBlock",
+        "position": {
+          "x": 1400,
+          "y": 625
+        },
+        "data": {
+          "blockType": "multiply",
+          "label": "Multiply",
+          "config": {}
+        },
+        "measured": {
+          "width": 180,
+          "height": 157
+        }
+      },
+      {
+        "id": "node-66",
+        "type": "signalBlock",
+        "position": {
+          "x": 1600,
+          "y": 625
+        },
+        "data": {
+          "blockType": "gain",
+          "label": "Gain",
+          "config": {
+            "gain": 0.5
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 129
+        }
+      },
+      {
+        "id": "node-67",
+        "type": "signalBlock",
+        "position": {
+          "x": 1800,
+          "y": 625
+        },
+        "data": {
+          "blockType": "splitter",
+          "label": "Signal Splitter",
+          "config": {
+            "numOutputs": 4
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 213
+        }
+      },
+      {
+        "id": "node-68",
+        "type": "signalBlock",
+        "position": {
+          "x": 2055.9207236779944,
+          "y": 310.0050000944842
+        },
+        "data": {
+          "blockType": "oscilloscope",
+          "label": "Oscilloscope",
+          "config": {
+            "timeWindow": 0.05,
+            "refreshRate": 60,
+            "minAmplitude": -1,
+            "maxAmplitude": 1
+          }
+        },
+        "measured": {
+          "width": 238,
+          "height": 199
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node-69",
+        "type": "signalBlock",
+        "position": {
+          "x": 2055.9207236779944,
+          "y": 526.3171052880222
+        },
+        "data": {
+          "blockType": "fft-analyzer",
+          "label": "FFT Analyzer",
+          "config": {
+            "fftMode": "spectrum",
+            "fftSize": 2048,
+            "smoothingTimeConstant": 0.8,
+            "minDecibels": -90,
+            "maxDecibels": -10,
+            "numFrequencyOutputs": 4,
+            "frequencyBins": [
+              {
+                "start": 0,
+                "end": 10,
+                "label": "Sub-Bass"
+              },
+              {
+                "start": 10,
+                "end": 50,
+                "label": "Bass"
+              },
+              {
+                "start": 50,
+                "end": 100,
+                "label": "Mids"
+              },
+              {
+                "start": 100,
+                "end": 200,
+                "label": "Highs"
+              }
+            ],
+            "numPeaks": 5,
+            "peakThreshold": -40,
+            "peakVisualization": "list",
+            "spectralOperation": "passthrough",
+            "operationFrequency": 1000,
+            "operationGain": 0
+          }
+        },
+        "measured": {
+          "width": 278,
+          "height": 239
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node-70",
+        "type": "signalBlock",
+        "position": {
+          "x": 2057.104868413593,
+          "y": 786.4425656987191
+        },
+        "data": {
+          "blockType": "oscilloscope",
+          "label": "Oscilloscope",
+          "config": {
+            "timeWindow": 0.1,
+            "refreshRate": 30,
+            "minAmplitude": -1,
+            "maxAmplitude": 1
+          }
+        },
+        "measured": {
+          "width": 238,
+          "height": 199
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node-71",
+        "type": "signalBlock",
+        "position": {
+          "x": 2057.104868413593,
+          "y": 1005.1229603634548
+        },
+        "data": {
+          "blockType": "audio-output",
+          "label": "Audio Output",
+          "config": {
+            "volume": 1,
+            "muted": true,
+            "customColor": "rgba(26, 69, 142, 1.00)"
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 97
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node-72",
+        "type": "signalBlock",
+        "position": {
+          "x": 1250,
+          "y": 50
+        },
+        "data": {
+          "blockType": "toggle",
+          "label": "Toggle",
+          "config": {
+            "value": 1,
+            "outputValue": 1
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 143
+        },
+        "selected": false
+      },
+      {
+        "id": "node-73",
+        "type": "signalBlock",
+        "position": {
+          "x": 1550,
+          "y": 50
+        },
+        "data": {
+          "blockType": "numeric-meter",
+          "label": "Numeric Meter",
+          "config": {
+            "decimals": 2,
+            "unit": "dB"
+          }
+        },
+        "measured": {
+          "width": 180,
+          "height": 153
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-node-24-node-25-1766817536393",
+        "source": "node-24",
+        "sourceHandle": "out",
+        "target": "node-25",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-25-node-26-1766817536547",
+        "source": "node-25",
+        "sourceHandle": "out",
+        "target": "node-26",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-12-node-26-1766817536660",
+        "source": "node-12",
+        "sourceHandle": "out",
+        "target": "node-26",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-26-node-27-1766817536765",
+        "source": "node-26",
+        "sourceHandle": "out",
+        "target": "node-27",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-28-node-29-1766817536874",
+        "source": "node-28",
+        "sourceHandle": "out",
+        "target": "node-29",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-29-node-30-1766817536983",
+        "source": "node-29",
+        "sourceHandle": "out",
+        "target": "node-30",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-13-node-30-1766817537095",
+        "source": "node-13",
+        "sourceHandle": "out",
+        "target": "node-30",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-30-node-31-1766817537204",
+        "source": "node-30",
+        "sourceHandle": "out",
+        "target": "node-31",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-32-node-33-1766817537282",
+        "source": "node-32",
+        "sourceHandle": "out",
+        "target": "node-33",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-33-node-34-1766817537360",
+        "source": "node-33",
+        "sourceHandle": "out",
+        "target": "node-34",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-14-node-34-1766817537433",
+        "source": "node-14",
+        "sourceHandle": "out",
+        "target": "node-34",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-34-node-35-1766817537555",
+        "source": "node-34",
+        "sourceHandle": "out",
+        "target": "node-35",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-36-node-37-1766817557039",
+        "source": "node-36",
+        "sourceHandle": "out",
+        "target": "node-37",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-15-node-37-1766817557153",
+        "source": "node-15",
+        "sourceHandle": "out",
+        "target": "node-37",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-37-node-38-1766817557261",
+        "source": "node-37",
+        "sourceHandle": "out",
+        "target": "node-38",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-39-node-40-1766817557373",
+        "source": "node-39",
+        "sourceHandle": "out",
+        "target": "node-40",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-40-node-41-1766817557485",
+        "source": "node-40",
+        "sourceHandle": "out",
+        "target": "node-41",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-16-node-41-1766817557604",
+        "source": "node-16",
+        "sourceHandle": "out",
+        "target": "node-41",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-41-node-42-1766817557728",
+        "source": "node-41",
+        "sourceHandle": "out",
+        "target": "node-42",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-43-node-44-1766817557832",
+        "source": "node-43",
+        "sourceHandle": "out",
+        "target": "node-44",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-44-node-45-1766817557907",
+        "source": "node-44",
+        "sourceHandle": "out",
+        "target": "node-45",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-17-node-45-1766817557986",
+        "source": "node-17",
+        "sourceHandle": "out",
+        "target": "node-45",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-45-node-46-1766817558063",
+        "source": "node-45",
+        "sourceHandle": "out",
+        "target": "node-46",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-47-node-48-1766817558200",
+        "source": "node-47",
+        "sourceHandle": "out",
+        "target": "node-48",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-48-node-49-1766817558321",
+        "source": "node-48",
+        "sourceHandle": "out",
+        "target": "node-49",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-18-node-49-1766817558448",
+        "source": "node-18",
+        "sourceHandle": "out",
+        "target": "node-49",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-49-node-50-1766817558559",
+        "source": "node-49",
+        "sourceHandle": "out",
+        "target": "node-50",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-51-node-52-1766817579159",
+        "source": "node-51",
+        "sourceHandle": "out",
+        "target": "node-52",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-52-node-53-1766817579272",
+        "source": "node-52",
+        "sourceHandle": "out",
+        "target": "node-53",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-19-node-53-1766817579388",
+        "source": "node-19",
+        "sourceHandle": "out",
+        "target": "node-53",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-53-node-54-1766817579503",
+        "source": "node-53",
+        "sourceHandle": "out",
+        "target": "node-54",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-21-node-24-1766817579614",
+        "source": "node-21",
+        "sourceHandle": "out",
+        "target": "node-24",
+        "targetHandle": "freq",
+        "animated": false
+      },
+      {
+        "id": "edge-node-22-node-52-1766817579731",
+        "source": "node-22",
+        "sourceHandle": "out",
+        "target": "node-52",
+        "targetHandle": "cutoff",
+        "animated": false
+      },
+      {
+        "id": "edge-node-23-node-28-1766817579847",
+        "source": "node-23",
+        "sourceHandle": "out",
+        "target": "node-28",
+        "targetHandle": "amp",
+        "animated": false
+      },
+      {
+        "id": "edge-node-27-node-58-1766817579954",
+        "source": "node-27",
+        "sourceHandle": "out",
+        "target": "node-58",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-31-node-58-1766817580046",
+        "source": "node-31",
+        "sourceHandle": "out",
+        "target": "node-58",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-35-node-59-1766817580125",
+        "source": "node-35",
+        "sourceHandle": "out",
+        "target": "node-59",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-38-node-59-1766817580201",
+        "source": "node-38",
+        "sourceHandle": "out",
+        "target": "node-59",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-42-node-60-1766817580337",
+        "source": "node-42",
+        "sourceHandle": "out",
+        "target": "node-60",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-46-node-60-1766817580461",
+        "source": "node-46",
+        "sourceHandle": "out",
+        "target": "node-60",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-50-node-61-1766817580596",
+        "source": "node-50",
+        "sourceHandle": "out",
+        "target": "node-61",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-54-node-61-1766817580726",
+        "source": "node-54",
+        "sourceHandle": "out",
+        "target": "node-61",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-58-node-62-1766817601184",
+        "source": "node-58",
+        "sourceHandle": "out",
+        "target": "node-62",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-59-node-62-1766817601303",
+        "source": "node-59",
+        "sourceHandle": "out",
+        "target": "node-62",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-60-node-63-1766817601417",
+        "source": "node-60",
+        "sourceHandle": "out",
+        "target": "node-63",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-61-node-63-1766817601530",
+        "source": "node-61",
+        "sourceHandle": "out",
+        "target": "node-63",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-62-node-64-1766817601656",
+        "source": "node-62",
+        "sourceHandle": "out",
+        "target": "node-64",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-63-node-64-1766817601776",
+        "source": "node-63",
+        "sourceHandle": "out",
+        "target": "node-64",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-64-node-65-1766817601904",
+        "source": "node-64",
+        "sourceHandle": "out",
+        "target": "node-65",
+        "targetHandle": "inputA",
+        "animated": false
+      },
+      {
+        "id": "edge-node-20-node-65-1766817602014",
+        "source": "node-20",
+        "sourceHandle": "out",
+        "target": "node-65",
+        "targetHandle": "inputB",
+        "animated": false
+      },
+      {
+        "id": "edge-node-65-node-66-1766817602094",
+        "source": "node-65",
+        "sourceHandle": "out",
+        "target": "node-66",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-66-node-67-1766817602173",
+        "source": "node-66",
+        "sourceHandle": "out",
+        "target": "node-67",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-67-node-68-1766817602251",
+        "source": "node-67",
+        "sourceHandle": "out0",
+        "target": "node-68",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-67-node-69-1766817602388",
+        "source": "node-67",
+        "sourceHandle": "out1",
+        "target": "node-69",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-67-node-70-1766817602511",
+        "source": "node-67",
+        "sourceHandle": "out2",
+        "target": "node-70",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-67-node-71-1766817602633",
+        "source": "node-67",
+        "sourceHandle": "out3",
+        "target": "node-71",
+        "targetHandle": "in",
+        "animated": false
+      },
+      {
+        "id": "edge-node-20-node-73-1766817602757",
+        "source": "node-20",
+        "sourceHandle": "out",
+        "target": "node-73",
+        "targetHandle": "in",
+        "animated": false
+      }
+    ],
+    "nodeIdCounter": 74,
+    "selectedNodeId": null
+  }
+}
