@@ -13,6 +13,7 @@ import {
   Lightbulb,
   Bug,
   BookOpen,
+  Github,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -75,6 +76,10 @@ export function TopbarMenu() {
 
   const handleDocumentation = () => {
     navigate("/docs");
+  };
+
+  const handleViewSource = () => {
+    window.open("https://github.com/geoffjay/signals", "_blank");
   };
 
   const handleLoginClick = () => {
@@ -207,6 +212,11 @@ export function TopbarMenu() {
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+
+          <DropdownMenuItem onClick={handleViewSource}>
+            <Github className="mr-2 h-4 w-4" />
+            <span>View Source</span>
+          </DropdownMenuItem>
 
           <DropdownMenuSeparator />
 
