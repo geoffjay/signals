@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Menu,
   LogIn,
@@ -8,6 +9,10 @@ import {
   Download,
   Upload,
   FilePlus,
+  HelpCircle,
+  Lightbulb,
+  Bug,
+  BookOpen,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -17,6 +22,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuGroup,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -39,6 +47,7 @@ import { ExportProjectDialog } from "./ExportProjectDialog";
 import { ImportProjectDialog } from "./ImportProjectDialog";
 
 export function TopbarMenu() {
+  const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { isDirty, nodes, createNewProject } = useSignalFlowStore();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -49,6 +58,24 @@ export function TopbarMenu() {
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
 
   const hasExistingProject = nodes.length > 0;
+
+  const handleRequestFeature = () => {
+    window.open(
+      "https://github.com/geoffjay/signals/issues/new?template=FEATURE_REQUEST_TEMPLATE.md",
+      "_blank",
+    );
+  };
+
+  const handleReportBug = () => {
+    window.open(
+      "https://github.com/geoffjay/signals/issues/new?template=BUG_TEMPLATE.md",
+      "_blank",
+    );
+  };
+
+  const handleDocumentation = () => {
+    navigate("/docs");
+  };
 
   const handleLoginClick = () => {
     setShowLoginDialog(true);
@@ -156,6 +183,30 @@ export function TopbarMenu() {
             <span className="text-xs">Theme</span>
             <ThemeToggle />
           </div>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <HelpCircle className="mr-2 h-4 w-4" />
+              <span>Help</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={handleRequestFeature}>
+                <Lightbulb className="mr-2 h-4 w-4" />
+                <span>Request a Feature</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleReportBug}>
+                <Bug className="mr-2 h-4 w-4" />
+                <span>Report a Bug</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleDocumentation}>
+                <BookOpen className="mr-2 h-4 w-4" />
+                <span>Documentation</span>
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
 
           <DropdownMenuSeparator />
 

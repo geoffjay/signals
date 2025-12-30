@@ -1,10 +1,12 @@
 import { useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SignalFlowAppWithProvider } from "@/components/SignalFlowApp";
+import { Documentation } from "@/pages/Documentation";
 import { useAuthStore } from "@/store/authStore";
 import { useSignalFlowStore } from "@/store/signalFlowStore";
 
-export function App() {
+function AppContent() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const isDirty = useSignalFlowStore((state) => state.isDirty);
 
@@ -27,9 +29,20 @@ export function App() {
   }, [isDirty]);
 
   return (
-    <ThemeProvider defaultTheme="dark">
-      <SignalFlowAppWithProvider />
-    </ThemeProvider>
+    <Routes>
+      <Route path="/" element={<SignalFlowAppWithProvider />} />
+      <Route path="/docs" element={<Documentation />} />
+    </Routes>
+  );
+}
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="dark">
+        <AppContent />
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
