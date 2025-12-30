@@ -15,6 +15,7 @@ import { GENERATOR_DEFINITIONS, type GeneratorBlockType } from "./generators";
 import { FILTER_DEFINITIONS, type FilterBlockType } from "./filters";
 import { PROCESSOR_DEFINITIONS, type ProcessorBlockType } from "./processors";
 import { DYNAMICS_DEFINITIONS, type DynamicsBlockType } from "./dynamics";
+import { DISTORTION_DEFINITIONS, type DistortionBlockType } from "./distortion";
 import { INPUT_DEFINITIONS, type InputBlockType } from "./inputs";
 import { OUTPUT_DEFINITIONS, type OutputBlockType } from "./outputs";
 import { ROUTING_DEFINITIONS, type RoutingBlockType } from "./routing";
@@ -26,6 +27,7 @@ export type { GeneratorBlockType } from "./generators";
 export type { FilterBlockType } from "./filters";
 export type { ProcessorBlockType, MathBlockType } from "./processors";
 export type { DynamicsBlockType } from "./dynamics";
+export type { DistortionBlockType } from "./distortion";
 export type { InputBlockType } from "./inputs";
 export type { OutputBlockType } from "./outputs";
 export type { RoutingBlockType } from "./routing";
@@ -39,6 +41,7 @@ export type BlockType =
   | FilterBlockType
   | ProcessorBlockType
   | DynamicsBlockType
+  | DistortionBlockType
   | InputBlockType
   | OutputBlockType
   | RoutingBlockType
@@ -52,6 +55,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   ...FILTER_DEFINITIONS,
   ...PROCESSOR_DEFINITIONS,
   ...DYNAMICS_DEFINITIONS,
+  ...DISTORTION_DEFINITIONS,
   ...INPUT_DEFINITIONS,
   ...OUTPUT_DEFINITIONS,
   ...ROUTING_DEFINITIONS,
@@ -136,6 +140,7 @@ export {
   FILTER_DEFINITIONS,
   PROCESSOR_DEFINITIONS,
   DYNAMICS_DEFINITIONS,
+  DISTORTION_DEFINITIONS,
   INPUT_DEFINITIONS,
   OUTPUT_DEFINITIONS,
   ROUTING_DEFINITIONS,

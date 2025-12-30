@@ -41,6 +41,14 @@ export interface BlockConfig {
   attack?: number; // seconds (0 to 1)
   release?: number; // seconds (0 to 1)
 
+  // Distortion/Saturation
+  distortionAmount?: number; // 0-100 for waveshaper
+  distortionCurve?: "soft-clip" | "hard-clip" | "tanh" | "atan" | "sine" | "cubic";
+  clipThreshold?: number; // 0-1 for hard clipper
+  softClipAmount?: number; // 0-1 for soft clipper
+  softClipCurve?: "tanh" | "atan" | "cubic";
+  oversample?: "none" | "2x" | "4x";
+
   // Multiplexer
   numInputs?: number;
   selectorValue?: number;

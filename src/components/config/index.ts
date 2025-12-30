@@ -8,6 +8,11 @@ import { GainConfig } from "./GainConfig";
 import { FilterConfig } from "./FilterConfig";
 import { EQFilterConfig } from "./EQFilterConfig";
 import { CompressorConfig } from "./CompressorConfig";
+import {
+  WaveshaperConfig,
+  HardClipConfig,
+  SoftClipConfig,
+} from "./DistortionConfig";
 import { MultiplexerConfig, SplitterConfig } from "./RoutingConfig";
 import { OscilloscopeConfig } from "./OscilloscopeConfig";
 import { AudioOutputConfig } from "./AudioOutputConfig";
@@ -34,6 +39,9 @@ export {
   FilterConfig,
   EQFilterConfig,
   CompressorConfig,
+  WaveshaperConfig,
+  HardClipConfig,
+  SoftClipConfig,
   MultiplexerConfig,
   SplitterConfig,
   OscilloscopeConfig,
@@ -79,6 +87,11 @@ export const configComponentMap: Record<
 
   // Dynamics
   compressor: CompressorConfig,
+
+  // Distortion/Saturation
+  waveshaper: WaveshaperConfig,
+  "hard-clip": HardClipConfig,
+  "soft-clip": SoftClipConfig,
 
   // Routing
   multiplexer: MultiplexerConfig,

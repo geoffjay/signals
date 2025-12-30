@@ -43,6 +43,9 @@ import {
   ChevronRight,
   LayoutGrid,
   LayoutList,
+  AudioWaveform,
+  Scissors,
+  Feather,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -67,6 +70,9 @@ const BLOCK_ICONS: Record<
   "lowshelf-filter": TrendingDown,
   "highshelf-filter": TrendingUp,
   compressor: Minimize2,
+  waveshaper: AudioWaveform,
+  "hard-clip": Scissors,
+  "soft-clip": Feather,
   multiplexer: Combine,
   splitter: Split,
   oscilloscope: LineChart,
@@ -117,6 +123,9 @@ const blockGroups = [
     blocks: [
       "gain",
       "compressor",
+      "waveshaper",
+      "hard-clip",
+      "soft-clip",
       "low-pass-filter",
       "high-pass-filter",
       "band-pass-filter",

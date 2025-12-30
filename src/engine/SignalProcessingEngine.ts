@@ -416,6 +416,18 @@ export class SignalProcessingEngine {
         this.createCompressor(nodeId, config);
         break;
 
+      case "waveshaper":
+        this.createWaveshaper(nodeId, config);
+        break;
+
+      case "hard-clip":
+        this.createHardClip(nodeId, config);
+        break;
+
+      case "soft-clip":
+        this.createSoftClip(nodeId, config);
+        break;
+
       case "splitter":
         this.createSplitter(nodeId);
         break;
@@ -642,6 +654,115 @@ export class SignalProcessingEngine {
     compressor.release.value = config.release ?? 0.25;
 
     this.nodes.set(nodeId, compressor);
+  }
+
+  /**
+   * Generate a waveshaper curve based on curve type and amount
+   */
+  private generateWaveshaperCurve(
+    curveType: string,
+    amount: number,
+  ): Float32Array {
+    const samples = 1024;
+    const curve = new Float32Array(samples);
+    const k = amount * 10; // Scale amount for more noticeable effect
+
+    for (let i = 0; i < samples; i++) {
+      const x = (i * 2) / samples - 1; // Map to -1 to 1
+
+      switch (curveType) {
+        case "soft-clip":
+        case "tanh":
+          // Hyperbolic tangent - smooth saturation
+          curve[i] = Math.tanh(k * x);
+          break;
+
+        case "hard-clip":
+          // Hard clipping at threshold
+          const threshold = Math.max(0.01, 1 - amount);
+          curve[i] = Math.max(-threshold, Math.min(threshold, x));
+          break;
+
+        case "atan":
+          // Arctangent - softer than tanh
+          curve[i] = (2 / Math.PI) * Math.atan(k * x);
+          break;
+
+        case "sine":
+          // Sine waveshaping - creates odd harmonics
+          curve[i] = Math.sin((Math.PI / 2) * x * (1 + amount * 2));
+          // Clamp to -1 to 1
+          curve[i] = Math.max(-1, Math.min(1, curve[i]));
+          break;
+
+        case "cubic":
+          // Cubic soft clipping
+          if (Math.abs(x) < 0.5) {
+            curve[i] = x - (x * x * x) / 3;
+          } else {
+            curve[i] = Math.sign(x) * (2 / 3);
+          }
+          // Apply amount as blend
+          curve[i] = x * (1 - amount) + curve[i] * amount;
+          break;
+
+        default:
+          // Linear (no distortion)
+          curve[i] = x;
+      }
+    }
+
+    return curve;
+  }
+
+  private createWaveshaper(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const waveshaper = this.audioContext.createWaveShaper();
+    const amount = (config.distortionAmount ?? 50) / 100; // Convert 0-100 to 0-1
+    const curveType = config.distortionCurve ?? "soft-clip";
+
+    const curve = this.generateWaveshaperCurve(curveType, amount);
+    // @ts-expect-error - Float32Array type compatibility with Web Audio API
+    waveshaper.curve = curve;
+    waveshaper.oversample = config.oversample ?? "none";
+
+    this.nodes.set(nodeId, waveshaper);
+  }
+
+  private createHardClip(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const waveshaper = this.audioContext.createWaveShaper();
+    const threshold = config.clipThreshold ?? 0.8;
+
+    // Generate hard clip curve
+    const samples = 1024;
+    const curve = new Float32Array(samples);
+    for (let i = 0; i < samples; i++) {
+      const x = (i * 2) / samples - 1;
+      curve[i] = Math.max(-threshold, Math.min(threshold, x));
+    }
+
+    waveshaper.curve = curve;
+    waveshaper.oversample = config.oversample ?? "none";
+
+    this.nodes.set(nodeId, waveshaper);
+  }
+
+  private createSoftClip(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const waveshaper = this.audioContext.createWaveShaper();
+    const amount = config.softClipAmount ?? 0.5;
+    const curveType = config.softClipCurve ?? "tanh";
+
+    const curve = this.generateWaveshaperCurve(curveType, amount);
+    // @ts-expect-error - Float32Array type compatibility with Web Audio API
+    waveshaper.curve = curve;
+    waveshaper.oversample = config.oversample ?? "none";
+
+    this.nodes.set(nodeId, waveshaper);
   }
 
   private createSplitter(nodeId: string) {
@@ -1300,6 +1421,45 @@ export class SignalProcessingEngine {
           node.ratio.value = config.ratio ?? 12;
           node.attack.value = config.attack ?? 0.003;
           node.release.value = config.release ?? 0.25;
+        }
+        break;
+      }
+
+      case "waveshaper": {
+        if (node instanceof WaveShaperNode) {
+          const amount = (config.distortionAmount ?? 50) / 100;
+          const curveType = config.distortionCurve ?? "soft-clip";
+          const curve = this.generateWaveshaperCurve(curveType, amount);
+          // @ts-expect-error - Float32Array type compatibility with Web Audio API
+          node.curve = curve;
+          node.oversample = config.oversample ?? "none";
+        }
+        break;
+      }
+
+      case "hard-clip": {
+        if (node instanceof WaveShaperNode) {
+          const threshold = config.clipThreshold ?? 0.8;
+          const samples = 1024;
+          const curve = new Float32Array(samples);
+          for (let i = 0; i < samples; i++) {
+            const x = (i * 2) / samples - 1;
+            curve[i] = Math.max(-threshold, Math.min(threshold, x));
+          }
+          node.curve = curve;
+          node.oversample = config.oversample ?? "none";
+        }
+        break;
+      }
+
+      case "soft-clip": {
+        if (node instanceof WaveShaperNode) {
+          const amount = config.softClipAmount ?? 0.5;
+          const curveType = config.softClipCurve ?? "tanh";
+          const curve = this.generateWaveshaperCurve(curveType, amount);
+          // @ts-expect-error - Float32Array type compatibility with Web Audio API
+          node.curve = curve;
+          node.oversample = config.oversample ?? "none";
         }
         break;
       }
