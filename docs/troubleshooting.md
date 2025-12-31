@@ -98,3 +98,76 @@ To inspect audio nodes programmatically, the engine stores references in:
 - `this.oscillators` - Oscillator nodes specifically
 - `this.analysers` - Analyser nodes for visualization
 - `this.constantSources` - Constant sources for input controls
+
+## PocketBase Setup Issues
+
+### "Missing collection context" Error
+
+**Symptom:** Console shows `404: Missing collection context` when loading instruments.
+
+**Cause:** The `instruments` collection doesn't exist in PocketBase yet.
+
+**Solution:** Create the instruments collection in PocketBase Admin:
+
+1. Open PocketBase Admin (http://localhost:8090/_/)
+2. Go to Collections
+3. Click "New collection"
+4. Use these settings:
+   - Name: `instruments`
+   - Type: Base collection
+5. Add fields:
+   - `userId` - Relation to users (required, cascade delete)
+   - `name` - Text (required, max 100 chars)
+   - `description` - Text (optional, max 1000 chars)
+   - `instrumentData` - JSON (required)
+   - `isPublic` - Boolean (optional)
+   - `tags` - JSON (optional)
+6. Set API rules:
+   - List/View: `@request.auth.id != '' && (userId = @request.auth.id || isPublic = true)`
+   - Create: `@request.auth.id != ''`
+   - Update/Delete: `@request.auth.id != '' && userId = @request.auth.id`
+
+**Alternative:** Import the schema from `pb_schema/instruments.json` via PocketBase Admin > Settings > Import collections.
+
+### "Not authenticated" Error When Saving
+
+**Symptom:** "Not authenticated" error when trying to save an instrument to the cloud.
+
+**Cause:** User is not logged in or authentication token has expired.
+
+**Solution:**
+1. Log in to the application using the user menu
+2. If already logged in, try logging out and back in to refresh the token
+
+### 400 Bad Request When Loading Instruments
+
+**Symptom:** Console shows `400 Bad Request` with message "Something went wrong while processing your request" when loading instruments while logged in.
+
+**Cause:** The `instruments` collection schema doesn't match what the application expects. Common issues:
+
+1. **Field name mismatch**: The field must be named exactly `userId` (not `user` or `user_id`)
+2. **Field type wrong**: The `userId` field must be a **Relation** type pointing to users (not Text)
+3. **Missing required fields**: All required fields must exist with correct names
+
+**Solution:** Verify your collection schema in PocketBase Admin:
+
+1. Open PocketBase Admin (http://localhost:8090/_/)
+2. Go to Collections → instruments
+3. Check that the following fields exist with **exact names**:
+   - `userId` - Type: **Relation** (to users collection)
+   - `name` - Type: Text
+   - `description` - Type: Text
+   - `instrumentData` - Type: JSON
+   - `isPublic` - Type: Boolean
+   - `tags` - Type: JSON
+
+**Quick Fix - Delete and Reimport:**
+
+If field names don't match, the easiest fix is to delete the collection and reimport:
+
+1. In PocketBase Admin, delete the `instruments` collection
+2. Go to Settings → Import collections
+3. Upload `pb_schema/instruments.json` from this repository
+4. This will create the collection with the correct schema
+
+**Note:** The API rules in the imported schema use `userId` in filter expressions (e.g., `userId = @request.auth.id`). If your field is named differently, these rules will fail silently with a 400 error

@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import type { BlockConfig, BlockType } from "@/types/blocks";
 import type { SignalBlockData } from "./SignalBlock";
 import { getConfigComponent } from "./config";
+import { InstrumentConfig } from "./config/InstrumentConfig";
 import { CommonBlockConfig } from "./config/shared/CommonBlockConfig";
 import { useConnectionCheck } from "@/hooks";
 
@@ -35,8 +36,13 @@ export function ConfigDrawer({
   // Get connection check helper for this node
   const { isInputConnected } = useConnectionCheck(node.id, edges);
 
-  // Get the config component for this block type
-  const ConfigComponent = getConfigComponent(blockType as BlockType);
+  // Check if this is an instrument block (instrument is not a BlockType, so compare as string)
+  const isInstrumentBlock = (blockType as string) === "instrument";
+
+  // Get the config component for this block type (only for non-instrument blocks)
+  const ConfigComponent = isInstrumentBlock
+    ? null
+    : getConfigComponent(blockType as BlockType);
 
   // Handler to merge config updates
   const updateConfig = (updates: Partial<BlockConfig>) => {
@@ -59,7 +65,17 @@ export function ConfigDrawer({
         <CommonBlockConfig config={config} onConfigChange={updateConfig} />
 
         {/* Block-specific configuration */}
-        {ConfigComponent && (
+        {isInstrumentBlock ? (
+          <>
+            <Separator />
+            <InstrumentConfig
+              config={config}
+              blockType={blockType as BlockType}
+              onConfigChange={updateConfig}
+              isInputConnected={isInputConnected}
+            />
+          </>
+        ) : ConfigComponent ? (
           <>
             <Separator />
             <ConfigComponent
@@ -69,7 +85,7 @@ export function ConfigDrawer({
               isInputConnected={isInputConnected}
             />
           </>
-        )}
+        ) : null}
       </div>
 
       <Separator />

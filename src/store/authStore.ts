@@ -30,7 +30,7 @@ const transformPBUser = (pbUser: PBUser | null): User | null => {
     id: pbUser.id,
     email: pbUser.email,
     name: pbUser.name || pbUser.username || pbUser.email.split("@")[0],
-    avatar: pbUser.avatar ? pb.files.getUrl(pbUser, pbUser.avatar) : undefined,
+    avatar: pbUser.avatar ? pb.files.getURL(pbUser, pbUser.avatar) : undefined,
   };
 };
 

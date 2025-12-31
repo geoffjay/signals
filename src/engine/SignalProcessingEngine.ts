@@ -1,5 +1,6 @@
 import { type Node, type Edge } from "@xyflow/react";
 import { type BlockType, type BlockConfig } from "@/types/blocks";
+import type { InstrumentDefinition, PortMapping } from "@/types/instruments";
 
 export class SignalProcessingEngine {
   private audioContext: AudioContext | null = null;
@@ -13,6 +14,11 @@ export class SignalProcessingEngine {
   private reactFlowNodes: Node[] = [];
   private reactFlowEdges: Edge[] = [];
   private isRunning = false;
+  // Track expanded instruments: instrumentNodeId -> { definition, internalNodeIds }
+  private instrumentInstances: Map<
+    string,
+    { definition: InstrumentDefinition; internalNodeIds: string[] }
+  > = new Map();
 
   async start() {
     if (this.isRunning) return;
@@ -76,6 +82,7 @@ export class SignalProcessingEngine {
     this.constantSources.clear();
     this.nodes.clear();
     this.analysers.clear();
+    this.instrumentInstances.clear();
 
     this.isRunning = false;
   }
@@ -91,12 +98,13 @@ export class SignalProcessingEngine {
     const currentNodeIds = new Set(Array.from(this.nodes.keys()));
     const newNodeIds = new Set(nodes.map((n) => n.id));
 
-    // Find nodes to remove (excluding internal helper nodes like FFT filters and inverters)
+    // Find nodes to remove (excluding internal helper nodes like FFT filters, inverters, and instrument internal nodes)
     const nodesToRemove = Array.from(currentNodeIds).filter(
       (id) =>
         !newNodeIds.has(id) &&
         !id.includes("-freq_out") && // FFT filter sub-nodes
-        !id.includes("-inverter"), // Subtraction inverter nodes
+        !id.includes("-inverter") && // Subtraction inverter nodes
+        !id.includes("::"), // Instrument internal nodes (use :: as namespace separator)
     );
 
     // Find nodes to add
@@ -104,6 +112,13 @@ export class SignalProcessingEngine {
 
     // Remove deleted nodes
     nodesToRemove.forEach((nodeId) => {
+      // Check if this is an instrument node and clean up its internal nodes
+      const instrumentInstance = this.instrumentInstances.get(nodeId);
+      if (instrumentInstance) {
+        this.cleanupInstrument(nodeId);
+        return;
+      }
+
       const node = this.nodes.get(nodeId);
       if (node) {
         try {
@@ -152,16 +167,34 @@ export class SignalProcessingEngine {
 
     // Add new nodes
     nodesToAdd.forEach((node) => {
-      const blockType = node.data.blockType as BlockType;
+      const blockType = node.data.blockType as string;
+
+      // Handle instrument blocks specially
+      if (blockType === "instrument") {
+        const definition = node.data
+          .instrumentDefinition as InstrumentDefinition;
+        if (definition) {
+          this.expandInstrument(node.id, definition);
+        }
+        return;
+      }
+
       const config = node.data.config as BlockConfig;
-      this.createAudioNode(node.id, blockType, config);
+      this.createAudioNode(node.id, blockType as BlockType, config);
     });
 
     // Rebuild all connections (simpler than tracking connection changes)
-    // First disconnect everything EXCEPT FFT filter sub-nodes (preserve internal FFT structure)
+    // First disconnect everything EXCEPT:
+    // - FFT filter sub-nodes (preserve internal FFT structure)
+    // - Instrument internal nodes (preserve internal instrument connections)
     this.nodes.forEach((node, nodeId) => {
       // Skip FFT filter sub-nodes - they maintain internal connections
       if (nodeId.includes("-freq_out")) {
+        return;
+      }
+      // Skip instrument internal nodes - they maintain internal connections
+      // Internal nodes use :: as namespace separator (e.g., "instrument-1::node-2")
+      if (nodeId.includes("::")) {
         return;
       }
       try {
@@ -1138,11 +1171,61 @@ export class SignalProcessingEngine {
     targetId: string,
     targetHandle: string,
   ) {
+    // Resolve instrument ports first
+    let actualSourceId = sourceId;
+    let actualSourceHandle = sourceHandle;
+    let actualTargetId = targetId;
+    let actualTargetHandle = targetHandle;
+
+    // Check if source is an instrument node (output port)
+    if (this.instrumentInstances.has(sourceId)) {
+      console.log(
+        `[Connection] Source is instrument: ${sourceId}, port: ${sourceHandle}`,
+      );
+      const resolved = this.resolveInstrumentPort(
+        sourceId,
+        sourceHandle,
+        false,
+      );
+      if (resolved) {
+        actualSourceId = resolved.nodeId;
+        actualSourceHandle = resolved.handleId;
+        console.log(
+          `[Connection] Resolved source to: ${actualSourceId}:${actualSourceHandle}`,
+        );
+      } else {
+        console.warn(
+          `Could not resolve instrument source port: ${sourceId}:${sourceHandle}`,
+        );
+        return;
+      }
+    }
+
+    // Check if target is an instrument node (input port)
+    if (this.instrumentInstances.has(targetId)) {
+      console.log(
+        `[Connection] Target is instrument: ${targetId}, port: ${targetHandle}`,
+      );
+      const resolved = this.resolveInstrumentPort(targetId, targetHandle, true);
+      if (resolved) {
+        actualTargetId = resolved.nodeId;
+        actualTargetHandle = resolved.handleId;
+        console.log(
+          `[Connection] Resolved target to: ${actualTargetId}:${actualTargetHandle}`,
+        );
+      } else {
+        console.warn(
+          `Could not resolve instrument target port: ${targetId}:${targetHandle}`,
+        );
+        return;
+      }
+    }
+
     // Special case: FFT analyzer frequency output mode
     // Source handles like 'freq_out0', 'freq_out1' route from filter nodes
-    let sourceNode = this.nodes.get(sourceId);
-    if (sourceHandle.startsWith("freq_out")) {
-      const filterKey = `${sourceId}-${sourceHandle}`;
+    let sourceNode = this.nodes.get(actualSourceId);
+    if (actualSourceHandle.startsWith("freq_out")) {
+      const filterKey = `${actualSourceId}-${actualSourceHandle}`;
       const filterNode = this.nodes.get(filterKey);
       console.log(
         `[FFT] Looking for filter node ${filterKey}: ${filterNode ? "FOUND" : "NOT FOUND"}`,
@@ -1153,7 +1236,7 @@ export class SignalProcessingEngine {
       }
     }
 
-    const targetNode = this.nodes.get(targetId);
+    const targetNode = this.nodes.get(actualTargetId);
 
     if (!sourceNode || !targetNode) {
       console.log(
@@ -1163,7 +1246,15 @@ export class SignalProcessingEngine {
     }
 
     // Get target block type for handle-specific routing
-    const targetBlock = this.reactFlowNodes.find((n) => n.id === targetId);
+    // For instrument internal nodes, parse out the original node ID
+    const lookupTargetId = actualTargetId.includes("::")
+      ? actualTargetId.split("::")[1]
+      : actualTargetId;
+    const targetBlock = actualTargetId.includes("::")
+      ? this.instrumentInstances
+          .get(actualTargetId.split("::")[0])
+          ?.definition.internalNodes.find((n) => n.id === lookupTargetId)
+      : this.reactFlowNodes.find((n) => n.id === actualTargetId);
     const blockType = targetBlock?.data?.blockType as BlockType | undefined;
 
     try {
@@ -1173,19 +1264,19 @@ export class SignalProcessingEngine {
         case "triangle-wave":
         case "sawtooth-wave": {
           // Wave generators: connect to AudioParams based on handle
-          if (targetHandle === "freq") {
-            const oscillator = this.oscillators.get(targetId);
+          if (actualTargetHandle === "freq") {
+            const oscillator = this.oscillators.get(actualTargetId);
             if (oscillator) {
               // Base value already set to 0 in updateGraph reset loop
               sourceNode.connect(oscillator.frequency);
             }
-          } else if (targetHandle === "amp") {
+          } else if (actualTargetHandle === "amp") {
             // targetNode is the gain node
             if (targetNode instanceof GainNode) {
               // Base value already set to 0 in updateGraph reset loop
               sourceNode.connect(targetNode.gain);
             }
-          } else if (targetHandle === "phase") {
+          } else if (actualTargetHandle === "phase") {
             // Phase modulation not directly supported by Web Audio API
             // Would need custom processing - for now, ignore
           }
@@ -1193,7 +1284,7 @@ export class SignalProcessingEngine {
         }
 
         case "noise": {
-          if (targetHandle === "amp") {
+          if (actualTargetHandle === "amp") {
             // targetNode is the gain node
             if (targetNode instanceof GainNode) {
               // Base value already set to 0 in updateGraph reset loop
@@ -1208,10 +1299,10 @@ export class SignalProcessingEngine {
         case "band-pass-filter":
         case "notch-filter":
         case "allpass-filter": {
-          if (targetHandle === "in") {
+          if (actualTargetHandle === "in") {
             // Normal audio connection
             sourceNode.connect(targetNode);
-          } else if (targetHandle === "cutoff") {
+          } else if (actualTargetHandle === "cutoff") {
             // Connect to filter frequency parameter
             if (targetNode instanceof BiquadFilterNode) {
               // Base value already set to 0 in updateGraph reset loop
@@ -1222,10 +1313,10 @@ export class SignalProcessingEngine {
         }
 
         case "peaking-eq": {
-          if (targetHandle === "in") {
+          if (actualTargetHandle === "in") {
             // Normal audio connection
             sourceNode.connect(targetNode);
-          } else if (targetHandle === "frequency") {
+          } else if (actualTargetHandle === "frequency") {
             // Connect to filter frequency parameter
             if (targetNode instanceof BiquadFilterNode) {
               // Base value already set to 0 in updateGraph reset loop
@@ -1237,10 +1328,10 @@ export class SignalProcessingEngine {
 
         case "lowshelf-filter":
         case "highshelf-filter": {
-          if (targetHandle === "in") {
+          if (actualTargetHandle === "in") {
             // Normal audio connection
             sourceNode.connect(targetNode);
-          } else if (targetHandle === "cutoff") {
+          } else if (actualTargetHandle === "cutoff") {
             // Connect to filter frequency parameter
             if (targetNode instanceof BiquadFilterNode) {
               // Base value already set to 0 in updateGraph reset loop
@@ -1256,12 +1347,12 @@ export class SignalProcessingEngine {
           break;
 
         case "subtract":
-          if (targetHandle === "inputA") {
+          if (actualTargetHandle === "inputA") {
             // Input A connects directly to summer
             sourceNode.connect(targetNode);
-          } else if (targetHandle === "inputB") {
+          } else if (actualTargetHandle === "inputB") {
             // Input B connects through inverter
-            const inverter = this.nodes.get(`${targetId}-inverter`);
+            const inverter = this.nodes.get(`${actualTargetId}-inverter`);
             if (inverter) {
               sourceNode.connect(inverter);
             }
@@ -1269,10 +1360,10 @@ export class SignalProcessingEngine {
           break;
 
         case "multiply":
-          if (targetHandle === "inputA") {
+          if (actualTargetHandle === "inputA") {
             // Signal A passes through gain node
             sourceNode.connect(targetNode);
-          } else if (targetHandle === "inputB") {
+          } else if (actualTargetHandle === "inputB") {
             // Signal B modulates the gain parameter
             sourceNode.connect((targetNode as GainNode).gain);
           }
@@ -1280,10 +1371,10 @@ export class SignalProcessingEngine {
 
         case "divide":
           // AudioWorklet with 2 inputs: connect to appropriate input channel
-          if (targetHandle === "inputA") {
+          if (actualTargetHandle === "inputA") {
             // Connect to first input (channel 0)
             sourceNode.connect(targetNode, 0, 0);
-          } else if (targetHandle === "inputB") {
+          } else if (actualTargetHandle === "inputB") {
             // Connect to second input (channel 1)
             sourceNode.connect(targetNode, 0, 1);
           }
@@ -1292,7 +1383,7 @@ export class SignalProcessingEngine {
         case "fft-analyzer":
           // FFT analyzer: normal audio connection to input
           console.log(
-            `[FFT] Connecting input: ${sourceId}(${sourceHandle}) -> ${targetId}(${targetHandle})`,
+            `[FFT] Connecting input: ${actualSourceId}(${actualSourceHandle}) -> ${actualTargetId}(${actualTargetHandle})`,
           );
           console.log(`[FFT] Target node type: ${targetNode.constructor.name}`);
           sourceNode.connect(targetNode);
@@ -1302,7 +1393,7 @@ export class SignalProcessingEngine {
         case "splitter":
           // Splitter: single input fans out to multiple outputs
           // All connections go to/from the same gain node
-          if (targetHandle === "in") {
+          if (actualTargetHandle === "in") {
             sourceNode.connect(targetNode);
           }
           break;
@@ -1311,18 +1402,18 @@ export class SignalProcessingEngine {
           // Multiplexer: multiple inputs selected by selector
           // AudioWorklet has N+1 inputs: input 0 = selector, inputs 1-N = signal inputs
           // Handle format: "selector" for selector, "in0", "in1", etc. for signal inputs
-          if (targetHandle === "selector") {
+          if (actualTargetHandle === "selector") {
             // Selector connects to input 0
             console.log(`[MUX] Connecting selector signal to input 0`);
             sourceNode.connect(targetNode, 0, 0);
-          } else if (targetHandle.startsWith("in")) {
+          } else if (actualTargetHandle.startsWith("in")) {
             // Parse input number from handle (e.g., "in0" -> 0, "in1" -> 1)
-            const inputNum = parseInt(targetHandle.slice(2), 10);
+            const inputNum = parseInt(actualTargetHandle.slice(2), 10);
             if (!isNaN(inputNum)) {
               // Signal inputs connect to inputs 1, 2, 3, etc. (offset by 1 for selector)
               const destInput = inputNum + 1;
               console.log(
-                `[MUX] Connecting ${sourceId}(${sourceHandle}) to mux input ${destInput} (handle: ${targetHandle})`,
+                `[MUX] Connecting ${actualSourceId}(${actualSourceHandle}) to mux input ${destInput} (handle: ${actualTargetHandle})`,
               );
               sourceNode.connect(targetNode, 0, destInput);
             }
@@ -1333,7 +1424,7 @@ export class SignalProcessingEngine {
         default:
           // Default connection for all other block types
           console.log(
-            `[Connection] Default connect: ${sourceId}(${sourceHandle}) -> ${targetId}(${targetHandle}), blockType=${blockType}`,
+            `[Connection] Default connect: ${actualSourceId}(${actualSourceHandle}) -> ${actualTargetId}(${actualTargetHandle}), blockType=${blockType}`,
           );
           sourceNode.connect(targetNode);
           console.log(`[Connection] Successfully connected`);
@@ -1665,5 +1756,189 @@ export class SignalProcessingEngine {
         break;
       }
     }
+  }
+
+  /**
+   * Expand an instrument into its internal audio nodes
+   */
+  private expandInstrument(
+    instrumentNodeId: string,
+    definition: InstrumentDefinition,
+  ) {
+    if (!this.audioContext) return;
+
+    console.log(
+      `[Instrument] Expanding instrument ${instrumentNodeId}: "${definition.metadata.name}"`,
+    );
+    console.log(
+      `[Instrument] Internal nodes: ${definition.internalNodes.length}, edges: ${definition.internalEdges.length}`,
+    );
+    console.log(
+      `[Instrument] External ports: ${definition.externalPorts.length}, mappings: ${definition.portMappings.length}`,
+    );
+
+    const internalNodeIds: string[] = [];
+
+    // Create internal nodes with namespaced IDs
+    definition.internalNodes.forEach((node) => {
+      const internalId = `${instrumentNodeId}::${node.id}`;
+      const blockType = node.data.blockType as BlockType;
+      const config = node.data.config as BlockConfig;
+
+      console.log(
+        `[Instrument] Creating internal node: ${internalId} (${blockType})`,
+      );
+      this.createAudioNode(internalId, blockType, config);
+      internalNodeIds.push(internalId);
+    });
+
+    // Set up internal connections
+    definition.internalEdges.forEach((edge) => {
+      const sourceId = `${instrumentNodeId}::${edge.source}`;
+      const targetId = `${instrumentNodeId}::${edge.target}`;
+      console.log(
+        `[Instrument] Internal connection: ${sourceId}(${edge.sourceHandle}) -> ${targetId}(${edge.targetHandle})`,
+      );
+      this.connectNodes(
+        sourceId,
+        edge.sourceHandle!,
+        targetId,
+        edge.targetHandle!,
+      );
+    });
+
+    // Log port mappings for debugging
+    definition.portMappings.forEach((mapping) => {
+      console.log(
+        `[Instrument] Port mapping: ${mapping.externalPortId} -> ${mapping.internalNodeId}:${mapping.internalPortId}`,
+      );
+    });
+
+    // Store the instrument instance
+    this.instrumentInstances.set(instrumentNodeId, {
+      definition,
+      internalNodeIds,
+    });
+
+    console.log(`[Instrument] Expansion complete for ${instrumentNodeId}`);
+  }
+
+  /**
+   * Clean up an instrument and all its internal nodes
+   */
+  private cleanupInstrument(instrumentNodeId: string) {
+    const instance = this.instrumentInstances.get(instrumentNodeId);
+    if (!instance) return;
+
+    // Remove all internal nodes
+    instance.internalNodeIds.forEach((internalId) => {
+      const node = this.nodes.get(internalId);
+      if (node) {
+        try {
+          node.disconnect();
+        } catch {
+          // Already disconnected
+        }
+      }
+
+      // Stop oscillators
+      const oscillator = this.oscillators.get(internalId);
+      if (oscillator) {
+        try {
+          oscillator.stop();
+        } catch {
+          // Already stopped
+        }
+        this.oscillators.delete(internalId);
+      }
+
+      // Stop constant sources
+      const constantSource = this.constantSources.get(internalId);
+      if (constantSource) {
+        try {
+          constantSource.stop();
+        } catch {
+          // Already stopped
+        }
+        this.constantSources.delete(internalId);
+      }
+
+      // Remove helper nodes (inverter for subtraction)
+      const helperNode = this.nodes.get(`${internalId}-inverter`);
+      if (helperNode) {
+        try {
+          helperNode.disconnect();
+        } catch {
+          // Already disconnected
+        }
+        this.nodes.delete(`${internalId}-inverter`);
+      }
+
+      this.nodes.delete(internalId);
+      this.analysers.delete(internalId);
+    });
+
+    this.instrumentInstances.delete(instrumentNodeId);
+  }
+
+  /**
+   * Resolve an instrument port to its internal node and port
+   * Returns the actual internal node ID and port handle to connect to
+   */
+  private resolveInstrumentPort(
+    instrumentNodeId: string,
+    externalPortId: string,
+    isInput: boolean,
+  ): { nodeId: string; handleId: string } | null {
+    const instance = this.instrumentInstances.get(instrumentNodeId);
+    if (!instance) {
+      console.warn(
+        `[Instrument] No instance found for instrument ${instrumentNodeId}`,
+      );
+      return null;
+    }
+
+    const { definition } = instance;
+
+    console.log(
+      `[Instrument] Resolving ${isInput ? "input" : "output"} port: ${externalPortId} on ${instrumentNodeId}`,
+    );
+    console.log(
+      `[Instrument] Available mappings:`,
+      definition.portMappings.map(
+        (m) => `${m.externalPortId} -> ${m.internalNodeId}:${m.internalPortId}`,
+      ),
+    );
+
+    // Find the port mapping for this external port
+    const mapping = definition.portMappings.find(
+      (m: PortMapping) => m.externalPortId === externalPortId,
+    );
+
+    if (!mapping) {
+      console.warn(
+        `[Instrument] No mapping found for external port ${externalPortId} on instrument ${instrumentNodeId}`,
+      );
+      return null;
+    }
+
+    const result = {
+      nodeId: `${instrumentNodeId}::${mapping.internalNodeId}`,
+      handleId: mapping.internalPortId,
+    };
+
+    console.log(
+      `[Instrument] Resolved to: ${result.nodeId}:${result.handleId}`,
+    );
+
+    // Return the internal node ID (namespaced) and port handle
+    return result;
+  }
+
+  /**
+   * Check if a node ID is an instrument node
+   */
+  isInstrumentNode(nodeId: string): boolean {
+    return this.instrumentInstances.has(nodeId);
   }
 }

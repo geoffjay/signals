@@ -43,7 +43,13 @@ export interface BlockConfig {
 
   // Distortion/Saturation
   distortionAmount?: number; // 0-100 for waveshaper
-  distortionCurve?: "soft-clip" | "hard-clip" | "tanh" | "atan" | "sine" | "cubic";
+  distortionCurve?:
+    | "soft-clip"
+    | "hard-clip"
+    | "tanh"
+    | "atan"
+    | "sine"
+    | "cubic";
   clipThreshold?: number; // 0-1 for hard clipper
   softClipAmount?: number; // 0-1 for soft clipper
   softClipCurve?: "tanh" | "atan" | "cubic";
@@ -103,6 +109,9 @@ export interface BlockConfig {
   spectralOperation?: "passthrough" | "low-shelf" | "high-shelf" | "notch-band";
   operationFrequency?: number;
   operationGain?: number;
+
+  // Instrument blocks
+  instrumentId?: string;
 }
 
 /**
