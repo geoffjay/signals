@@ -167,6 +167,129 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     [id, blockData.config.pulseDuration, setNodes],
   );
 
+  // Handler for keyboard key press
+  const handleKeyPress = useCallback(
+    (frequency: number, velocity: number) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            const nodeData = node.data as SignalBlockData;
+            return {
+              ...node,
+              data: {
+                ...nodeData,
+                config: {
+                  ...nodeData.config,
+                  frequency,
+                  gate: 1,
+                  velocity,
+                },
+              },
+            };
+          }
+          return node;
+        }),
+      );
+    },
+    [id, setNodes],
+  );
+
+  // Handler for keyboard key release
+  const handleKeyRelease = useCallback(() => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          const nodeData = node.data as SignalBlockData;
+          return {
+            ...node,
+            data: {
+              ...nodeData,
+              config: {
+                ...nodeData.config,
+                frequency: 0,
+                gate: 0,
+                velocity: 0,
+              },
+            },
+          };
+        }
+        return node;
+      }),
+    );
+  }, [id, setNodes]);
+
+  // Handler for beat pad press
+  const handlePadPress = useCallback(
+    (padIndex: number, velocity: number) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            const nodeData = node.data as SignalBlockData;
+            return {
+              ...node,
+              data: {
+                ...nodeData,
+                config: {
+                  ...nodeData.config,
+                  trigger: 1,
+                  activePad: padIndex,
+                  velocity,
+                },
+              },
+            };
+          }
+          return node;
+        }),
+      );
+    },
+    [id, setNodes],
+  );
+
+  // Handler for beat pad release
+  const handlePadRelease = useCallback(() => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          const nodeData = node.data as SignalBlockData;
+          return {
+            ...node,
+            data: {
+              ...nodeData,
+              config: {
+                ...nodeData.config,
+                trigger: 0,
+                activePad: -1,
+              },
+            },
+          };
+        }
+        return node;
+      }),
+    );
+  }, [id, setNodes]);
+
+  // Handler for crossfader position change
+  const handleCrossfaderChange = useCallback(
+    (position: number) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            const nodeData = node.data as SignalBlockData;
+            return {
+              ...node,
+              data: {
+                ...nodeData,
+                config: { ...nodeData.config, position },
+              },
+            };
+          }
+          return node;
+        }),
+      );
+    },
+    [id, setNodes],
+  );
+
   // Collected handlers for BlockContent
   const handlers = {
     onSliderChange: handleSliderChange,
@@ -174,6 +297,11 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     onButtonRelease: handleButtonRelease,
     onToggle: handleToggle,
     onPulse: handlePulse,
+    onKeyPress: handleKeyPress,
+    onKeyRelease: handleKeyRelease,
+    onPadPress: handlePadPress,
+    onPadRelease: handlePadRelease,
+    onCrossfaderChange: handleCrossfaderChange,
   };
 
   // Use custom label if set, otherwise use default block label

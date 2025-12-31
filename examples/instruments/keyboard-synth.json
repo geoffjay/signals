@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "id": "keyboard-synth",
+    "name": "Keyboard Synth",
+    "description": "A simple keyboard-controlled synthesizer demonstrating how to use the keyboard block. Press keys to play notes - the keyboard outputs frequency to control pitch and gate to control when sound plays.",
+    "author": "Signals Demo",
+    "version": "1.0.0",
+    "tags": ["keyboard", "synth", "interactive", "demo"]
+  },
+  "defaultConfig": {},
+  "internalNodes": [
+    {
+      "id": "keyboard1",
+      "type": "signalBlock",
+      "position": { "x": 50, "y": 150 },
+      "data": {
+        "blockType": "keyboard",
+        "label": "Keyboard",
+        "config": {
+          "octave": 4,
+          "numOctaves": 2
+        }
+      }
+    },
+    {
+      "id": "osc1",
+      "type": "signalBlock",
+      "position": { "x": 350, "y": 100 },
+      "data": {
+        "blockType": "sine-wave",
+        "label": "Oscillator",
+        "config": {
+          "frequency": 440,
+          "amplitude": 0.8
+        }
+      }
+    },
+    {
+      "id": "vca",
+      "type": "signalBlock",
+      "position": { "x": 600, "y": 150 },
+      "data": {
+        "blockType": "multiply",
+        "label": "VCA (Gate)",
+        "config": {}
+      }
+    },
+    {
+      "id": "velocityVca",
+      "type": "signalBlock",
+      "position": { "x": 850, "y": 150 },
+      "data": {
+        "blockType": "multiply",
+        "label": "Velocity",
+        "config": {}
+      }
+    },
+    {
+      "id": "output",
+      "type": "signalBlock",
+      "position": { "x": 1100, "y": 150 },
+      "data": {
+        "blockType": "audio-output",
+        "label": "Output",
+        "config": {
+          "volume": 0.5,
+          "muted": false
+        }
+      }
+    },
+    {
+      "id": "scope",
+      "type": "signalBlock",
+      "position": { "x": 850, "y": 350 },
+      "data": {
+        "blockType": "oscilloscope",
+        "label": "Waveform",
+        "config": {
+          "timeWindow": 0.02
+        }
+      }
+    }
+  ],
+  "internalEdges": [
+    {
+      "id": "e-keyboard-freq",
+      "source": "keyboard1",
+      "sourceHandle": "freq",
+      "target": "osc1",
+      "targetHandle": "freq"
+    },
+    {
+      "id": "e-osc-vca",
+      "source": "osc1",
+      "sourceHandle": "out",
+      "target": "vca",
+      "targetHandle": "inputA"
+    },
+    {
+      "id": "e-keyboard-gate",
+      "source": "keyboard1",
+      "sourceHandle": "gate",
+      "target": "vca",
+      "targetHandle": "inputB"
+    },
+    {
+      "id": "e-vca-velocity",
+      "source": "vca",
+      "sourceHandle": "out",
+      "target": "velocityVca",
+      "targetHandle": "inputA"
+    },
+    {
+      "id": "e-keyboard-velocity",
+      "source": "keyboard1",
+      "sourceHandle": "velocity",
+      "target": "velocityVca",
+      "targetHandle": "inputB"
+    },
+    {
+      "id": "e-velocity-output",
+      "source": "velocityVca",
+      "sourceHandle": "out",
+      "target": "output",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e-velocity-scope",
+      "source": "velocityVca",
+      "sourceHandle": "out",
+      "target": "scope",
+      "targetHandle": "in"
+    }
+  ],
+  "externalPorts": [],
+  "portMappings": [],
+  "nodeIdCounter": 10
+}

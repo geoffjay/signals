@@ -1,0 +1,216 @@
+{
+  "metadata": {
+    "id": "beat-pad-triggers",
+    "name": "Beat Pad Triggers",
+    "description": "Demonstrates the beat pad block triggering different oscillator frequencies. Each pad outputs a unique index that can be used to select different sounds or pitches.",
+    "author": "Signals Demo",
+    "version": "1.0.0",
+    "tags": ["beat-pad", "triggers", "interactive", "demo"]
+  },
+  "defaultConfig": {},
+  "internalNodes": [
+    {
+      "id": "beatpad1",
+      "type": "signalBlock",
+      "position": { "x": 50, "y": 150 },
+      "data": {
+        "blockType": "beat-pad",
+        "label": "Beat Pad",
+        "config": {
+          "columns": 4,
+          "rows": 2,
+          "padSize": 50,
+          "gap": 4
+        }
+      }
+    },
+    {
+      "id": "padToFreq",
+      "type": "signalBlock",
+      "position": { "x": 350, "y": 50 },
+      "data": {
+        "blockType": "multiply",
+        "label": "Pad to Freq",
+        "config": {}
+      }
+    },
+    {
+      "id": "freqScale",
+      "type": "signalBlock",
+      "position": { "x": 350, "y": 200 },
+      "data": {
+        "blockType": "slider",
+        "label": "Freq Scale",
+        "config": {
+          "min": 50,
+          "max": 200,
+          "value": 100
+        }
+      }
+    },
+    {
+      "id": "baseFreq",
+      "type": "signalBlock",
+      "position": { "x": 600, "y": 50 },
+      "data": {
+        "blockType": "add",
+        "label": "Add Base",
+        "config": {}
+      }
+    },
+    {
+      "id": "baseFreqValue",
+      "type": "signalBlock",
+      "position": { "x": 600, "y": 200 },
+      "data": {
+        "blockType": "slider",
+        "label": "Base Freq",
+        "config": {
+          "min": 100,
+          "max": 500,
+          "value": 200
+        }
+      }
+    },
+    {
+      "id": "osc1",
+      "type": "signalBlock",
+      "position": { "x": 850, "y": 50 },
+      "data": {
+        "blockType": "square-wave",
+        "label": "Oscillator",
+        "config": {
+          "frequency": 440,
+          "amplitude": 0.6
+        }
+      }
+    },
+    {
+      "id": "vca",
+      "type": "signalBlock",
+      "position": { "x": 1100, "y": 100 },
+      "data": {
+        "blockType": "multiply",
+        "label": "VCA (Trigger)",
+        "config": {}
+      }
+    },
+    {
+      "id": "velocityVca",
+      "type": "signalBlock",
+      "position": { "x": 1350, "y": 100 },
+      "data": {
+        "blockType": "multiply",
+        "label": "Velocity",
+        "config": {}
+      }
+    },
+    {
+      "id": "output",
+      "type": "signalBlock",
+      "position": { "x": 1600, "y": 100 },
+      "data": {
+        "blockType": "audio-output",
+        "label": "Output",
+        "config": {
+          "volume": 0.4,
+          "muted": false
+        }
+      }
+    },
+    {
+      "id": "scope",
+      "type": "signalBlock",
+      "position": { "x": 1350, "y": 300 },
+      "data": {
+        "blockType": "oscilloscope",
+        "label": "Waveform",
+        "config": {
+          "timeWindow": 0.01
+        }
+      }
+    }
+  ],
+  "internalEdges": [
+    {
+      "id": "e-pad-index",
+      "source": "beatpad1",
+      "sourceHandle": "padIndex",
+      "target": "padToFreq",
+      "targetHandle": "inputA"
+    },
+    {
+      "id": "e-freq-scale",
+      "source": "freqScale",
+      "sourceHandle": "out",
+      "target": "padToFreq",
+      "targetHandle": "inputB"
+    },
+    {
+      "id": "e-scaled-freq",
+      "source": "padToFreq",
+      "sourceHandle": "out",
+      "target": "baseFreq",
+      "targetHandle": "inputA"
+    },
+    {
+      "id": "e-base-freq",
+      "source": "baseFreqValue",
+      "sourceHandle": "out",
+      "target": "baseFreq",
+      "targetHandle": "inputB"
+    },
+    {
+      "id": "e-freq-osc",
+      "source": "baseFreq",
+      "sourceHandle": "out",
+      "target": "osc1",
+      "targetHandle": "freq"
+    },
+    {
+      "id": "e-osc-vca",
+      "source": "osc1",
+      "sourceHandle": "out",
+      "target": "vca",
+      "targetHandle": "inputA"
+    },
+    {
+      "id": "e-trigger-vca",
+      "source": "beatpad1",
+      "sourceHandle": "trigger",
+      "target": "vca",
+      "targetHandle": "inputB"
+    },
+    {
+      "id": "e-vca-velocity",
+      "source": "vca",
+      "sourceHandle": "out",
+      "target": "velocityVca",
+      "targetHandle": "inputA"
+    },
+    {
+      "id": "e-velocity",
+      "source": "beatpad1",
+      "sourceHandle": "velocity",
+      "target": "velocityVca",
+      "targetHandle": "inputB"
+    },
+    {
+      "id": "e-velocity-output",
+      "source": "velocityVca",
+      "sourceHandle": "out",
+      "target": "output",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e-velocity-scope",
+      "source": "velocityVca",
+      "sourceHandle": "out",
+      "target": "scope",
+      "targetHandle": "in"
+    }
+  ],
+  "externalPorts": [],
+  "portMappings": [],
+  "nodeIdCounter": 15
+}

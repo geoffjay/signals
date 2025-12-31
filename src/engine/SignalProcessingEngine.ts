@@ -161,6 +161,66 @@ export class SignalProcessingEngine {
         this.nodes.delete(`${nodeId}-inverter`);
       }
 
+      // Clean up keyboard sub-nodes (freq, gate, velocity)
+      const keyboardSuffixes = ["-freq", "-gate", "-velocity"];
+      keyboardSuffixes.forEach((suffix) => {
+        const subNode = this.nodes.get(`${nodeId}${suffix}`);
+        if (subNode) {
+          try {
+            subNode.disconnect();
+          } catch {
+            // Already disconnected
+          }
+          this.nodes.delete(`${nodeId}${suffix}`);
+        }
+        const subSource = this.constantSources.get(`${nodeId}${suffix}`);
+        if (subSource) {
+          try {
+            subSource.stop();
+          } catch {
+            // Already stopped
+          }
+          this.constantSources.delete(`${nodeId}${suffix}`);
+        }
+      });
+
+      // Clean up beat-pad sub-nodes (trigger, padIndex, velocity)
+      const beatPadSuffixes = ["-trigger", "-padIndex", "-velocity"];
+      beatPadSuffixes.forEach((suffix) => {
+        const subNode = this.nodes.get(`${nodeId}${suffix}`);
+        if (subNode) {
+          try {
+            subNode.disconnect();
+          } catch {
+            // Already disconnected
+          }
+          this.nodes.delete(`${nodeId}${suffix}`);
+        }
+        const subSource = this.constantSources.get(`${nodeId}${suffix}`);
+        if (subSource) {
+          try {
+            subSource.stop();
+          } catch {
+            // Already stopped
+          }
+          this.constantSources.delete(`${nodeId}${suffix}`);
+        }
+      });
+
+      // Clean up crossfader sub-nodes (inputA, inputB, output)
+      const crossfaderSuffixes = ["-inputA", "-inputB", "-output"];
+      crossfaderSuffixes.forEach((suffix) => {
+        const subNode = this.nodes.get(`${nodeId}${suffix}`);
+        if (subNode) {
+          try {
+            subNode.disconnect();
+          } catch {
+            // Already disconnected
+          }
+          this.nodes.delete(`${nodeId}${suffix}`);
+        }
+      });
+
       this.nodes.delete(nodeId);
       this.analysers.delete(nodeId);
     });
@@ -599,6 +659,18 @@ export class SignalProcessingEngine {
 
       case "multiplexer":
         this.createMultiplexer(nodeId, config);
+        break;
+
+      case "keyboard":
+        this.createKeyboard(nodeId, config);
+        break;
+
+      case "beat-pad":
+        this.createBeatPad(nodeId, config);
+        break;
+
+      case "crossfader":
+        this.createCrossfader(nodeId, config);
         break;
     }
   }
@@ -1209,6 +1281,148 @@ export class SignalProcessingEngine {
     }
   }
 
+  private createKeyboard(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    // Keyboard outputs three signals: frequency, gate, and velocity
+    // Each is a ConstantSourceNode that gets updated when keys are pressed
+
+    // Frequency output
+    const freqSource = this.audioContext.createConstantSource();
+    freqSource.offset.value = config.frequency || 0;
+    freqSource.start();
+
+    // Gate output (0 = off, 1 = on)
+    const gateSource = this.audioContext.createConstantSource();
+    gateSource.offset.value = config.gate || 0;
+    gateSource.start();
+
+    // Velocity output (0-1)
+    const velocitySource = this.audioContext.createConstantSource();
+    velocitySource.offset.value = config.velocity || 0;
+    velocitySource.start();
+
+    // Store all three outputs with suffixed IDs
+    this.constantSources.set(`${nodeId}-freq`, freqSource);
+    this.constantSources.set(`${nodeId}-gate`, gateSource);
+    this.constantSources.set(`${nodeId}-velocity`, velocitySource);
+
+    // Store main node reference (use freq as primary for lookups)
+    this.nodes.set(nodeId, freqSource);
+    this.nodes.set(`${nodeId}-freq`, freqSource);
+    this.nodes.set(`${nodeId}-gate`, gateSource);
+    this.nodes.set(`${nodeId}-velocity`, velocitySource);
+  }
+
+  private createBeatPad(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    // Beat pad outputs three signals: trigger, padIndex, and velocity
+    // Each is a ConstantSourceNode that gets updated when pads are pressed
+
+    // Trigger output (0 = off, 1 = triggered)
+    const triggerSource = this.audioContext.createConstantSource();
+    triggerSource.offset.value = config.trigger || 0;
+    triggerSource.start();
+
+    // Pad index output (which pad was pressed, -1 = none)
+    const padIndexSource = this.audioContext.createConstantSource();
+    padIndexSource.offset.value = config.activePad ?? -1;
+    padIndexSource.start();
+
+    // Velocity output (0-1)
+    const velocitySource = this.audioContext.createConstantSource();
+    velocitySource.offset.value = config.velocity || 0;
+    velocitySource.start();
+
+    // Store all three outputs with suffixed IDs
+    this.constantSources.set(`${nodeId}-trigger`, triggerSource);
+    this.constantSources.set(`${nodeId}-padIndex`, padIndexSource);
+    this.constantSources.set(`${nodeId}-velocity`, velocitySource);
+
+    // Store main node reference (use trigger as primary for lookups)
+    this.nodes.set(nodeId, triggerSource);
+    this.nodes.set(`${nodeId}-trigger`, triggerSource);
+    this.nodes.set(`${nodeId}-padIndex`, padIndexSource);
+    this.nodes.set(`${nodeId}-velocity`, velocitySource);
+  }
+
+  private createCrossfader(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const position = (config.position as number) ?? 0.5;
+    const curveType = (config.curveType as string) ?? "equal-power";
+
+    // Calculate initial gain values
+    const { gainA, gainB } = this.calculateCrossfadeGains(position, curveType);
+
+    // Create input gain nodes for A and B channels
+    const inputA = this.audioContext.createGain();
+    inputA.gain.value = gainA;
+
+    const inputB = this.audioContext.createGain();
+    inputB.gain.value = gainB;
+
+    // Create output mixer (sums the two weighted inputs)
+    const outputMixer = this.audioContext.createGain();
+    outputMixer.gain.value = 1.0;
+
+    // Connect inputs to output mixer
+    inputA.connect(outputMixer);
+    inputB.connect(outputMixer);
+
+    // Store nodes
+    this.nodes.set(nodeId, outputMixer); // Main node is the output
+    this.nodes.set(`${nodeId}-inputA`, inputA);
+    this.nodes.set(`${nodeId}-inputB`, inputB);
+    this.nodes.set(`${nodeId}-output`, outputMixer);
+  }
+
+  /**
+   * Calculate gain values for crossfader A and B channels
+   */
+  private calculateCrossfadeGains(
+    position: number,
+    curveType: string
+  ): { gainA: number; gainB: number } {
+    const pos = Math.max(0, Math.min(1, position));
+
+    switch (curveType) {
+      case "linear":
+        // Simple linear crossfade
+        return {
+          gainA: 1 - pos,
+          gainB: pos,
+        };
+
+      case "equal-power":
+        // Equal-power crossfade (constant total power)
+        // Uses sine/cosine curves for smooth transition
+        return {
+          gainA: Math.cos(pos * Math.PI * 0.5),
+          gainB: Math.sin(pos * Math.PI * 0.5),
+        };
+
+      case "cut":
+        // DJ-style cut crossfade (sharp transition at edges)
+        // Full A until 45%, transition 45-55%, full B after 55%
+        if (pos < 0.45) {
+          return { gainA: 1, gainB: 0 };
+        } else if (pos > 0.55) {
+          return { gainA: 0, gainB: 1 };
+        } else {
+          const t = (pos - 0.45) / 0.1;
+          return {
+            gainA: 1 - t,
+            gainB: t,
+          };
+        }
+
+      default:
+        return { gainA: 0.5, gainB: 0.5 };
+    }
+  }
+
   private createAnalyser(nodeId: string, config: BlockConfig) {
     if (!this.audioContext) return;
 
@@ -1600,6 +1814,31 @@ export class SignalProcessingEngine {
       }
     }
 
+    // Special case: Keyboard outputs (freq, gate, velocity)
+    // Route from the appropriate constant source sub-node
+    const sourceBlockForKeyboard = this.reactFlowNodes.find(
+      (n) => n.id === actualSourceId,
+    );
+    if (sourceBlockForKeyboard?.data?.blockType === "keyboard") {
+      if (actualSourceHandle === "freq" || actualSourceHandle === "gate" || actualSourceHandle === "velocity") {
+        const subNode = this.nodes.get(`${actualSourceId}-${actualSourceHandle}`);
+        if (subNode) {
+          sourceNode = subNode;
+        }
+      }
+    }
+
+    // Special case: Beat pad outputs (trigger, padIndex, velocity)
+    // Route from the appropriate constant source sub-node
+    if (sourceBlockForKeyboard?.data?.blockType === "beat-pad") {
+      if (actualSourceHandle === "trigger" || actualSourceHandle === "padIndex" || actualSourceHandle === "velocity") {
+        const subNode = this.nodes.get(`${actualSourceId}-${actualSourceHandle}`);
+        if (subNode) {
+          sourceNode = subNode;
+        }
+      }
+    }
+
     // Special case: Effects with separate output nodes
     // These blocks use a separate output node for the mixed signal
     const sourceBlock = this.reactFlowNodes.find(
@@ -1611,6 +1850,7 @@ export class SignalProcessingEngine {
       "flanger",
       "phaser",
       "vibrato",
+      "crossfader",
     ];
     if (
       sourceBlock?.data?.blockType &&
@@ -1916,6 +2156,22 @@ export class SignalProcessingEngine {
                 `[MUX] Connecting ${actualSourceId}(${actualSourceHandle}) to mux input ${destInput} (handle: ${actualTargetHandle})`,
               );
               sourceNode.connect(targetNode, 0, destInput);
+            }
+          }
+          break;
+        }
+
+        case "crossfader": {
+          // Crossfader: routes inputA and inputB to their respective gain nodes
+          if (actualTargetHandle === "inputA") {
+            const inputANode = this.nodes.get(`${actualTargetId}-inputA`);
+            if (inputANode) {
+              sourceNode.connect(inputANode);
+            }
+          } else if (actualTargetHandle === "inputB") {
+            const inputBNode = this.nodes.get(`${actualTargetId}-inputB`);
+            if (inputBNode) {
+              sourceNode.connect(inputBNode);
             }
           }
           break;
@@ -2237,6 +2493,61 @@ export class SignalProcessingEngine {
         const source = this.constantSources.get(nodeId);
         if (source instanceof ConstantSourceNode) {
           source.offset.value = config.pulseValue || 1.0;
+        }
+        break;
+      }
+
+      case "keyboard": {
+        // Update all three output constant sources
+        const freqSource = this.constantSources.get(`${nodeId}-freq`);
+        const gateSource = this.constantSources.get(`${nodeId}-gate`);
+        const velocitySource = this.constantSources.get(`${nodeId}-velocity`);
+
+        if (freqSource instanceof ConstantSourceNode) {
+          freqSource.offset.value = config.frequency || 0;
+        }
+        if (gateSource instanceof ConstantSourceNode) {
+          gateSource.offset.value = config.gate || 0;
+        }
+        if (velocitySource instanceof ConstantSourceNode) {
+          velocitySource.offset.value = config.velocity || 0;
+        }
+        break;
+      }
+
+      case "beat-pad": {
+        // Update all three output constant sources
+        const triggerSource = this.constantSources.get(`${nodeId}-trigger`);
+        const padIndexSource = this.constantSources.get(`${nodeId}-padIndex`);
+        const velocitySource = this.constantSources.get(`${nodeId}-velocity`);
+
+        if (triggerSource instanceof ConstantSourceNode) {
+          triggerSource.offset.value = config.trigger || 0;
+        }
+        if (padIndexSource instanceof ConstantSourceNode) {
+          padIndexSource.offset.value = config.activePad ?? -1;
+        }
+        if (velocitySource instanceof ConstantSourceNode) {
+          velocitySource.offset.value = config.velocity || 0;
+        }
+        break;
+      }
+
+      case "crossfader": {
+        // Update crossfader gain values based on position and curve type
+        const position = (config.position as number) ?? 0.5;
+        const curveType = (config.curveType as string) ?? "equal-power";
+
+        const { gainA, gainB } = this.calculateCrossfadeGains(position, curveType);
+
+        const inputANode = this.nodes.get(`${nodeId}-inputA`);
+        const inputBNode = this.nodes.get(`${nodeId}-inputB`);
+
+        if (inputANode instanceof GainNode) {
+          inputANode.gain.value = gainA;
+        }
+        if (inputBNode instanceof GainNode) {
+          inputBNode.gain.value = gainB;
         }
         break;
       }

@@ -57,6 +57,9 @@ import {
   Orbit,
   CircleDashed,
   Vibrate,
+  Piano,
+  Grid2X2,
+  ArrowLeftRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -139,12 +142,15 @@ const BLOCK_ICONS: Record<
   pow: Superscript,
   mod: Percent,
   clamp: Shrink,
+  keyboard: Piano,
+  "beat-pad": Grid2X2,
+  crossfader: ArrowLeftRight,
 };
 
 const blockGroups = [
   {
     title: "Inputs",
-    blocks: ["slider", "button", "toggle", "pulse"] as BlockType[],
+    blocks: ["slider", "button", "toggle", "pulse", "keyboard", "beat-pad", "crossfader"] as BlockType[],
   },
   {
     title: "Generators",

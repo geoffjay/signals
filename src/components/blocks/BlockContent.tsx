@@ -4,6 +4,9 @@ import {
   ButtonControl,
   ToggleControl,
   PulseControl,
+  KeyboardControl,
+  BeatPadControl,
+  CrossfaderControl,
 } from "./controls";
 import {
   OscilloscopeBlock,
@@ -21,6 +24,11 @@ interface BlockContentProps {
     onButtonRelease: () => void;
     onToggle: (e: React.MouseEvent) => void;
     onPulse: (e: React.MouseEvent) => void;
+    onKeyPress?: (frequency: number, velocity: number) => void;
+    onKeyRelease?: () => void;
+    onPadPress?: (padIndex: number, velocity: number) => void;
+    onPadRelease?: () => void;
+    onCrossfaderChange?: (position: number) => void;
   };
 }
 
@@ -68,6 +76,32 @@ export function BlockContent({
 
     case "pulse":
       return <PulseControl config={config} onPulse={handlers.onPulse} />;
+
+    case "keyboard":
+      return (
+        <KeyboardControl
+          config={config}
+          onKeyPress={handlers.onKeyPress ?? (() => {})}
+          onKeyRelease={handlers.onKeyRelease ?? (() => {})}
+        />
+      );
+
+    case "beat-pad":
+      return (
+        <BeatPadControl
+          config={config}
+          onPadPress={handlers.onPadPress ?? (() => {})}
+          onPadRelease={handlers.onPadRelease ?? (() => {})}
+        />
+      );
+
+    case "crossfader":
+      return (
+        <CrossfaderControl
+          config={config}
+          onPositionChange={handlers.onCrossfaderChange ?? (() => {})}
+        />
+      );
 
     // All other block types have no special content
     default:

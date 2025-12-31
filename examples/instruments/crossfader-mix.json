@@ -1,0 +1,211 @@
+{
+  "metadata": {
+    "id": "crossfader-mix",
+    "name": "Crossfader Mix",
+    "description": "Demonstrates the crossfader block mixing between two different oscillators. Move the crossfader left for oscillator A (sine), right for oscillator B (saw), or center for a 50/50 mix.",
+    "author": "Signals Demo",
+    "version": "1.0.0",
+    "tags": ["crossfader", "mixer", "interactive", "demo"]
+  },
+  "defaultConfig": {},
+  "internalNodes": [
+    {
+      "id": "oscA",
+      "type": "signalBlock",
+      "position": { "x": 50, "y": 50 },
+      "data": {
+        "blockType": "sine-wave",
+        "label": "Osc A (Sine)",
+        "config": {
+          "frequency": 220,
+          "amplitude": 0.7,
+          "customColor": "rgba(59, 130, 246, 0.3)"
+        }
+      }
+    },
+    {
+      "id": "oscB",
+      "type": "signalBlock",
+      "position": { "x": 50, "y": 300 },
+      "data": {
+        "blockType": "sawtooth-wave",
+        "label": "Osc B (Saw)",
+        "config": {
+          "frequency": 330,
+          "amplitude": 0.5,
+          "customColor": "rgba(239, 68, 68, 0.3)"
+        }
+      }
+    },
+    {
+      "id": "freqA",
+      "type": "signalBlock",
+      "position": { "x": 50, "y": 150 },
+      "data": {
+        "blockType": "slider",
+        "label": "Freq A",
+        "config": {
+          "min": 100,
+          "max": 800,
+          "value": 220
+        }
+      }
+    },
+    {
+      "id": "freqB",
+      "type": "signalBlock",
+      "position": { "x": 50, "y": 400 },
+      "data": {
+        "blockType": "slider",
+        "label": "Freq B",
+        "config": {
+          "min": 100,
+          "max": 800,
+          "value": 330
+        }
+      }
+    },
+    {
+      "id": "crossfader1",
+      "type": "signalBlock",
+      "position": { "x": 400, "y": 175 },
+      "data": {
+        "blockType": "crossfader",
+        "label": "Crossfader",
+        "config": {
+          "position": 0.5,
+          "curveType": "equal-power"
+        }
+      }
+    },
+    {
+      "id": "masterGain",
+      "type": "signalBlock",
+      "position": { "x": 700, "y": 175 },
+      "data": {
+        "blockType": "gain",
+        "label": "Master",
+        "config": {
+          "gain": 0.6
+        }
+      }
+    },
+    {
+      "id": "output",
+      "type": "signalBlock",
+      "position": { "x": 950, "y": 175 },
+      "data": {
+        "blockType": "audio-output",
+        "label": "Output",
+        "config": {
+          "volume": 0.5,
+          "muted": false
+        }
+      }
+    },
+    {
+      "id": "scopeA",
+      "type": "signalBlock",
+      "position": { "x": 300, "y": 50 },
+      "data": {
+        "blockType": "oscilloscope",
+        "label": "Scope A",
+        "config": {
+          "timeWindow": 0.02
+        }
+      }
+    },
+    {
+      "id": "scopeB",
+      "type": "signalBlock",
+      "position": { "x": 300, "y": 350 },
+      "data": {
+        "blockType": "oscilloscope",
+        "label": "Scope B",
+        "config": {
+          "timeWindow": 0.02
+        }
+      }
+    },
+    {
+      "id": "scopeMix",
+      "type": "signalBlock",
+      "position": { "x": 700, "y": 350 },
+      "data": {
+        "blockType": "oscilloscope",
+        "label": "Mixed Output",
+        "config": {
+          "timeWindow": 0.02
+        }
+      }
+    }
+  ],
+  "internalEdges": [
+    {
+      "id": "e-freqA-osc",
+      "source": "freqA",
+      "sourceHandle": "out",
+      "target": "oscA",
+      "targetHandle": "freq"
+    },
+    {
+      "id": "e-freqB-osc",
+      "source": "freqB",
+      "sourceHandle": "out",
+      "target": "oscB",
+      "targetHandle": "freq"
+    },
+    {
+      "id": "e-oscA-scope",
+      "source": "oscA",
+      "sourceHandle": "out",
+      "target": "scopeA",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e-oscB-scope",
+      "source": "oscB",
+      "sourceHandle": "out",
+      "target": "scopeB",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e-oscA-xfade",
+      "source": "oscA",
+      "sourceHandle": "out",
+      "target": "crossfader1",
+      "targetHandle": "inputA"
+    },
+    {
+      "id": "e-oscB-xfade",
+      "source": "oscB",
+      "sourceHandle": "out",
+      "target": "crossfader1",
+      "targetHandle": "inputB"
+    },
+    {
+      "id": "e-xfade-master",
+      "source": "crossfader1",
+      "sourceHandle": "out",
+      "target": "masterGain",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e-master-output",
+      "source": "masterGain",
+      "sourceHandle": "out",
+      "target": "output",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e-master-scope",
+      "source": "masterGain",
+      "sourceHandle": "out",
+      "target": "scopeMix",
+      "targetHandle": "in"
+    }
+  ],
+  "externalPorts": [],
+  "portMappings": [],
+  "nodeIdCounter": 15
+}

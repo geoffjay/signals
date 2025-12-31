@@ -29,6 +29,9 @@ import {
   ButtonConfig,
   ToggleConfig,
   PulseConfig,
+  KeyboardConfig,
+  BeatPadConfig,
+  CrossfaderConfig,
 } from "./InputControlConfig";
 import { NumericMeterConfig } from "./NumericMeterConfig";
 import { FFTAnalyzerConfig } from "./FFTAnalyzerConfig";
@@ -64,6 +67,9 @@ export {
   ButtonConfig,
   ToggleConfig,
   PulseConfig,
+  KeyboardConfig,
+  BeatPadConfig,
+  CrossfaderConfig,
   NumericMeterConfig,
   FFTAnalyzerConfig,
 };
@@ -129,6 +135,9 @@ export const configComponentMap: Record<
   button: ButtonConfig,
   toggle: ToggleConfig,
   pulse: PulseConfig,
+  keyboard: KeyboardConfig,
+  "beat-pad": BeatPadConfig,
+  crossfader: CrossfaderConfig,
 
   // FFT
   "fft-analyzer": FFTAnalyzerConfig,

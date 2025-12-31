@@ -116,6 +116,25 @@ export interface BlockConfig {
   pulseValue?: number;
   pulseDuration?: number; // in milliseconds
 
+  // Keyboard control
+  octave?: number; // Base octave (0-8)
+  numOctaves?: number; // Number of octaves to display (1-3)
+  gate?: number; // Gate signal (0 or 1)
+  velocity?: number; // Velocity (0-1)
+
+  // Beat pad control
+  columns?: number; // Number of columns (1-8)
+  rows?: number; // Number of rows (1-8)
+  padSize?: number; // Size of each pad in pixels (24-60)
+  gap?: number; // Gap between pads in pixels (2-12)
+  activePad?: number; // Currently active pad index (-1 = none)
+  padColors?: string[]; // Custom colors for each pad
+  trigger?: number; // Trigger signal (0 or 1)
+
+  // Crossfader control
+  position?: number; // Crossfader position (0-1, 0.5 = center)
+  curveType?: "linear" | "equal-power" | "cut"; // Crossfade curve type
+
   // Numeric meter
   decimals?: number;
   unit?: string;
