@@ -379,6 +379,8 @@ export function SignalFlowApp() {
 
   // Track previous values of input controls to detect changes
   const prevInputValuesRef = useRef<Map<string, number>>(new Map());
+  // Track previous values for multi-output controls (keyboard, beat-pad, crossfader)
+  const prevMultiOutputValuesRef = useRef<Map<string, string>>(new Map());
 
   // Update engine when input control values change during playback
   useEffect(() => {
@@ -388,7 +390,7 @@ export function SignalFlowApp() {
       const blockType = node.data.blockType as BlockType;
       const config = node.data.config as BlockConfig;
 
-      // Check if this is an input control block
+      // Check if this is a simple input control block (single value output)
       if (["slider", "button", "toggle", "pulse"].includes(blockType)) {
         const currentValue = config.value ?? 0;
         const prevValue = prevInputValuesRef.current.get(node.id);
@@ -397,6 +399,39 @@ export function SignalFlowApp() {
         if (prevValue !== currentValue) {
           engineRef.current.updateConstantValue(node.id, currentValue);
           prevInputValuesRef.current.set(node.id, currentValue);
+        }
+      }
+
+      // Handle keyboard (outputs: frequency, gate, velocity)
+      if (blockType === "keyboard") {
+        const currentKey = `${config.frequency ?? 0}-${config.gate ?? 0}-${config.velocity ?? 0}`;
+        const prevKey = prevMultiOutputValuesRef.current.get(node.id);
+
+        if (prevKey !== currentKey) {
+          engineRef.current.updateNodeConfig(node.id, blockType, config);
+          prevMultiOutputValuesRef.current.set(node.id, currentKey);
+        }
+      }
+
+      // Handle beat-pad (outputs: trigger, padIndex, velocity)
+      if (blockType === "beat-pad") {
+        const currentKey = `${config.trigger ?? 0}-${config.activePad ?? -1}-${config.velocity ?? 0}`;
+        const prevKey = prevMultiOutputValuesRef.current.get(node.id);
+
+        if (prevKey !== currentKey) {
+          engineRef.current.updateNodeConfig(node.id, blockType, config);
+          prevMultiOutputValuesRef.current.set(node.id, currentKey);
+        }
+      }
+
+      // Handle crossfader (position affects gain distribution)
+      if (blockType === "crossfader") {
+        const currentKey = `${config.position ?? 0.5}-${config.curveType ?? "equal-power"}`;
+        const prevKey = prevMultiOutputValuesRef.current.get(node.id);
+
+        if (prevKey !== currentKey) {
+          engineRef.current.updateNodeConfig(node.id, blockType, config);
+          prevMultiOutputValuesRef.current.set(node.id, currentKey);
         }
       }
     });
