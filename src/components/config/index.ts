@@ -13,7 +13,14 @@ import {
   HardClipConfig,
   SoftClipConfig,
 } from "./DistortionConfig";
-import { DelayConfig, TremoloConfig } from "./TimeBasedConfig";
+import {
+  DelayConfig,
+  TremoloConfig,
+  ChorusConfig,
+  FlangerConfig,
+  PhaserConfig,
+  VibratoConfig,
+} from "./TimeBasedConfig";
 import { MultiplexerConfig, SplitterConfig } from "./RoutingConfig";
 import { OscilloscopeConfig } from "./OscilloscopeConfig";
 import { AudioOutputConfig } from "./AudioOutputConfig";
@@ -45,6 +52,10 @@ export {
   SoftClipConfig,
   DelayConfig,
   TremoloConfig,
+  ChorusConfig,
+  FlangerConfig,
+  PhaserConfig,
+  VibratoConfig,
   MultiplexerConfig,
   SplitterConfig,
   OscilloscopeConfig,
@@ -99,6 +110,10 @@ export const configComponentMap: Record<
   // Time-based effects
   delay: DelayConfig,
   tremolo: TremoloConfig,
+  chorus: ChorusConfig,
+  flanger: FlangerConfig,
+  phaser: PhaserConfig,
+  vibrato: VibratoConfig,
 
   // Routing
   multiplexer: MultiplexerConfig,

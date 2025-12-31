@@ -65,6 +65,31 @@ export interface BlockConfig {
   tremoloDepth?: number; // 0 to 1 (modulation depth)
   tremoloWaveform?: "sine" | "square" | "triangle" | "sawtooth";
 
+  // Chorus
+  chorusRate?: number; // Hz (LFO speed, 0.1 to 10)
+  chorusDepth?: number; // seconds (modulation depth, 0.001 to 0.02)
+  chorusMix?: number; // dry/wet (0 to 1)
+  chorusVoices?: number; // 1 to 4 voices
+
+  // Flanger
+  flangerRate?: number; // Hz (LFO speed, 0.1 to 10)
+  flangerDepth?: number; // seconds (modulation depth, 0.0001 to 0.01)
+  flangerFeedback?: number; // -0.95 to 0.95 (negative for inverted)
+  flangerMix?: number; // dry/wet (0 to 1)
+
+  // Phaser
+  phaserRate?: number; // Hz (LFO speed, 0.1 to 10)
+  phaserDepth?: number; // 0 to 1 (modulation depth)
+  phaserStages?: number; // 2, 4, 6, or 8 allpass stages
+  phaserFeedback?: number; // -0.95 to 0.95
+  phaserMix?: number; // dry/wet (0 to 1)
+  phaserBaseFrequency?: number; // Hz (center frequency for allpass filters)
+
+  // Vibrato
+  vibratoRate?: number; // Hz (LFO speed, 0.1 to 20)
+  vibratoDepth?: number; // seconds (pitch variation via delay, 0.001 to 0.01)
+  vibratoWaveform?: "sine" | "square" | "triangle" | "sawtooth";
+
   // Multiplexer
   numInputs?: number;
   selectorValue?: number;

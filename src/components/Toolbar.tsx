@@ -53,6 +53,10 @@ import {
   Copy,
   Timer,
   AudioLines,
+  Layers,
+  Orbit,
+  CircleDashed,
+  Vibrate,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -103,6 +107,10 @@ const BLOCK_ICONS: Record<
   "soft-clip": Feather,
   delay: Timer,
   tremolo: AudioLines,
+  chorus: Layers,
+  flanger: Orbit,
+  phaser: CircleDashed,
+  vibrato: Vibrate,
   multiplexer: Combine,
   splitter: Split,
   oscilloscope: LineChart,
@@ -158,6 +166,10 @@ const blockGroups = [
       "soft-clip",
       "delay",
       "tremolo",
+      "chorus",
+      "flanger",
+      "phaser",
+      "vibrato",
       "low-pass-filter",
       "high-pass-filter",
       "band-pass-filter",

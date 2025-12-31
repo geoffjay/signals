@@ -469,6 +469,22 @@ export class SignalProcessingEngine {
         this.createTremolo(nodeId, config);
         break;
 
+      case "chorus":
+        this.createChorus(nodeId, config);
+        break;
+
+      case "flanger":
+        this.createFlanger(nodeId, config);
+        break;
+
+      case "phaser":
+        this.createPhaser(nodeId, config);
+        break;
+
+      case "vibrato":
+        this.createVibrato(nodeId, config);
+        break;
+
       case "splitter":
         this.createSplitter(nodeId);
         break;
@@ -888,6 +904,261 @@ export class SignalProcessingEngine {
     this.nodes.set(nodeId, signalGain); // Main signal node
     this.nodes.set(`${nodeId}-lfo`, lfo);
     this.nodes.set(`${nodeId}-depth`, depthGain);
+    this.oscillators.set(`${nodeId}-lfo`, lfo);
+  }
+
+  private createChorus(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const rate = config.chorusRate ?? 1.5;
+    const depth = config.chorusDepth ?? 0.002;
+    const mix = config.chorusMix ?? 0.5;
+    const voices = config.chorusVoices ?? 2;
+
+    // Create input gain
+    const inputGain = this.audioContext.createGain();
+    inputGain.gain.value = 1.0;
+
+    // Create dry path
+    const dryGain = this.audioContext.createGain();
+    dryGain.gain.value = 1.0 - mix;
+
+    // Create wet path with multiple voices
+    const wetGain = this.audioContext.createGain();
+    wetGain.gain.value = mix / voices;
+
+    // Create output
+    const outputGain = this.audioContext.createGain();
+    outputGain.gain.value = 1.0;
+
+    // Connect dry path
+    inputGain.connect(dryGain);
+    dryGain.connect(outputGain);
+
+    // Create chorus voices (each with slightly different delay and LFO phase)
+    for (let i = 0; i < voices; i++) {
+      const delayNode = this.audioContext.createDelay(0.1);
+      delayNode.delayTime.value = 0.02 + i * 0.005; // Base delay offset per voice
+
+      const lfo = this.audioContext.createOscillator();
+      lfo.type = "sine";
+      lfo.frequency.value = rate * (1 + i * 0.1); // Slightly different rate per voice
+
+      const lfoGain = this.audioContext.createGain();
+      lfoGain.gain.value = depth;
+
+      // Connect LFO to modulate delay time
+      lfo.connect(lfoGain);
+      lfoGain.connect(delayNode.delayTime);
+
+      // Connect voice to wet path
+      inputGain.connect(delayNode);
+      delayNode.connect(wetGain);
+
+      lfo.start();
+
+      // Store voice components
+      this.nodes.set(`${nodeId}-delay-${i}`, delayNode);
+      this.nodes.set(`${nodeId}-lfo-${i}`, lfo);
+      this.nodes.set(`${nodeId}-lfoGain-${i}`, lfoGain);
+      this.oscillators.set(`${nodeId}-lfo-${i}`, lfo);
+    }
+
+    wetGain.connect(outputGain);
+
+    // Store main components
+    this.nodes.set(nodeId, inputGain);
+    this.nodes.set(`${nodeId}-dry`, dryGain);
+    this.nodes.set(`${nodeId}-wet`, wetGain);
+    this.nodes.set(`${nodeId}-output`, outputGain);
+  }
+
+  private createFlanger(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const rate = config.flangerRate ?? 0.5;
+    const depth = config.flangerDepth ?? 0.001;
+    const feedback = config.flangerFeedback ?? 0.5;
+    const mix = config.flangerMix ?? 0.5;
+
+    // Create input gain
+    const inputGain = this.audioContext.createGain();
+    inputGain.gain.value = 1.0;
+
+    // Create delay node (short delay for flanging)
+    const delayNode = this.audioContext.createDelay(0.02);
+    delayNode.delayTime.value = 0.005; // Base delay
+
+    // Create LFO
+    const lfo = this.audioContext.createOscillator();
+    lfo.type = "sine";
+    lfo.frequency.value = rate;
+
+    const lfoGain = this.audioContext.createGain();
+    lfoGain.gain.value = depth;
+
+    // Create feedback path
+    const feedbackGain = this.audioContext.createGain();
+    feedbackGain.gain.value = Math.max(-0.95, Math.min(0.95, feedback));
+
+    // Create dry/wet mixing
+    const dryGain = this.audioContext.createGain();
+    dryGain.gain.value = 1.0 - mix;
+
+    const wetGain = this.audioContext.createGain();
+    wetGain.gain.value = mix;
+
+    // Create output
+    const outputGain = this.audioContext.createGain();
+    outputGain.gain.value = 1.0;
+
+    // Connect LFO to delay time
+    lfo.connect(lfoGain);
+    lfoGain.connect(delayNode.delayTime);
+
+    // Wire up the flanger structure
+    inputGain.connect(dryGain);
+    inputGain.connect(delayNode);
+    delayNode.connect(wetGain);
+    delayNode.connect(feedbackGain);
+    feedbackGain.connect(delayNode);
+    dryGain.connect(outputGain);
+    wetGain.connect(outputGain);
+
+    lfo.start();
+
+    // Store components
+    this.nodes.set(nodeId, inputGain);
+    this.nodes.set(`${nodeId}-delay`, delayNode);
+    this.nodes.set(`${nodeId}-lfo`, lfo);
+    this.nodes.set(`${nodeId}-lfoGain`, lfoGain);
+    this.nodes.set(`${nodeId}-feedback`, feedbackGain);
+    this.nodes.set(`${nodeId}-dry`, dryGain);
+    this.nodes.set(`${nodeId}-wet`, wetGain);
+    this.nodes.set(`${nodeId}-output`, outputGain);
+    this.oscillators.set(`${nodeId}-lfo`, lfo);
+  }
+
+  private createPhaser(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const rate = config.phaserRate ?? 0.5;
+    const depth = config.phaserDepth ?? 1.0;
+    const stages = config.phaserStages ?? 4;
+    const feedback = config.phaserFeedback ?? 0.5;
+    const mix = config.phaserMix ?? 0.5;
+    const baseFrequency = config.phaserBaseFrequency ?? 1000;
+
+    // Create input gain
+    const inputGain = this.audioContext.createGain();
+    inputGain.gain.value = 1.0;
+
+    // Create LFO for modulating allpass filter frequencies
+    const lfo = this.audioContext.createOscillator();
+    lfo.type = "sine";
+    lfo.frequency.value = rate;
+
+    const lfoGain = this.audioContext.createGain();
+    lfoGain.gain.value = baseFrequency * depth; // Modulation range
+
+    // Create chain of allpass filters
+    const allpassFilters: BiquadFilterNode[] = [];
+    let prevNode: AudioNode = inputGain;
+
+    for (let i = 0; i < stages; i++) {
+      const allpass = this.audioContext.createBiquadFilter();
+      allpass.type = "allpass";
+      allpass.frequency.value = baseFrequency;
+      allpass.Q.value = 0.5;
+
+      // Connect LFO to modulate frequency
+      lfo.connect(lfoGain);
+      lfoGain.connect(allpass.frequency);
+
+      prevNode.connect(allpass);
+      prevNode = allpass;
+      allpassFilters.push(allpass);
+
+      this.nodes.set(`${nodeId}-allpass-${i}`, allpass);
+    }
+
+    // Create feedback path
+    const feedbackGain = this.audioContext.createGain();
+    feedbackGain.gain.value = Math.max(-0.95, Math.min(0.95, feedback));
+
+    // Create dry/wet mixing
+    const dryGain = this.audioContext.createGain();
+    dryGain.gain.value = 1.0 - mix;
+
+    const wetGain = this.audioContext.createGain();
+    wetGain.gain.value = mix;
+
+    // Create output
+    const outputGain = this.audioContext.createGain();
+    outputGain.gain.value = 1.0;
+
+    // Connect feedback from last allpass back to first
+    if (allpassFilters.length > 0) {
+      allpassFilters[allpassFilters.length - 1].connect(feedbackGain);
+      feedbackGain.connect(allpassFilters[0]);
+      allpassFilters[allpassFilters.length - 1].connect(wetGain);
+    }
+
+    inputGain.connect(dryGain);
+    dryGain.connect(outputGain);
+    wetGain.connect(outputGain);
+
+    lfo.start();
+
+    // Store components
+    this.nodes.set(nodeId, inputGain);
+    this.nodes.set(`${nodeId}-lfo`, lfo);
+    this.nodes.set(`${nodeId}-lfoGain`, lfoGain);
+    this.nodes.set(`${nodeId}-feedback`, feedbackGain);
+    this.nodes.set(`${nodeId}-dry`, dryGain);
+    this.nodes.set(`${nodeId}-wet`, wetGain);
+    this.nodes.set(`${nodeId}-output`, outputGain);
+    this.oscillators.set(`${nodeId}-lfo`, lfo);
+  }
+
+  private createVibrato(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const rate = config.vibratoRate ?? 5;
+    const depth = config.vibratoDepth ?? 0.003;
+    const waveform = config.vibratoWaveform ?? "sine";
+
+    // Create input gain
+    const inputGain = this.audioContext.createGain();
+    inputGain.gain.value = 1.0;
+
+    // Create delay node for pitch modulation
+    const delayNode = this.audioContext.createDelay(0.1);
+    delayNode.delayTime.value = 0.01; // Base delay
+
+    // Create LFO
+    const lfo = this.audioContext.createOscillator();
+    lfo.type = waveform;
+    lfo.frequency.value = rate;
+
+    const lfoGain = this.audioContext.createGain();
+    lfoGain.gain.value = depth;
+
+    // Connect LFO to delay time (creates pitch modulation)
+    lfo.connect(lfoGain);
+    lfoGain.connect(delayNode.delayTime);
+
+    // Connect signal path
+    inputGain.connect(delayNode);
+
+    lfo.start();
+
+    // Store components
+    this.nodes.set(nodeId, inputGain);
+    this.nodes.set(`${nodeId}-delay`, delayNode);
+    this.nodes.set(`${nodeId}-lfo`, lfo);
+    this.nodes.set(`${nodeId}-lfoGain`, lfoGain);
+    this.nodes.set(`${nodeId}-output`, delayNode); // Output is directly from delay
     this.oscillators.set(`${nodeId}-lfo`, lfo);
   }
 
@@ -1329,15 +1600,25 @@ export class SignalProcessingEngine {
       }
     }
 
-    // Special case: Delay output
-    // The delay block uses a separate output node for the mixed signal
+    // Special case: Effects with separate output nodes
+    // These blocks use a separate output node for the mixed signal
     const sourceBlock = this.reactFlowNodes.find(
       (n) => n.id === actualSourceId,
     );
-    if (sourceBlock?.data?.blockType === "delay") {
-      const delayOutput = this.nodes.get(`${actualSourceId}-output`);
-      if (delayOutput) {
-        sourceNode = delayOutput;
+    const effectsWithOutputNode = [
+      "delay",
+      "chorus",
+      "flanger",
+      "phaser",
+      "vibrato",
+    ];
+    if (
+      sourceBlock?.data?.blockType &&
+      effectsWithOutputNode.includes(sourceBlock.data.blockType as string)
+    ) {
+      const effectOutput = this.nodes.get(`${actualSourceId}-output`);
+      if (effectOutput) {
+        sourceNode = effectOutput;
       }
     }
 
@@ -1481,6 +1762,80 @@ export class SignalProcessingEngine {
             const depthNode = this.nodes.get(`${actualTargetId}-depth`);
             if (depthNode instanceof GainNode) {
               sourceNode.connect(depthNode.gain);
+            }
+          }
+          break;
+        }
+
+        case "chorus": {
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          } else if (actualTargetHandle === "rate") {
+            // Modulate all voice LFOs
+            for (let i = 0; i < 4; i++) {
+              const lfo = this.nodes.get(`${actualTargetId}-lfo-${i}`);
+              if (lfo instanceof OscillatorNode) {
+                sourceNode.connect(lfo.frequency);
+              }
+            }
+          } else if (actualTargetHandle === "depth") {
+            // Modulate all voice depth gains
+            for (let i = 0; i < 4; i++) {
+              const lfoGain = this.nodes.get(`${actualTargetId}-lfoGain-${i}`);
+              if (lfoGain instanceof GainNode) {
+                sourceNode.connect(lfoGain.gain);
+              }
+            }
+          }
+          break;
+        }
+
+        case "flanger": {
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          } else if (actualTargetHandle === "rate") {
+            const lfo = this.nodes.get(`${actualTargetId}-lfo`);
+            if (lfo instanceof OscillatorNode) {
+              sourceNode.connect(lfo.frequency);
+            }
+          } else if (actualTargetHandle === "depth") {
+            const lfoGain = this.nodes.get(`${actualTargetId}-lfoGain`);
+            if (lfoGain instanceof GainNode) {
+              sourceNode.connect(lfoGain.gain);
+            }
+          }
+          break;
+        }
+
+        case "phaser": {
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          } else if (actualTargetHandle === "rate") {
+            const lfo = this.nodes.get(`${actualTargetId}-lfo`);
+            if (lfo instanceof OscillatorNode) {
+              sourceNode.connect(lfo.frequency);
+            }
+          } else if (actualTargetHandle === "depth") {
+            const lfoGain = this.nodes.get(`${actualTargetId}-lfoGain`);
+            if (lfoGain instanceof GainNode) {
+              sourceNode.connect(lfoGain.gain);
+            }
+          }
+          break;
+        }
+
+        case "vibrato": {
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          } else if (actualTargetHandle === "rate") {
+            const lfo = this.nodes.get(`${actualTargetId}-lfo`);
+            if (lfo instanceof OscillatorNode) {
+              sourceNode.connect(lfo.frequency);
+            }
+          } else if (actualTargetHandle === "depth") {
+            const lfoGain = this.nodes.get(`${actualTargetId}-lfoGain`);
+            if (lfoGain instanceof GainNode) {
+              sourceNode.connect(lfoGain.gain);
             }
           }
           break;
@@ -1739,6 +2094,124 @@ export class SignalProcessingEngine {
         }
         if (node instanceof GainNode) {
           node.gain.value = 1.0 - depth * 0.5;
+        }
+        break;
+      }
+
+      case "chorus": {
+        const chorusRate = config.chorusRate ?? 1.5;
+        const chorusDepth = config.chorusDepth ?? 0.002;
+        const chorusMix = config.chorusMix ?? 0.5;
+        const voices = config.chorusVoices ?? 2;
+
+        const dryNode = this.nodes.get(`${nodeId}-dry`);
+        const wetNode = this.nodes.get(`${nodeId}-wet`);
+
+        if (dryNode instanceof GainNode) {
+          dryNode.gain.value = 1.0 - chorusMix;
+        }
+        if (wetNode instanceof GainNode) {
+          wetNode.gain.value = chorusMix / voices;
+        }
+
+        // Update all voice LFOs
+        for (let i = 0; i < 4; i++) {
+          const lfo = this.nodes.get(`${nodeId}-lfo-${i}`);
+          const lfoGain = this.nodes.get(`${nodeId}-lfoGain-${i}`);
+          if (lfo instanceof OscillatorNode) {
+            lfo.frequency.value = chorusRate * (1 + i * 0.1);
+          }
+          if (lfoGain instanceof GainNode) {
+            lfoGain.gain.value = chorusDepth;
+          }
+        }
+        break;
+      }
+
+      case "flanger": {
+        const flangerRate = config.flangerRate ?? 0.5;
+        const flangerDepth = config.flangerDepth ?? 0.001;
+        const flangerFeedback = config.flangerFeedback ?? 0.5;
+        const flangerMix = config.flangerMix ?? 0.5;
+
+        const lfo = this.nodes.get(`${nodeId}-lfo`);
+        const lfoGain = this.nodes.get(`${nodeId}-lfoGain`);
+        const feedbackNode = this.nodes.get(`${nodeId}-feedback`);
+        const dryNode = this.nodes.get(`${nodeId}-dry`);
+        const wetNode = this.nodes.get(`${nodeId}-wet`);
+
+        if (lfo instanceof OscillatorNode) {
+          lfo.frequency.value = flangerRate;
+        }
+        if (lfoGain instanceof GainNode) {
+          lfoGain.gain.value = flangerDepth;
+        }
+        if (feedbackNode instanceof GainNode) {
+          feedbackNode.gain.value = Math.max(-0.95, Math.min(0.95, flangerFeedback));
+        }
+        if (dryNode instanceof GainNode) {
+          dryNode.gain.value = 1.0 - flangerMix;
+        }
+        if (wetNode instanceof GainNode) {
+          wetNode.gain.value = flangerMix;
+        }
+        break;
+      }
+
+      case "phaser": {
+        const phaserRate = config.phaserRate ?? 0.5;
+        const phaserDepth = config.phaserDepth ?? 1.0;
+        const phaserFeedback = config.phaserFeedback ?? 0.5;
+        const phaserMix = config.phaserMix ?? 0.5;
+        const baseFrequency = config.phaserBaseFrequency ?? 1000;
+
+        const lfo = this.nodes.get(`${nodeId}-lfo`);
+        const lfoGain = this.nodes.get(`${nodeId}-lfoGain`);
+        const feedbackNode = this.nodes.get(`${nodeId}-feedback`);
+        const dryNode = this.nodes.get(`${nodeId}-dry`);
+        const wetNode = this.nodes.get(`${nodeId}-wet`);
+
+        if (lfo instanceof OscillatorNode) {
+          lfo.frequency.value = phaserRate;
+        }
+        if (lfoGain instanceof GainNode) {
+          lfoGain.gain.value = baseFrequency * phaserDepth;
+        }
+        if (feedbackNode instanceof GainNode) {
+          feedbackNode.gain.value = Math.max(-0.95, Math.min(0.95, phaserFeedback));
+        }
+        if (dryNode instanceof GainNode) {
+          dryNode.gain.value = 1.0 - phaserMix;
+        }
+        if (wetNode instanceof GainNode) {
+          wetNode.gain.value = phaserMix;
+        }
+
+        // Update allpass filter frequencies
+        const stages = config.phaserStages ?? 4;
+        for (let i = 0; i < stages; i++) {
+          const allpass = this.nodes.get(`${nodeId}-allpass-${i}`);
+          if (allpass instanceof BiquadFilterNode) {
+            allpass.frequency.value = baseFrequency;
+          }
+        }
+        break;
+      }
+
+      case "vibrato": {
+        const vibratoRate = config.vibratoRate ?? 5;
+        const vibratoDepth = config.vibratoDepth ?? 0.003;
+        const vibratoWaveform = config.vibratoWaveform ?? "sine";
+
+        const lfo = this.nodes.get(`${nodeId}-lfo`);
+        const lfoGain = this.nodes.get(`${nodeId}-lfoGain`);
+
+        if (lfo instanceof OscillatorNode) {
+          lfo.type = vibratoWaveform;
+          lfo.frequency.value = vibratoRate;
+        }
+        if (lfoGain instanceof GainNode) {
+          lfoGain.gain.value = vibratoDepth;
         }
         break;
       }
