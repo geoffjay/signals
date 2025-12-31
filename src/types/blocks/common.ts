@@ -55,6 +55,16 @@ export interface BlockConfig {
   softClipCurve?: "tanh" | "atan" | "cubic";
   oversample?: "none" | "2x" | "4x";
 
+  // Time-based effects (Delay)
+  delayTime?: number; // seconds (0 to 5)
+  delayFeedback?: number; // 0 to 0.95 (prevent runaway)
+  delayMix?: number; // dry/wet (0 to 1)
+
+  // Modulation effects (Tremolo)
+  tremoloRate?: number; // Hz (LFO speed)
+  tremoloDepth?: number; // 0 to 1 (modulation depth)
+  tremoloWaveform?: "sine" | "square" | "triangle" | "sawtooth";
+
   // Multiplexer
   numInputs?: number;
   selectorValue?: number;

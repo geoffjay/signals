@@ -461,6 +461,14 @@ export class SignalProcessingEngine {
         this.createSoftClip(nodeId, config);
         break;
 
+      case "delay":
+        this.createDelay(nodeId, config);
+        break;
+
+      case "tremolo":
+        this.createTremolo(nodeId, config);
+        break;
+
       case "splitter":
         this.createSplitter(nodeId);
         break;
@@ -796,6 +804,91 @@ export class SignalProcessingEngine {
     waveshaper.oversample = config.oversample ?? "none";
 
     this.nodes.set(nodeId, waveshaper);
+  }
+
+  private createDelay(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const delayTime = config.delayTime ?? 0.3;
+    const feedback = config.delayFeedback ?? 0.3;
+    const mix = config.delayMix ?? 0.5;
+
+    // Create input gain node (main input)
+    const inputGain = this.audioContext.createGain();
+    inputGain.gain.value = 1.0;
+
+    // Create delay node
+    const delayNode = this.audioContext.createDelay(5.0); // Max 5 seconds
+    delayNode.delayTime.value = delayTime;
+
+    // Create feedback gain
+    const feedbackGain = this.audioContext.createGain();
+    feedbackGain.gain.value = Math.min(feedback, 0.95); // Cap to prevent runaway
+
+    // Create dry/wet mixing
+    const dryGain = this.audioContext.createGain();
+    dryGain.gain.value = 1.0 - mix;
+
+    const wetGain = this.audioContext.createGain();
+    wetGain.gain.value = mix;
+
+    // Create output mixer
+    const outputGain = this.audioContext.createGain();
+    outputGain.gain.value = 1.0;
+
+    // Wire up the delay structure:
+    // input -> dry -> output
+    // input -> delay -> wet -> output
+    // delay -> feedback -> delay
+    inputGain.connect(dryGain);
+    inputGain.connect(delayNode);
+    delayNode.connect(wetGain);
+    delayNode.connect(feedbackGain);
+    feedbackGain.connect(delayNode);
+    dryGain.connect(outputGain);
+    wetGain.connect(outputGain);
+
+    // Store all components for later updates
+    this.nodes.set(nodeId, inputGain); // Main input node
+    this.nodes.set(`${nodeId}-delay`, delayNode);
+    this.nodes.set(`${nodeId}-feedback`, feedbackGain);
+    this.nodes.set(`${nodeId}-dry`, dryGain);
+    this.nodes.set(`${nodeId}-wet`, wetGain);
+    this.nodes.set(`${nodeId}-output`, outputGain);
+  }
+
+  private createTremolo(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const rate = config.tremoloRate ?? 5;
+    const depth = config.tremoloDepth ?? 0.5;
+    const waveform = config.tremoloWaveform ?? "sine";
+
+    // Create LFO oscillator
+    const lfo = this.audioContext.createOscillator();
+    lfo.type = waveform;
+    lfo.frequency.value = rate;
+
+    // Create depth gain (scales LFO amplitude)
+    const depthGain = this.audioContext.createGain();
+    depthGain.gain.value = depth * 0.5; // Scale depth to 0-0.5 range
+
+    // Create main gain node for signal
+    const signalGain = this.audioContext.createGain();
+    signalGain.gain.value = 1.0 - depth * 0.5; // Center point of modulation
+
+    // Connect LFO to modulate the signal gain
+    lfo.connect(depthGain);
+    depthGain.connect(signalGain.gain);
+
+    // Start the LFO
+    lfo.start();
+
+    // Store components
+    this.nodes.set(nodeId, signalGain); // Main signal node
+    this.nodes.set(`${nodeId}-lfo`, lfo);
+    this.nodes.set(`${nodeId}-depth`, depthGain);
+    this.oscillators.set(`${nodeId}-lfo`, lfo);
   }
 
   private createSplitter(nodeId: string) {
@@ -1236,6 +1329,18 @@ export class SignalProcessingEngine {
       }
     }
 
+    // Special case: Delay output
+    // The delay block uses a separate output node for the mixed signal
+    const sourceBlock = this.reactFlowNodes.find(
+      (n) => n.id === actualSourceId,
+    );
+    if (sourceBlock?.data?.blockType === "delay") {
+      const delayOutput = this.nodes.get(`${actualSourceId}-output`);
+      if (delayOutput) {
+        sourceNode = delayOutput;
+      }
+    }
+
     const targetNode = this.nodes.get(actualTargetId);
 
     if (!sourceNode || !targetNode) {
@@ -1336,6 +1441,46 @@ export class SignalProcessingEngine {
             if (targetNode instanceof BiquadFilterNode) {
               // Base value already set to 0 in updateGraph reset loop
               sourceNode.connect(targetNode.frequency);
+            }
+          }
+          break;
+        }
+
+        case "delay": {
+          if (actualTargetHandle === "in") {
+            // Audio input connects to main input gain
+            sourceNode.connect(targetNode);
+          } else if (actualTargetHandle === "time") {
+            // Time modulation connects to delay time AudioParam
+            const delayNode = this.nodes.get(`${actualTargetId}-delay`);
+            if (delayNode instanceof DelayNode) {
+              sourceNode.connect(delayNode.delayTime);
+            }
+          } else if (actualTargetHandle === "feedback") {
+            // Feedback modulation connects to feedback gain
+            const feedbackNode = this.nodes.get(`${actualTargetId}-feedback`);
+            if (feedbackNode instanceof GainNode) {
+              sourceNode.connect(feedbackNode.gain);
+            }
+          }
+          break;
+        }
+
+        case "tremolo": {
+          if (actualTargetHandle === "in") {
+            // Audio input connects to main signal gain
+            sourceNode.connect(targetNode);
+          } else if (actualTargetHandle === "rate") {
+            // Rate modulation connects to LFO frequency
+            const lfo = this.nodes.get(`${actualTargetId}-lfo`);
+            if (lfo instanceof OscillatorNode) {
+              sourceNode.connect(lfo.frequency);
+            }
+          } else if (actualTargetHandle === "depth") {
+            // Depth modulation connects to depth gain
+            const depthNode = this.nodes.get(`${actualTargetId}-depth`);
+            if (depthNode instanceof GainNode) {
+              sourceNode.connect(depthNode.gain);
             }
           }
           break;
@@ -1551,6 +1696,49 @@ export class SignalProcessingEngine {
           // @ts-expect-error - Float32Array type compatibility with Web Audio API
           node.curve = curve;
           node.oversample = config.oversample ?? "none";
+        }
+        break;
+      }
+
+      case "delay": {
+        const delayNode = this.nodes.get(`${nodeId}-delay`);
+        const feedbackNode = this.nodes.get(`${nodeId}-feedback`);
+        const dryNode = this.nodes.get(`${nodeId}-dry`);
+        const wetNode = this.nodes.get(`${nodeId}-wet`);
+
+        if (delayNode instanceof DelayNode) {
+          delayNode.delayTime.value = config.delayTime ?? 0.3;
+        }
+        if (feedbackNode instanceof GainNode) {
+          feedbackNode.gain.value = Math.min(config.delayFeedback ?? 0.3, 0.95);
+        }
+        const mix = config.delayMix ?? 0.5;
+        if (dryNode instanceof GainNode) {
+          dryNode.gain.value = 1.0 - mix;
+        }
+        if (wetNode instanceof GainNode) {
+          wetNode.gain.value = mix;
+        }
+        break;
+      }
+
+      case "tremolo": {
+        const lfo = this.nodes.get(`${nodeId}-lfo`);
+        const depthNode = this.nodes.get(`${nodeId}-depth`);
+
+        const rate = config.tremoloRate ?? 5;
+        const depth = config.tremoloDepth ?? 0.5;
+        const waveform = config.tremoloWaveform ?? "sine";
+
+        if (lfo instanceof OscillatorNode) {
+          lfo.type = waveform;
+          lfo.frequency.value = rate;
+        }
+        if (depthNode instanceof GainNode) {
+          depthNode.gain.value = depth * 0.5;
+        }
+        if (node instanceof GainNode) {
+          node.gain.value = 1.0 - depth * 0.5;
         }
         break;
       }

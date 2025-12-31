@@ -51,6 +51,8 @@ import {
   Pencil,
   Trash2,
   Copy,
+  Timer,
+  AudioLines,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -99,6 +101,8 @@ const BLOCK_ICONS: Record<
   waveshaper: AudioWaveform,
   "hard-clip": Scissors,
   "soft-clip": Feather,
+  delay: Timer,
+  tremolo: AudioLines,
   multiplexer: Combine,
   splitter: Split,
   oscilloscope: LineChart,
@@ -152,6 +156,8 @@ const blockGroups = [
       "waveshaper",
       "hard-clip",
       "soft-clip",
+      "delay",
+      "tremolo",
       "low-pass-filter",
       "high-pass-filter",
       "band-pass-filter",

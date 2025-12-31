@@ -16,6 +16,7 @@ import { FILTER_DEFINITIONS, type FilterBlockType } from "./filters";
 import { PROCESSOR_DEFINITIONS, type ProcessorBlockType } from "./processors";
 import { DYNAMICS_DEFINITIONS, type DynamicsBlockType } from "./dynamics";
 import { DISTORTION_DEFINITIONS, type DistortionBlockType } from "./distortion";
+import { TIMEBASED_DEFINITIONS, type TimeBasedBlockType } from "./timebased";
 import { INPUT_DEFINITIONS, type InputBlockType } from "./inputs";
 import { OUTPUT_DEFINITIONS, type OutputBlockType } from "./outputs";
 import { ROUTING_DEFINITIONS, type RoutingBlockType } from "./routing";
@@ -28,6 +29,7 @@ export type { FilterBlockType } from "./filters";
 export type { ProcessorBlockType, MathBlockType } from "./processors";
 export type { DynamicsBlockType } from "./dynamics";
 export type { DistortionBlockType } from "./distortion";
+export type { TimeBasedBlockType, LFOWaveformType } from "./timebased";
 export type { InputBlockType } from "./inputs";
 export type { OutputBlockType } from "./outputs";
 export type { RoutingBlockType } from "./routing";
@@ -42,6 +44,7 @@ export type BlockType =
   | ProcessorBlockType
   | DynamicsBlockType
   | DistortionBlockType
+  | TimeBasedBlockType
   | InputBlockType
   | OutputBlockType
   | RoutingBlockType
@@ -56,6 +59,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   ...PROCESSOR_DEFINITIONS,
   ...DYNAMICS_DEFINITIONS,
   ...DISTORTION_DEFINITIONS,
+  ...TIMEBASED_DEFINITIONS,
   ...INPUT_DEFINITIONS,
   ...OUTPUT_DEFINITIONS,
   ...ROUTING_DEFINITIONS,
@@ -141,6 +145,7 @@ export {
   PROCESSOR_DEFINITIONS,
   DYNAMICS_DEFINITIONS,
   DISTORTION_DEFINITIONS,
+  TIMEBASED_DEFINITIONS,
   INPUT_DEFINITIONS,
   OUTPUT_DEFINITIONS,
   ROUTING_DEFINITIONS,

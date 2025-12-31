@@ -13,6 +13,7 @@ import {
   HardClipConfig,
   SoftClipConfig,
 } from "./DistortionConfig";
+import { DelayConfig, TremoloConfig } from "./TimeBasedConfig";
 import { MultiplexerConfig, SplitterConfig } from "./RoutingConfig";
 import { OscilloscopeConfig } from "./OscilloscopeConfig";
 import { AudioOutputConfig } from "./AudioOutputConfig";
@@ -42,6 +43,8 @@ export {
   WaveshaperConfig,
   HardClipConfig,
   SoftClipConfig,
+  DelayConfig,
+  TremoloConfig,
   MultiplexerConfig,
   SplitterConfig,
   OscilloscopeConfig,
@@ -92,6 +95,10 @@ export const configComponentMap: Record<
   waveshaper: WaveshaperConfig,
   "hard-clip": HardClipConfig,
   "soft-clip": SoftClipConfig,
+
+  // Time-based effects
+  delay: DelayConfig,
+  tremolo: TremoloConfig,
 
   // Routing
   multiplexer: MultiplexerConfig,
