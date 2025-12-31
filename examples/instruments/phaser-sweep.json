@@ -1,0 +1,166 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-8888-4888-8888-888888888888"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-phaser-rate",
+      "label": "phaser rate",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-phaser-depth",
+      "label": "phaser depth",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-bpf-in",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "bpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__bpf-out-phaser-in",
+      "source": "bpf",
+      "sourceHandle": "out",
+      "target": "phaser",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__phaser-out-peaking-in",
+      "source": "phaser",
+      "sourceHandle": "out",
+      "target": "peaking",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__peaking-out-output-gain-in",
+      "source": "peaking",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "square-wave",
+        "config": {
+          "amplitude": 0.5,
+          "frequency": 220,
+          "phase": 0
+        },
+        "label": "Square Wave"
+      },
+      "id": "osc",
+      "position": { "x": 50, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "band-pass-filter",
+        "config": {
+          "cutoffFrequency": 800,
+          "qFactor": 1.5
+        },
+        "label": "Band-Pass Formant"
+      },
+      "id": "bpf",
+      "position": { "x": 280, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "phaser",
+        "config": {
+          "phaserRate": 0.4,
+          "phaserDepth": 0.8,
+          "phaserStages": 6,
+          "phaserFeedback": 0.6,
+          "phaserMix": 0.7,
+          "phaserBaseFrequency": 800
+        },
+        "label": "6-Stage Phaser"
+      },
+      "id": "phaser",
+      "position": { "x": 510, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "peaking-eq",
+        "config": {
+          "cutoffFrequency": 2000,
+          "qFactor": 2.0,
+          "filterGain": 3
+        },
+        "label": "Presence Boost"
+      },
+      "id": "peaking",
+      "position": { "x": 740, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 970, "y": 150 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Square wave with band-pass filtering and 6-stage phaser for swooshing sweep effects.",
+    "id": "a1b2c3d4-8888-4888-8888-888888888888",
+    "isPublic": true,
+    "name": "Phaser Sweep",
+    "tags": ["phaser", "sweep", "modulation", "square"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 6,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "osc",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-phaser-rate",
+      "internalNodeId": "phaser",
+      "internalPortId": "rate"
+    },
+    {
+      "externalPortId": "ext-in-phaser-depth",
+      "internalNodeId": "phaser",
+      "internalPortId": "depth"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

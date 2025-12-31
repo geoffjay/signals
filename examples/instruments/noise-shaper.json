@@ -1,0 +1,215 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-dddd-4ddd-8ddd-dddddddddddd"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-noise-amp",
+      "label": "noise level",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-cutoff",
+      "label": "filter cutoff",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-resonance",
+      "label": "resonance",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__noise-out-hpf-in",
+      "source": "noise",
+      "sourceHandle": "out",
+      "target": "hpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__hpf-out-bpf-in",
+      "source": "hpf",
+      "sourceHandle": "out",
+      "target": "bpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__bpf-out-waveshaper-in",
+      "source": "bpf",
+      "sourceHandle": "out",
+      "target": "waveshaper",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__waveshaper-out-notch-in",
+      "source": "waveshaper",
+      "sourceHandle": "out",
+      "target": "notch",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__notch-out-abs-in",
+      "source": "notch",
+      "sourceHandle": "out",
+      "target": "abs",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__abs-out-lpf-in",
+      "source": "abs",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-output-gain-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "noise",
+        "config": {
+          "amplitude": 0.8
+        },
+        "label": "White Noise"
+      },
+      "id": "noise",
+      "position": { "x": 50, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "high-pass-filter",
+        "config": {
+          "cutoffFrequency": 200,
+          "qFactor": 1.0
+        },
+        "label": "High-Pass"
+      },
+      "id": "hpf",
+      "position": { "x": 250, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "band-pass-filter",
+        "config": {
+          "cutoffFrequency": 1000,
+          "qFactor": 5.0
+        },
+        "label": "Band-Pass (Resonant)"
+      },
+      "id": "bpf",
+      "position": { "x": 450, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "waveshaper",
+        "config": {
+          "distortionAmount": 40,
+          "distortionCurve": "atan",
+          "oversample": "2x"
+        },
+        "label": "Waveshaper"
+      },
+      "id": "waveshaper",
+      "position": { "x": 650, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "notch-filter",
+        "config": {
+          "cutoffFrequency": 2500,
+          "qFactor": 3.0
+        },
+        "label": "Notch Filter"
+      },
+      "id": "notch",
+      "position": { "x": 850, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "abs",
+        "config": {},
+        "label": "Rectify (Abs)"
+      },
+      "id": "abs",
+      "position": { "x": 1050, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 4000,
+          "qFactor": 0.7
+        },
+        "label": "Smooth LP"
+      },
+      "id": "lpf",
+      "position": { "x": 1250, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.4
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1450, "y": 150 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Sculpted noise through multiple filters, waveshaping, and rectification. Creates textured, evolving noise soundscapes.",
+    "id": "a1b2c3d4-dddd-4ddd-8ddd-dddddddddddd",
+    "isPublic": true,
+    "name": "Noise Shaper",
+    "tags": ["noise", "texture", "filter", "experimental", "abs"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 9,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-noise-amp",
+      "internalNodeId": "noise",
+      "internalPortId": "amp"
+    },
+    {
+      "externalPortId": "ext-in-cutoff",
+      "internalNodeId": "bpf",
+      "internalPortId": "cutoff"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

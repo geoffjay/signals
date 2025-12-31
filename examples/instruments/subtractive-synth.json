@@ -1,0 +1,177 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-2222-4222-8222-222222222222"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-cutoff",
+      "label": "filter cutoff",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-resonance",
+      "label": "resonance",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__saw-out-mix-inputA",
+      "source": "saw",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__square-out-mix-inputB",
+      "source": "square",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix-out-lpf-in",
+      "source": "mix",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-hpf-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "hpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__hpf-out-output-gain-in",
+      "source": "hpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sawtooth-wave",
+        "config": {
+          "amplitude": 0.5,
+          "frequency": 220,
+          "phase": 0
+        },
+        "label": "Sawtooth OSC"
+      },
+      "id": "saw",
+      "position": { "x": 50, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "square-wave",
+        "config": {
+          "amplitude": 0.3,
+          "frequency": 221,
+          "phase": 0
+        },
+        "label": "Square OSC (detuned)"
+      },
+      "id": "square",
+      "position": { "x": 50, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {
+          "customLabel": "Oscillator Mix"
+        },
+        "label": "Mix"
+      },
+      "id": "mix",
+      "position": { "x": 300, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 1500,
+          "qFactor": 2.0
+        },
+        "label": "Low-Pass Filter"
+      },
+      "id": "lpf",
+      "position": { "x": 550, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "high-pass-filter",
+        "config": {
+          "cutoffFrequency": 80,
+          "qFactor": 0.7
+        },
+        "label": "High-Pass Filter"
+      },
+      "id": "hpf",
+      "position": { "x": 800, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.6
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1050, "y": 200 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Classic subtractive synthesis with dual detuned oscillators, mixed and filtered through low-pass and high-pass filters.",
+    "id": "a1b2c3d4-2222-4222-8222-222222222222",
+    "isPublic": true,
+    "name": "Subtractive Synth",
+    "tags": ["subtractive", "dual-osc", "filter", "classic"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 7,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "saw",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-cutoff",
+      "internalNodeId": "lpf",
+      "internalPortId": "cutoff"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

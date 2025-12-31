@@ -1,0 +1,231 @@
+{
+  "defaultConfig": {
+    "instrumentId": "b1c2d3e4-6666-4666-8666-666666666666"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-signal",
+      "label": "input",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-diffusion",
+      "label": "diffusion amount",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__input-gain-out-ap1-in",
+      "source": "input-gain",
+      "sourceHandle": "out",
+      "target": "ap1",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__ap1-out-ap2-in",
+      "source": "ap1",
+      "sourceHandle": "out",
+      "target": "ap2",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__ap2-out-ap3-in",
+      "source": "ap2",
+      "sourceHandle": "out",
+      "target": "ap3",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__ap3-out-ap4-in",
+      "source": "ap3",
+      "sourceHandle": "out",
+      "target": "ap4",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__ap4-out-wet-gain-in",
+      "source": "ap4",
+      "sourceHandle": "out",
+      "target": "wet-gain",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__input-gain-out-dry-gain-in",
+      "source": "input-gain",
+      "sourceHandle": "out",
+      "target": "dry-gain",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__wet-gain-out-mix-inputA",
+      "source": "wet-gain",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__dry-gain-out-mix-inputB",
+      "source": "dry-gain",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix-out-output-gain-in",
+      "source": "mix",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 1.0
+        },
+        "label": "Input Gain"
+      },
+      "id": "input-gain",
+      "position": { "x": 50, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "allpass-filter",
+        "config": {
+          "cutoffFrequency": 200,
+          "qFactor": 2.0
+        },
+        "label": "Allpass 1 (200Hz)"
+      },
+      "id": "ap1",
+      "position": { "x": 280, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "allpass-filter",
+        "config": {
+          "cutoffFrequency": 600,
+          "qFactor": 2.0
+        },
+        "label": "Allpass 2 (600Hz)"
+      },
+      "id": "ap2",
+      "position": { "x": 510, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "allpass-filter",
+        "config": {
+          "cutoffFrequency": 1800,
+          "qFactor": 2.0
+        },
+        "label": "Allpass 3 (1.8kHz)"
+      },
+      "id": "ap3",
+      "position": { "x": 740, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "allpass-filter",
+        "config": {
+          "cutoffFrequency": 5400,
+          "qFactor": 2.0
+        },
+        "label": "Allpass 4 (5.4kHz)"
+      },
+      "id": "ap4",
+      "position": { "x": 970, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.6
+        },
+        "label": "Wet Gain"
+      },
+      "id": "wet-gain",
+      "position": { "x": 1200, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.6
+        },
+        "label": "Dry Gain"
+      },
+      "id": "dry-gain",
+      "position": { "x": 510, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix"
+      },
+      "id": "mix",
+      "position": { "x": 1200, "y": 250 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.7
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1430, "y": 250 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Cascaded allpass filters create phase diffusion without changing amplitude. Building block for reverbs and spatial effects.",
+    "id": "b1c2d3e4-6666-4666-8666-666666666666",
+    "isPublic": true,
+    "name": "Allpass Diffuser",
+    "tags": ["allpass", "diffusion", "reverb", "spatial", "phase"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 10,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-signal",
+      "internalNodeId": "input-gain",
+      "internalPortId": "in"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

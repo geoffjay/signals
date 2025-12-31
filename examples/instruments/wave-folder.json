@@ -1,0 +1,211 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-eeee-4eee-8eee-eeeeeeeeeeee"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-fold-amount",
+      "label": "fold amount",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-gain1-in",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "fold-gain",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__gain1-out-sin-in",
+      "source": "fold-gain",
+      "sourceHandle": "out",
+      "target": "sin",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__sin-out-abs-in",
+      "source": "sin",
+      "sourceHandle": "out",
+      "target": "abs",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__abs-out-subtract-inputA",
+      "source": "abs",
+      "sourceHandle": "out",
+      "target": "subtract",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-original-gain-in",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "original-gain",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__original-gain-out-subtract-inputB",
+      "source": "original-gain",
+      "sourceHandle": "out",
+      "target": "subtract",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__subtract-out-lpf-in",
+      "source": "subtract",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-output-gain-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "triangle-wave",
+        "config": {
+          "amplitude": 0.8,
+          "frequency": 110,
+          "phase": 0
+        },
+        "label": "Triangle Source"
+      },
+      "id": "osc",
+      "position": { "x": 50, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 3.0
+        },
+        "label": "Fold Amount"
+      },
+      "id": "fold-gain",
+      "position": { "x": 280, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sin",
+        "config": {},
+        "label": "Wave Fold (sin)"
+      },
+      "id": "sin",
+      "position": { "x": 510, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "abs",
+        "config": {},
+        "label": "Rectify"
+      },
+      "id": "abs",
+      "position": { "x": 740, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.3
+        },
+        "label": "Original Scaled"
+      },
+      "id": "original-gain",
+      "position": { "x": 510, "y": 280 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "subtract",
+        "config": {},
+        "label": "Difference"
+      },
+      "id": "subtract",
+      "position": { "x": 970, "y": 180 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 6000,
+          "qFactor": 0.7
+        },
+        "label": "Anti-Alias"
+      },
+      "id": "lpf",
+      "position": { "x": 1200, "y": 180 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1430, "y": 180 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Wave folder using sin math block to create harmonic-rich timbres from simple waveforms. Classic West Coast synthesis technique.",
+    "id": "a1b2c3d4-eeee-4eee-8eee-eeeeeeeeeeee",
+    "isPublic": true,
+    "name": "Wave Folder",
+    "tags": ["wave-fold", "sin", "west-coast", "harmonics", "experimental"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 9,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "osc",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-fold-amount",
+      "internalNodeId": "fold-gain",
+      "internalPortId": "in"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-vibrato-rate",
+      "label": "vibrato rate",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-vibrato-depth",
+      "label": "vibrato depth",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__saw1-out-mix-inputA",
+      "source": "saw1",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__saw2-out-mix-inputB",
+      "source": "saw2",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix-out-vibrato-in",
+      "source": "mix",
+      "sourceHandle": "out",
+      "target": "vibrato",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__vibrato-out-lpf-in",
+      "source": "vibrato",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-highshelf-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "highshelf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__highshelf-out-output-gain-in",
+      "source": "highshelf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sawtooth-wave",
+        "config": {
+          "amplitude": 0.35,
+          "frequency": 440,
+          "phase": 0
+        },
+        "label": "Sawtooth 1"
+      },
+      "id": "saw1",
+      "position": { "x": 50, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sawtooth-wave",
+        "config": {
+          "amplitude": 0.35,
+          "frequency": 440.8,
+          "phase": 90
+        },
+        "label": "Sawtooth 2 (detuned)"
+      },
+      "id": "saw2",
+      "position": { "x": 50, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix"
+      },
+      "id": "mix",
+      "position": { "x": 300, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "vibrato",
+        "config": {
+          "vibratoRate": 5.5,
+          "vibratoDepth": 0.004,
+          "vibratoWaveform": "sine"
+        },
+        "label": "Vibrato"
+      },
+      "id": "vibrato",
+      "position": { "x": 530, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 4000,
+          "qFactor": 0.7
+        },
+        "label": "Low-Pass Filter"
+      },
+      "id": "lpf",
+      "position": { "x": 760, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "highshelf-filter",
+        "config": {
+          "cutoffFrequency": 2500,
+          "filterGain": -2
+        },
+        "label": "High Shelf (Warmth)"
+      },
+      "id": "highshelf",
+      "position": { "x": 990, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1220, "y": 200 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "String-like sound with dual detuned sawtooth waves and expressive vibrato modulation.",
+    "id": "a1b2c3d4-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "isPublic": true,
+    "name": "Vibrato Strings",
+    "tags": ["strings", "vibrato", "expressive", "detuned"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 8,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "saw1",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-vibrato-rate",
+      "internalNodeId": "vibrato",
+      "internalPortId": "rate"
+    },
+    {
+      "externalPortId": "ext-in-vibrato-depth",
+      "internalNodeId": "vibrato",
+      "internalPortId": "depth"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

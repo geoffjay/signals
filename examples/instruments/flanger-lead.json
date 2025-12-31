@@ -1,0 +1,167 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-7777-4777-8777-777777777777"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-flanger-rate",
+      "label": "flanger rate",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-flanger-depth",
+      "label": "flanger depth",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-waveshaper-in",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "waveshaper",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__waveshaper-out-flanger-in",
+      "source": "waveshaper",
+      "sourceHandle": "out",
+      "target": "flanger",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__flanger-out-compressor-in",
+      "source": "flanger",
+      "sourceHandle": "out",
+      "target": "compressor",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__compressor-out-output-gain-in",
+      "source": "compressor",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sawtooth-wave",
+        "config": {
+          "amplitude": 0.6,
+          "frequency": 330,
+          "phase": 0
+        },
+        "label": "Sawtooth Lead"
+      },
+      "id": "osc",
+      "position": { "x": 50, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "waveshaper",
+        "config": {
+          "distortionAmount": 25,
+          "distortionCurve": "tanh",
+          "oversample": "2x"
+        },
+        "label": "Light Saturation"
+      },
+      "id": "waveshaper",
+      "position": { "x": 280, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "flanger",
+        "config": {
+          "flangerRate": 0.3,
+          "flangerDepth": 0.002,
+          "flangerFeedback": 0.7,
+          "flangerMix": 0.5
+        },
+        "label": "Flanger"
+      },
+      "id": "flanger",
+      "position": { "x": 510, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "compressor",
+        "config": {
+          "threshold": -18,
+          "knee": 20,
+          "ratio": 4,
+          "attack": 0.005,
+          "release": 0.1
+        },
+        "label": "Compressor"
+      },
+      "id": "compressor",
+      "position": { "x": 740, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.6
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 970, "y": 150 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Sawtooth lead with light saturation and flanging effect. Includes compression for consistent dynamics.",
+    "id": "a1b2c3d4-7777-4777-8777-777777777777",
+    "isPublic": true,
+    "name": "Flanger Lead",
+    "tags": ["lead", "flanger", "sawtooth", "modulation"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 6,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "osc",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-flanger-rate",
+      "internalNodeId": "flanger",
+      "internalPortId": "rate"
+    },
+    {
+      "externalPortId": "ext-in-flanger-depth",
+      "internalNodeId": "flanger",
+      "internalPortId": "depth"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

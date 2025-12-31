@@ -1,0 +1,260 @@
+{
+  "defaultConfig": {
+    "instrumentId": "b1c2d3e4-2222-4222-8222-222222222222"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "root frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-mod-rate",
+      "label": "modulation rate",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__root-out-mix1-inputA",
+      "source": "root",
+      "sourceHandle": "out",
+      "target": "mix1",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__fifth-out-mix1-inputB",
+      "source": "fifth",
+      "sourceHandle": "out",
+      "target": "mix1",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix1-out-mix2-inputA",
+      "source": "mix1",
+      "sourceHandle": "out",
+      "target": "mix2",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__octave-out-mix2-inputB",
+      "source": "octave",
+      "sourceHandle": "out",
+      "target": "mix2",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix2-out-phaser-in",
+      "source": "mix2",
+      "sourceHandle": "out",
+      "target": "phaser",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__phaser-out-delay-in",
+      "source": "phaser",
+      "sourceHandle": "out",
+      "target": "delay",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__delay-out-lpf-in",
+      "source": "delay",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-compressor-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "compressor",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__compressor-out-output-gain-in",
+      "source": "compressor",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.35,
+          "frequency": 55,
+          "phase": 0
+        },
+        "label": "Root (A1)"
+      },
+      "id": "root",
+      "position": { "x": 50, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.25,
+          "frequency": 82.5,
+          "phase": 45
+        },
+        "label": "Fifth (E2)"
+      },
+      "id": "fifth",
+      "position": { "x": 50, "y": 280 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "triangle-wave",
+        "config": {
+          "amplitude": 0.2,
+          "frequency": 110,
+          "phase": 90
+        },
+        "label": "Octave (A2)"
+      },
+      "id": "octave",
+      "position": { "x": 50, "y": 460 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix 1"
+      },
+      "id": "mix1",
+      "position": { "x": 300, "y": 180 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix 2"
+      },
+      "id": "mix2",
+      "position": { "x": 530, "y": 310 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "phaser",
+        "config": {
+          "phaserRate": 0.1,
+          "phaserDepth": 0.6,
+          "phaserStages": 8,
+          "phaserFeedback": 0.4,
+          "phaserMix": 0.5,
+          "phaserBaseFrequency": 500
+        },
+        "label": "Slow Phaser"
+      },
+      "id": "phaser",
+      "position": { "x": 760, "y": 310 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "delay",
+        "config": {
+          "delayTime": 0.5,
+          "delayFeedback": 0.5,
+          "delayMix": 0.4
+        },
+        "label": "Ambient Delay"
+      },
+      "id": "delay",
+      "position": { "x": 990, "y": 310 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 1500,
+          "qFactor": 0.5
+        },
+        "label": "Dark LP Filter"
+      },
+      "id": "lpf",
+      "position": { "x": 1220, "y": 310 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "compressor",
+        "config": {
+          "threshold": -20,
+          "knee": 30,
+          "ratio": 4,
+          "attack": 0.01,
+          "release": 0.3
+        },
+        "label": "Glue Compressor"
+      },
+      "id": "compressor",
+      "position": { "x": 1450, "y": 310 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.6
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1680, "y": 310 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Evolving ambient drone with harmonic intervals, slow phaser modulation, and diffuse delay. Perfect for ambient/meditation soundscapes.",
+    "id": "b1c2d3e4-2222-4222-8222-222222222222",
+    "isPublic": true,
+    "name": "Ambient Drone",
+    "tags": ["ambient", "drone", "meditation", "phaser", "delay", "atmospheric"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 11,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "root",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-mod-rate",
+      "internalNodeId": "phaser",
+      "internalPortId": "rate"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

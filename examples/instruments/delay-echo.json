@@ -1,0 +1,228 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-5555-4555-8555-555555555555"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-signal",
+      "label": "input",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-time",
+      "label": "delay time",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-feedback",
+      "label": "feedback",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__input-gain-out-delay1-in",
+      "source": "input-gain",
+      "sourceHandle": "out",
+      "target": "delay1",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__delay1-out-hpf-in",
+      "source": "delay1",
+      "sourceHandle": "out",
+      "target": "hpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__hpf-out-delay2-in",
+      "source": "hpf",
+      "sourceHandle": "out",
+      "target": "delay2",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__delay2-out-lpf-in",
+      "source": "delay2",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-mix-inputA",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__input-gain-out-dry-in",
+      "source": "input-gain",
+      "sourceHandle": "out",
+      "target": "dry-gain",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__dry-gain-out-mix-inputB",
+      "source": "dry-gain",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix-out-output-gain-in",
+      "source": "mix",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 1.0
+        },
+        "label": "Input Gain"
+      },
+      "id": "input-gain",
+      "position": { "x": 50, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "delay",
+        "config": {
+          "delayTime": 0.25,
+          "delayFeedback": 0.4,
+          "delayMix": 1.0
+        },
+        "label": "Delay 1 (Quarter Note)"
+      },
+      "id": "delay1",
+      "position": { "x": 280, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "high-pass-filter",
+        "config": {
+          "cutoffFrequency": 200,
+          "qFactor": 0.7
+        },
+        "label": "HP Filter"
+      },
+      "id": "hpf",
+      "position": { "x": 510, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "delay",
+        "config": {
+          "delayTime": 0.375,
+          "delayFeedback": 0.3,
+          "delayMix": 1.0
+        },
+        "label": "Delay 2 (Dotted Eighth)"
+      },
+      "id": "delay2",
+      "position": { "x": 740, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 3000,
+          "qFactor": 0.7
+        },
+        "label": "LP Filter (Darken)"
+      },
+      "id": "lpf",
+      "position": { "x": 970, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.8
+        },
+        "label": "Dry Signal"
+      },
+      "id": "dry-gain",
+      "position": { "x": 280, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix"
+      },
+      "id": "mix",
+      "position": { "x": 1100, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.7
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1330, "y": 200 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Dual delay with filtering for rhythmic echo effects. Uses HP and LP filters to shape delay tails.",
+    "id": "a1b2c3d4-5555-4555-8555-555555555555",
+    "isPublic": true,
+    "name": "Delay Echo",
+    "tags": ["delay", "echo", "time-based", "rhythm"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 9,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-signal",
+      "internalNodeId": "input-gain",
+      "internalPortId": "in"
+    },
+    {
+      "externalPortId": "ext-in-time",
+      "internalNodeId": "delay1",
+      "internalPortId": "time"
+    },
+    {
+      "externalPortId": "ext-in-feedback",
+      "internalNodeId": "delay1",
+      "internalPortId": "feedback"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

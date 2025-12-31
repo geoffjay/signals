@@ -1,0 +1,216 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-3333-4333-8333-333333333333"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-carrier-freq",
+      "label": "carrier freq",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-mod-depth",
+      "label": "mod depth",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-mod-ratio",
+      "label": "mod ratio",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__modulator-out-scale-inputA",
+      "source": "modulator",
+      "sourceHandle": "out",
+      "target": "mod-scale",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mod-depth-out-scale-inputB",
+      "source": "mod-depth-gain",
+      "sourceHandle": "out",
+      "target": "mod-scale",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__scale-out-fm-inputA",
+      "source": "mod-scale",
+      "sourceHandle": "out",
+      "target": "fm-add",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__carrier-base-out-fm-inputB",
+      "source": "carrier-base",
+      "sourceHandle": "out",
+      "target": "fm-add",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__fm-add-out-carrier-freq",
+      "source": "fm-add",
+      "sourceHandle": "out",
+      "target": "carrier",
+      "targetHandle": "freq"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__carrier-out-lpf-in",
+      "source": "carrier",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-output-gain-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 1.0,
+          "frequency": 880,
+          "phase": 0
+        },
+        "label": "Modulator"
+      },
+      "id": "modulator",
+      "position": { "x": 50, "y": 50 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 200,
+          "frequency": 1,
+          "phase": 0
+        },
+        "label": "Mod Depth"
+      },
+      "id": "mod-depth-gain",
+      "position": { "x": 50, "y": 250 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "multiply",
+        "config": {},
+        "label": "Mod Scale"
+      },
+      "id": "mod-scale",
+      "position": { "x": 300, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 440,
+          "frequency": 1,
+          "phase": 0
+        },
+        "label": "Carrier Base Freq"
+      },
+      "id": "carrier-base",
+      "position": { "x": 300, "y": 350 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "FM Add"
+      },
+      "id": "fm-add",
+      "position": { "x": 550, "y": 250 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.6,
+          "frequency": 440,
+          "phase": 0
+        },
+        "label": "Carrier"
+      },
+      "id": "carrier",
+      "position": { "x": 800, "y": 250 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 4000,
+          "qFactor": 0.7
+        },
+        "label": "Anti-Aliasing Filter"
+      },
+      "id": "lpf",
+      "position": { "x": 1050, "y": 250 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1300, "y": 250 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "FM synthesis using math blocks to modulate carrier frequency. Demonstrates multiply and add for frequency modulation.",
+    "id": "a1b2c3d4-3333-4333-8333-333333333333",
+    "isPublic": true,
+    "name": "FM Synth",
+    "tags": ["fm", "synthesis", "math", "modulation"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 9,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-carrier-freq",
+      "internalNodeId": "carrier",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-mod-depth",
+      "internalNodeId": "mod-depth-gain",
+      "internalPortId": "amp"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

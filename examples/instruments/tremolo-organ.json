@@ -1,0 +1,221 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-9999-4999-8999-999999999999"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-tremolo-rate",
+      "label": "tremolo rate",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-tremolo-depth",
+      "label": "tremolo depth",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__fundamental-out-mix1-inputA",
+      "source": "fundamental",
+      "sourceHandle": "out",
+      "target": "mix1",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__second-out-mix1-inputB",
+      "source": "second",
+      "sourceHandle": "out",
+      "target": "mix1",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix1-out-mix2-inputA",
+      "source": "mix1",
+      "sourceHandle": "out",
+      "target": "mix2",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__third-out-mix2-inputB",
+      "source": "third",
+      "sourceHandle": "out",
+      "target": "mix2",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix2-out-tremolo-in",
+      "source": "mix2",
+      "sourceHandle": "out",
+      "target": "tremolo",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__tremolo-out-lowshelf-in",
+      "source": "tremolo",
+      "sourceHandle": "out",
+      "target": "lowshelf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lowshelf-out-output-gain-in",
+      "source": "lowshelf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.4,
+          "frequency": 262,
+          "phase": 0
+        },
+        "label": "Fundamental"
+      },
+      "id": "fundamental",
+      "position": { "x": 50, "y": 50 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.3,
+          "frequency": 524,
+          "phase": 0
+        },
+        "label": "2nd Harmonic"
+      },
+      "id": "second",
+      "position": { "x": 50, "y": 230 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.15,
+          "frequency": 786,
+          "phase": 0
+        },
+        "label": "3rd Harmonic"
+      },
+      "id": "third",
+      "position": { "x": 50, "y": 410 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix 1"
+      },
+      "id": "mix1",
+      "position": { "x": 300, "y": 140 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix 2"
+      },
+      "id": "mix2",
+      "position": { "x": 530, "y": 270 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "tremolo",
+        "config": {
+          "tremoloRate": 6,
+          "tremoloDepth": 0.4,
+          "tremoloWaveform": "sine"
+        },
+        "label": "Tremolo"
+      },
+      "id": "tremolo",
+      "position": { "x": 760, "y": 270 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "lowshelf-filter",
+        "config": {
+          "cutoffFrequency": 300,
+          "filterGain": 2
+        },
+        "label": "Low Shelf Boost"
+      },
+      "id": "lowshelf",
+      "position": { "x": 990, "y": 270 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1220, "y": 270 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Organ-like sound using additive synthesis with harmonic overtones and tremolo modulation.",
+    "id": "a1b2c3d4-9999-4999-8999-999999999999",
+    "isPublic": true,
+    "name": "Tremolo Organ",
+    "tags": ["organ", "tremolo", "additive", "harmonics"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 9,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "fundamental",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-tremolo-rate",
+      "internalNodeId": "tremolo",
+      "internalPortId": "rate"
+    },
+    {
+      "externalPortId": "ext-in-tremolo-depth",
+      "internalNodeId": "tremolo",
+      "internalPortId": "depth"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "defaultConfig": {
+    "instrumentId": "b1c2d3e4-3333-4333-8333-333333333333"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-min",
+      "label": "clamp min",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-max",
+      "label": "clamp max",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-clamp-inputValue",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "clamp",
+      "targetHandle": "inputValue"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__min-out-clamp-inputMin",
+      "source": "min-value",
+      "sourceHandle": "out",
+      "target": "clamp",
+      "targetHandle": "inputMin"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__max-out-clamp-inputMax",
+      "source": "max-value",
+      "sourceHandle": "out",
+      "target": "clamp",
+      "targetHandle": "inputMax"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__clamp-out-lpf-in",
+      "source": "clamp",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-output-gain-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sawtooth-wave",
+        "config": {
+          "amplitude": 1.0,
+          "frequency": 220,
+          "phase": 0
+        },
+        "label": "Sawtooth"
+      },
+      "id": "osc",
+      "position": { "x": 50, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.3,
+          "frequency": 0.001,
+          "phase": 0
+        },
+        "label": "Min Value (-0.3)"
+      },
+      "id": "min-value",
+      "position": { "x": 50, "y": 330 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.5,
+          "frequency": 0.001,
+          "phase": 0
+        },
+        "label": "Max Value (0.5)"
+      },
+      "id": "max-value",
+      "position": { "x": 50, "y": 500 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "clamp",
+        "config": {},
+        "label": "Asymmetric Clamp"
+      },
+      "id": "clamp",
+      "position": { "x": 350, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 4000,
+          "qFactor": 0.7
+        },
+        "label": "Anti-Alias"
+      },
+      "id": "lpf",
+      "position": { "x": 600, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.6
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 850, "y": 300 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Demonstrates clamp block for asymmetric waveshaping. Creates unique timbres by limiting waveform differently on positive and negative sides.",
+    "id": "b1c2d3e4-3333-4333-8333-333333333333",
+    "isPublic": true,
+    "name": "Clamped Synth",
+    "tags": ["clamp", "asymmetric", "waveshaping", "experimental"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 7,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "osc",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-min",
+      "internalNodeId": "min-value",
+      "internalPortId": "amp"
+    },
+    {
+      "externalPortId": "ext-in-max",
+      "internalNodeId": "max-value",
+      "internalPortId": "amp"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

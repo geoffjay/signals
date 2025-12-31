@@ -1,0 +1,211 @@
+{
+  "defaultConfig": {
+    "instrumentId": "b1c2d3e4-4444-4444-8444-444444444444"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-curve",
+      "label": "curve amount",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-abs-in",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "abs",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__abs-out-pow-inputA",
+      "source": "abs",
+      "sourceHandle": "out",
+      "target": "pow",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__exponent-out-pow-inputB",
+      "source": "exponent",
+      "sourceHandle": "out",
+      "target": "pow",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__pow-out-sign-multiply-inputA",
+      "source": "pow",
+      "sourceHandle": "out",
+      "target": "sign-multiply",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-sign-in",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "sign",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__sign-out-sign-multiply-inputB",
+      "source": "sign",
+      "sourceHandle": "out",
+      "target": "sign-multiply",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__sign-multiply-out-lpf-in",
+      "source": "sign-multiply",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-output-gain-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.9,
+          "frequency": 110,
+          "phase": 0
+        },
+        "label": "Sine Source"
+      },
+      "id": "osc",
+      "position": { "x": 50, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "abs",
+        "config": {},
+        "label": "Absolute Value"
+      },
+      "id": "abs",
+      "position": { "x": 280, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 3,
+          "frequency": 0.001,
+          "phase": 0
+        },
+        "label": "Exponent (3)"
+      },
+      "id": "exponent",
+      "position": { "x": 280, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "pow",
+        "config": {},
+        "label": "Power (x^3)"
+      },
+      "id": "pow",
+      "position": { "x": 510, "y": 180 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sign",
+        "config": {},
+        "label": "Extract Sign"
+      },
+      "id": "sign",
+      "position": { "x": 510, "y": 350 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "multiply",
+        "config": {},
+        "label": "Restore Sign"
+      },
+      "id": "sign-multiply",
+      "position": { "x": 740, "y": 260 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 5000,
+          "qFactor": 0.7
+        },
+        "label": "Smooth LP"
+      },
+      "id": "lpf",
+      "position": { "x": 970, "y": 260 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1200, "y": 260 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Uses pow and sign blocks to create exponential waveshaping while preserving polarity. Creates warm, tube-like distortion.",
+    "id": "b1c2d3e4-4444-4444-8444-444444444444",
+    "isPublic": true,
+    "name": "Exponential Shaper",
+    "tags": ["pow", "sign", "exponential", "waveshaping", "warm"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 9,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "osc",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-curve",
+      "internalNodeId": "exponent",
+      "internalPortId": "amp"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

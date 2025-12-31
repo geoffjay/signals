@@ -1,0 +1,109 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-1111-4111-8111-111111111111"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-amp",
+      "label": "amplitude",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-filter-in",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "filter",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__filter-out-gain-in",
+      "source": "filter",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.7,
+          "frequency": 440,
+          "phase": 0
+        },
+        "label": "Sine Oscillator"
+      },
+      "id": "osc",
+      "position": { "x": 100, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 2000,
+          "qFactor": 1.0
+        },
+        "label": "Low-Pass Filter"
+      },
+      "id": "filter",
+      "position": { "x": 350, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.8
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 600, "y": 150 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Simple sine wave oscillator with low-pass filter and gain control. A basic starting point for synthesis.",
+    "id": "a1b2c3d4-1111-4111-8111-111111111111",
+    "isPublic": true,
+    "name": "Basic Synth",
+    "tags": ["beginner", "sine", "filter"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 4,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "osc",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-amp",
+      "internalNodeId": "osc",
+      "internalPortId": "amp"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

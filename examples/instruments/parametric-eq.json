@@ -1,0 +1,241 @@
+{
+  "defaultConfig": {
+    "instrumentId": "b1c2d3e4-5555-4555-8555-555555555555"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-signal",
+      "label": "input",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-low-gain",
+      "label": "low shelf gain",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-mid-gain",
+      "label": "mid gain",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-high-gain",
+      "label": "high shelf gain",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__input-gain-out-hpf-in",
+      "source": "input-gain",
+      "sourceHandle": "out",
+      "target": "hpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__hpf-out-lowshelf-in",
+      "source": "hpf",
+      "sourceHandle": "out",
+      "target": "lowshelf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lowshelf-out-peaking-low-in",
+      "source": "lowshelf",
+      "sourceHandle": "out",
+      "target": "peaking-low",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__peaking-low-out-peaking-mid-in",
+      "source": "peaking-low",
+      "sourceHandle": "out",
+      "target": "peaking-mid",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__peaking-mid-out-peaking-high-in",
+      "source": "peaking-mid",
+      "sourceHandle": "out",
+      "target": "peaking-high",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__peaking-high-out-highshelf-in",
+      "source": "peaking-high",
+      "sourceHandle": "out",
+      "target": "highshelf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__highshelf-out-lpf-in",
+      "source": "highshelf",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-output-gain-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 1.0
+        },
+        "label": "Input Gain"
+      },
+      "id": "input-gain",
+      "position": { "x": 50, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "high-pass-filter",
+        "config": {
+          "cutoffFrequency": 30,
+          "qFactor": 0.7
+        },
+        "label": "Subsonic Cut"
+      },
+      "id": "hpf",
+      "position": { "x": 230, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "lowshelf-filter",
+        "config": {
+          "cutoffFrequency": 100,
+          "filterGain": 0
+        },
+        "label": "Low Shelf (100Hz)"
+      },
+      "id": "lowshelf",
+      "position": { "x": 410, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "peaking-eq",
+        "config": {
+          "cutoffFrequency": 250,
+          "qFactor": 1.5,
+          "filterGain": 0
+        },
+        "label": "Low-Mid (250Hz)"
+      },
+      "id": "peaking-low",
+      "position": { "x": 590, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "peaking-eq",
+        "config": {
+          "cutoffFrequency": 1000,
+          "qFactor": 1.0,
+          "filterGain": 0
+        },
+        "label": "Mid (1kHz)"
+      },
+      "id": "peaking-mid",
+      "position": { "x": 770, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "peaking-eq",
+        "config": {
+          "cutoffFrequency": 4000,
+          "qFactor": 1.5,
+          "filterGain": 0
+        },
+        "label": "High-Mid (4kHz)"
+      },
+      "id": "peaking-high",
+      "position": { "x": 950, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "highshelf-filter",
+        "config": {
+          "cutoffFrequency": 8000,
+          "filterGain": 0
+        },
+        "label": "High Shelf (8kHz)"
+      },
+      "id": "highshelf",
+      "position": { "x": 1130, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 18000,
+          "qFactor": 0.7
+        },
+        "label": "Ultrasonic Cut"
+      },
+      "id": "lpf",
+      "position": { "x": 1310, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 1.0
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1490, "y": 200 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "6-band parametric EQ with low shelf, 3 peaking bands, and high shelf. Demonstrates all filter types in a practical mixing context.",
+    "id": "b1c2d3e4-5555-4555-8555-555555555555",
+    "isPublic": true,
+    "name": "Parametric EQ",
+    "tags": ["eq", "filter", "mixing", "mastering", "parametric"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 10,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-signal",
+      "internalNodeId": "input-gain",
+      "internalPortId": "in"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

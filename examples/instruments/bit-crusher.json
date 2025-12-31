@@ -1,0 +1,193 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-cccc-4ccc-8ccc-cccccccccccc"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-resolution",
+      "label": "bit depth",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__osc-out-scale-up-inputA",
+      "source": "osc",
+      "sourceHandle": "out",
+      "target": "scale-up",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__resolution-out-scale-up-inputB",
+      "source": "resolution",
+      "sourceHandle": "out",
+      "target": "scale-up",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__scale-up-out-floor-in",
+      "source": "scale-up",
+      "sourceHandle": "out",
+      "target": "floor",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__floor-out-scale-down-inputA",
+      "source": "floor",
+      "sourceHandle": "out",
+      "target": "scale-down",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__resolution-out-scale-down-inputB",
+      "source": "resolution",
+      "sourceHandle": "out",
+      "target": "scale-down",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__scale-down-out-lpf-in",
+      "source": "scale-down",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-output-gain-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sawtooth-wave",
+        "config": {
+          "amplitude": 0.8,
+          "frequency": 220,
+          "phase": 0
+        },
+        "label": "Sawtooth Source"
+      },
+      "id": "osc",
+      "position": { "x": 50, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 16,
+          "frequency": 0.001,
+          "phase": 0
+        },
+        "label": "Resolution (Bit Depth)"
+      },
+      "id": "resolution",
+      "position": { "x": 50, "y": 320 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "multiply",
+        "config": {},
+        "label": "Scale Up"
+      },
+      "id": "scale-up",
+      "position": { "x": 300, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "floor",
+        "config": {},
+        "label": "Quantize (Floor)"
+      },
+      "id": "floor",
+      "position": { "x": 530, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "divide",
+        "config": {},
+        "label": "Scale Down"
+      },
+      "id": "scale-down",
+      "position": { "x": 760, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 8000,
+          "qFactor": 0.7
+        },
+        "label": "Anti-Alias Filter"
+      },
+      "id": "lpf",
+      "position": { "x": 990, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1220, "y": 200 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Bit crusher effect using floor operation to quantize signal amplitude. Creates lo-fi, 8-bit style sounds.",
+    "id": "a1b2c3d4-cccc-4ccc-8ccc-cccccccccccc",
+    "isPublic": true,
+    "name": "Bit Crusher",
+    "tags": ["lo-fi", "8-bit", "floor", "quantize", "retro"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 8,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "osc",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-resolution",
+      "internalNodeId": "resolution",
+      "internalPortId": "amp"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

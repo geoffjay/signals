@@ -1,0 +1,247 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-ffff-4fff-8fff-ffffffffffff"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-selector",
+      "label": "waveform select",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-clean",
+      "label": "clean output",
+      "type": "output"
+    },
+    {
+      "id": "ext-out-distorted",
+      "label": "distorted output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__sine-out-mux-in0",
+      "source": "sine",
+      "sourceHandle": "out",
+      "target": "mux",
+      "targetHandle": "in0"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__square-out-mux-in1",
+      "source": "square",
+      "sourceHandle": "out",
+      "target": "mux",
+      "targetHandle": "in1"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__saw-out-mux-in2",
+      "source": "saw",
+      "sourceHandle": "out",
+      "target": "mux",
+      "targetHandle": "in2"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__triangle-out-mux-in3",
+      "source": "triangle",
+      "sourceHandle": "out",
+      "target": "mux",
+      "targetHandle": "in3"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mux-out-splitter-in",
+      "source": "mux",
+      "sourceHandle": "out",
+      "target": "splitter",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__splitter-out0-clean-gain-in",
+      "source": "splitter",
+      "sourceHandle": "out0",
+      "target": "clean-gain",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__splitter-out1-waveshaper-in",
+      "source": "splitter",
+      "sourceHandle": "out1",
+      "target": "waveshaper",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__waveshaper-out-distort-gain-in",
+      "source": "waveshaper",
+      "sourceHandle": "out",
+      "target": "distort-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.6,
+          "frequency": 440,
+          "phase": 0
+        },
+        "label": "Sine"
+      },
+      "id": "sine",
+      "position": { "x": 50, "y": 50 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "square-wave",
+        "config": {
+          "amplitude": 0.6,
+          "frequency": 440,
+          "phase": 0
+        },
+        "label": "Square"
+      },
+      "id": "square",
+      "position": { "x": 50, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sawtooth-wave",
+        "config": {
+          "amplitude": 0.6,
+          "frequency": 440,
+          "phase": 0
+        },
+        "label": "Sawtooth"
+      },
+      "id": "saw",
+      "position": { "x": 50, "y": 350 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "triangle-wave",
+        "config": {
+          "amplitude": 0.6,
+          "frequency": 440,
+          "phase": 0
+        },
+        "label": "Triangle"
+      },
+      "id": "triangle",
+      "position": { "x": 50, "y": 500 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "multiplexer",
+        "config": {
+          "numInputs": 4,
+          "selectorValue": 0
+        },
+        "label": "Waveform Selector"
+      },
+      "id": "mux",
+      "position": { "x": 350, "y": 250 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "splitter",
+        "config": {
+          "numOutputs": 2
+        },
+        "label": "Split to Clean/Dirty"
+      },
+      "id": "splitter",
+      "position": { "x": 600, "y": 250 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.7
+        },
+        "label": "Clean Output"
+      },
+      "id": "clean-gain",
+      "position": { "x": 850, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "waveshaper",
+        "config": {
+          "distortionAmount": 70,
+          "distortionCurve": "tanh",
+          "oversample": "2x"
+        },
+        "label": "Waveshaper"
+      },
+      "id": "waveshaper",
+      "position": { "x": 850, "y": 320 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Distorted Output"
+      },
+      "id": "distort-gain",
+      "position": { "x": 1100, "y": 320 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Demonstrates multiplexer for waveform selection and splitter for parallel processing. Four waveforms selectable, split to clean and distorted outputs.",
+    "id": "a1b2c3d4-ffff-4fff-8fff-ffffffffffff",
+    "isPublic": true,
+    "name": "Signal Router",
+    "tags": ["multiplexer", "splitter", "routing", "parallel"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 10,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "sine",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-selector",
+      "internalNodeId": "mux",
+      "internalPortId": "selector"
+    },
+    {
+      "externalPortId": "ext-out-clean",
+      "internalNodeId": "clean-gain",
+      "internalPortId": "out"
+    },
+    {
+      "externalPortId": "ext-out-distorted",
+      "internalNodeId": "distort-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

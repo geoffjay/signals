@@ -1,0 +1,199 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-carrier-freq",
+      "label": "carrier freq",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-mod-freq",
+      "label": "modulator freq",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-mix",
+      "label": "dry/wet mix",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__carrier-out-multiply-inputA",
+      "source": "carrier",
+      "sourceHandle": "out",
+      "target": "multiply",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__modulator-out-multiply-inputB",
+      "source": "modulator",
+      "sourceHandle": "out",
+      "target": "multiply",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__multiply-out-wet-gain-in",
+      "source": "multiply",
+      "sourceHandle": "out",
+      "target": "wet-gain",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__carrier-out-dry-gain-in",
+      "source": "carrier",
+      "sourceHandle": "out",
+      "target": "dry-gain",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__wet-gain-out-mix-inputA",
+      "source": "wet-gain",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__dry-gain-out-mix-inputB",
+      "source": "dry-gain",
+      "sourceHandle": "out",
+      "target": "mix",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix-out-output-gain-in",
+      "source": "mix",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "sawtooth-wave",
+        "config": {
+          "amplitude": 0.6,
+          "frequency": 220,
+          "phase": 0
+        },
+        "label": "Carrier"
+      },
+      "id": "carrier",
+      "position": { "x": 50, "y": 100 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 1.0,
+          "frequency": 150,
+          "phase": 0
+        },
+        "label": "Modulator"
+      },
+      "id": "modulator",
+      "position": { "x": 50, "y": 320 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "multiply",
+        "config": {},
+        "label": "Ring Mod (A * B)"
+      },
+      "id": "multiply",
+      "position": { "x": 300, "y": 200 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.7
+        },
+        "label": "Wet Gain"
+      },
+      "id": "wet-gain",
+      "position": { "x": 530, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.3
+        },
+        "label": "Dry Gain"
+      },
+      "id": "dry-gain",
+      "position": { "x": 530, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix"
+      },
+      "id": "mix",
+      "position": { "x": 760, "y": 220 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 990, "y": 220 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Classic ring modulator using multiply block to create sum and difference frequencies. Creates metallic, bell-like tones.",
+    "id": "a1b2c3d4-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    "isPublic": true,
+    "name": "Ring Modulator",
+    "tags": ["ring-mod", "multiply", "metallic", "experimental"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 8,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-carrier-freq",
+      "internalNodeId": "carrier",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-mod-freq",
+      "internalNodeId": "modulator",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}

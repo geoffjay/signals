@@ -1,0 +1,222 @@
+{
+  "defaultConfig": {
+    "instrumentId": "a1b2c3d4-6666-4666-8666-666666666666"
+  },
+  "externalPorts": [
+    {
+      "id": "ext-in-freq",
+      "label": "frequency",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-chorus-rate",
+      "label": "chorus rate",
+      "type": "input"
+    },
+    {
+      "id": "ext-in-chorus-depth",
+      "label": "chorus depth",
+      "type": "input"
+    },
+    {
+      "id": "ext-out-signal",
+      "label": "output",
+      "type": "output"
+    }
+  ],
+  "internalEdges": [
+    {
+      "animated": false,
+      "id": "xy-edge__osc1-out-mix1-inputA",
+      "source": "osc1",
+      "sourceHandle": "out",
+      "target": "mix1",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__osc2-out-mix1-inputB",
+      "source": "osc2",
+      "sourceHandle": "out",
+      "target": "mix1",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix1-out-mix2-inputA",
+      "source": "mix1",
+      "sourceHandle": "out",
+      "target": "mix2",
+      "targetHandle": "inputA"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__osc3-out-mix2-inputB",
+      "source": "osc3",
+      "sourceHandle": "out",
+      "target": "mix2",
+      "targetHandle": "inputB"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__mix2-out-chorus-in",
+      "source": "mix2",
+      "sourceHandle": "out",
+      "target": "chorus",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__chorus-out-lpf-in",
+      "source": "chorus",
+      "sourceHandle": "out",
+      "target": "lpf",
+      "targetHandle": "in"
+    },
+    {
+      "animated": false,
+      "id": "xy-edge__lpf-out-output-gain-in",
+      "source": "lpf",
+      "sourceHandle": "out",
+      "target": "output-gain",
+      "targetHandle": "in"
+    }
+  ],
+  "internalNodes": [
+    {
+      "data": {
+        "blockType": "triangle-wave",
+        "config": {
+          "amplitude": 0.3,
+          "frequency": 220,
+          "phase": 0
+        },
+        "label": "Triangle OSC 1"
+      },
+      "id": "osc1",
+      "position": { "x": 50, "y": 50 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "triangle-wave",
+        "config": {
+          "amplitude": 0.3,
+          "frequency": 220.5,
+          "phase": 60
+        },
+        "label": "Triangle OSC 2 (detuned)"
+      },
+      "id": "osc2",
+      "position": { "x": 50, "y": 250 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "sine-wave",
+        "config": {
+          "amplitude": 0.2,
+          "frequency": 110,
+          "phase": 0
+        },
+        "label": "Sub Bass"
+      },
+      "id": "osc3",
+      "position": { "x": 50, "y": 450 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix 1"
+      },
+      "id": "mix1",
+      "position": { "x": 300, "y": 150 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "add",
+        "config": {},
+        "label": "Mix 2"
+      },
+      "id": "mix2",
+      "position": { "x": 530, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "chorus",
+        "config": {
+          "chorusRate": 0.8,
+          "chorusDepth": 0.004,
+          "chorusMix": 0.6,
+          "chorusVoices": 4
+        },
+        "label": "Chorus"
+      },
+      "id": "chorus",
+      "position": { "x": 760, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "low-pass-filter",
+        "config": {
+          "cutoffFrequency": 3500,
+          "qFactor": 0.7
+        },
+        "label": "Low-Pass Filter"
+      },
+      "id": "lpf",
+      "position": { "x": 990, "y": 300 },
+      "type": "signalBlock"
+    },
+    {
+      "data": {
+        "blockType": "gain",
+        "config": {
+          "gain": 0.5
+        },
+        "label": "Output Gain"
+      },
+      "id": "output-gain",
+      "position": { "x": 1220, "y": 300 },
+      "type": "signalBlock"
+    }
+  ],
+  "metadata": {
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "description": "Lush pad sound with three detuned oscillators and multi-voice chorus effect.",
+    "id": "a1b2c3d4-6666-4666-8666-666666666666",
+    "isPublic": true,
+    "name": "Chorus Pad",
+    "tags": ["pad", "chorus", "ambient", "layered"],
+    "updatedAt": "2025-12-31T12:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "nodeIdCounter": 9,
+  "portMappings": [
+    {
+      "externalPortId": "ext-in-freq",
+      "internalNodeId": "osc1",
+      "internalPortId": "freq"
+    },
+    {
+      "externalPortId": "ext-in-chorus-rate",
+      "internalNodeId": "chorus",
+      "internalPortId": "rate"
+    },
+    {
+      "externalPortId": "ext-in-chorus-depth",
+      "internalNodeId": "chorus",
+      "internalPortId": "depth"
+    },
+    {
+      "externalPortId": "ext-out-signal",
+      "internalNodeId": "output-gain",
+      "internalPortId": "out"
+    }
+  ]
+}
