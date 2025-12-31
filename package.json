@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "cli": "bun run cli/src/index.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",

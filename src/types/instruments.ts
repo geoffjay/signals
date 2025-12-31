@@ -183,43 +183,73 @@ export function createEmptyInstrumentDefinition(
 
 /**
  * Extracts a summary from a full instrument definition.
+ * Includes defensive checks for malformed data from database.
  */
 export function toInstrumentSummary(
   definition: InstrumentDefinition,
 ): InstrumentSummary {
+  // Defensive check for malformed externalPorts (may be object instead of array in older records)
+  const ports = Array.isArray(definition.externalPorts)
+    ? definition.externalPorts
+    : [];
+
   return {
-    id: definition.metadata.id,
-    name: definition.metadata.name,
-    description: definition.metadata.description,
-    author: definition.metadata.author,
-    tags: definition.metadata.tags,
-    isPublic: definition.metadata.isPublic ?? false,
-    createdAt: definition.metadata.createdAt,
-    updatedAt: definition.metadata.updatedAt,
-    inputCount: definition.externalPorts.filter((p) => p.type === "input")
-      .length,
-    outputCount: definition.externalPorts.filter((p) => p.type === "output")
-      .length,
+    id: definition.metadata?.id ?? "",
+    name: definition.metadata?.name ?? "Unknown",
+    description: definition.metadata?.description ?? "",
+    author: definition.metadata?.author,
+    tags: definition.metadata?.tags,
+    isPublic: definition.metadata?.isPublic ?? false,
+    createdAt: definition.metadata?.createdAt ?? "",
+    updatedAt: definition.metadata?.updatedAt ?? "",
+    inputCount: ports.filter((p) => p.type === "input").length,
+    outputCount: ports.filter((p) => p.type === "output").length,
   };
 }
 
 /**
  * Validates an instrument definition for completeness.
  * Returns an array of validation error messages, empty if valid.
+ * Includes defensive checks for malformed data.
  */
 export function validateInstrumentDefinition(
   definition: InstrumentDefinition,
 ): string[] {
   const errors: string[] = [];
 
+  // Defensive array checks for potentially malformed data
+  const externalPorts = Array.isArray(definition.externalPorts)
+    ? definition.externalPorts
+    : [];
+  const portMappings = Array.isArray(definition.portMappings)
+    ? definition.portMappings
+    : [];
+  const internalNodes = Array.isArray(definition.internalNodes)
+    ? definition.internalNodes
+    : [];
+
   // Check metadata
-  if (!definition.metadata.name?.trim()) {
+  if (!definition.metadata?.name?.trim()) {
     errors.push("Instrument name is required");
   }
 
+  // Validate array types
+  if (!Array.isArray(definition.externalPorts)) {
+    errors.push("externalPorts must be an array");
+  }
+  if (!Array.isArray(definition.portMappings)) {
+    errors.push("portMappings must be an array");
+  }
+  if (!Array.isArray(definition.internalNodes)) {
+    errors.push("internalNodes must be an array");
+  }
+  if (!Array.isArray(definition.internalEdges)) {
+    errors.push("internalEdges must be an array");
+  }
+
   // Check that all port mappings reference valid external ports
-  const externalPortIds = new Set(definition.externalPorts.map((p) => p.id));
-  for (const mapping of definition.portMappings) {
+  const externalPortIds = new Set(externalPorts.map((p) => p.id));
+  for (const mapping of portMappings) {
     if (!externalPortIds.has(mapping.externalPortId)) {
       errors.push(
         `Port mapping references unknown external port: ${mapping.externalPortId}`,
@@ -228,8 +258,8 @@ export function validateInstrumentDefinition(
   }
 
   // Check that all port mappings reference valid internal nodes
-  const internalNodeIds = new Set(definition.internalNodes.map((n) => n.id));
-  for (const mapping of definition.portMappings) {
+  const internalNodeIds = new Set(internalNodes.map((n) => n.id));
+  for (const mapping of portMappings) {
     if (!internalNodeIds.has(mapping.internalNodeId)) {
       errors.push(
         `Port mapping references unknown internal node: ${mapping.internalNodeId}`,
@@ -238,10 +268,8 @@ export function validateInstrumentDefinition(
   }
 
   // Check for unmapped external ports
-  const mappedPortIds = new Set(
-    definition.portMappings.map((m) => m.externalPortId),
-  );
-  for (const port of definition.externalPorts) {
+  const mappedPortIds = new Set(portMappings.map((m) => m.externalPortId));
+  for (const port of externalPorts) {
     if (!mappedPortIds.has(port.id)) {
       errors.push(
         `External port "${port.label}" is not mapped to any internal node`,
@@ -250,7 +278,7 @@ export function validateInstrumentDefinition(
   }
 
   // Check for duplicate external port labels
-  const portLabels = definition.externalPorts.map((p) => p.label.toLowerCase());
+  const portLabels = externalPorts.map((p) => p.label.toLowerCase());
   const duplicateLabels = portLabels.filter(
     (label, index) => portLabels.indexOf(label) !== index,
   );
