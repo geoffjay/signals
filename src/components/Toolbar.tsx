@@ -65,6 +65,7 @@ import {
   PlayCircle,
   Disc,
   Radio as SampleRate,
+  Target,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -155,6 +156,7 @@ const BLOCK_ICONS: Record<
   adsr: PlayCircle,
   "bit-crusher": Disc,
   "sample-rate-reducer": SampleRate,
+  "ring-mod": Target,
 };
 
 const blockGroups = [
@@ -191,6 +193,7 @@ const blockGroups = [
       "adsr",
       "bit-crusher",
       "sample-rate-reducer",
+      "ring-mod",
       "low-pass-filter",
       "high-pass-filter",
       "band-pass-filter",

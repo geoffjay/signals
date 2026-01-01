@@ -196,6 +196,9 @@ export interface BlockConfig {
   // Sample Rate Reducer
   reducerSampleRate?: number; // Hz (100 to 44100)
   reducerMix?: number; // dry/wet (0 to 1)
+
+  // Ring Modulator
+  ringModMix?: number; // dry/wet (0 to 1)
 }
 
 /**

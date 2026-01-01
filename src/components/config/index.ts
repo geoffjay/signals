@@ -24,6 +24,7 @@ import {
 } from "./TimeBasedConfig";
 import { EnvelopeFollowerConfig, ADSRConfig } from "./EnvelopeConfig";
 import { BitCrusherConfig, SampleRateReducerConfig } from "./LoFiConfig";
+import { RingModConfig } from "./RingModConfig";
 import { MultiplexerConfig, SplitterConfig } from "./RoutingConfig";
 import { OscilloscopeConfig } from "./OscilloscopeConfig";
 import { AudioOutputConfig } from "./AudioOutputConfig";
@@ -67,6 +68,7 @@ export {
   ADSRConfig,
   BitCrusherConfig,
   SampleRateReducerConfig,
+  RingModConfig,
   MultiplexerConfig,
   SplitterConfig,
   OscilloscopeConfig,
@@ -137,6 +139,9 @@ export const configComponentMap: Record<
   // Lo-Fi effects
   "bit-crusher": BitCrusherConfig,
   "sample-rate-reducer": SampleRateReducerConfig,
+
+  // Frequency/Pitch effects
+  "ring-mod": RingModConfig,
 
   // Routing
   multiplexer: MultiplexerConfig,

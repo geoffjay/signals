@@ -758,6 +758,11 @@ export class SignalProcessingEngine {
       case "sample-rate-reducer":
         this.createSampleRateReducer(nodeId, config);
         break;
+
+      // Frequency/Pitch effects
+      case "ring-mod":
+        this.createRingModulator(nodeId, config);
+        break;
     }
   }
 
@@ -1628,6 +1633,23 @@ export class SignalProcessingEngine {
     } catch (e) {
       console.error("Failed to create sample-rate-reducer AudioWorkletNode:", e);
     }
+  }
+
+  /**
+   * Ring Modulator - Multiplies carrier and modulator signals
+   * Uses same technique as multiply: carrier passes through GainNode,
+   * modulator modulates the gain parameter
+   */
+  private createRingModulator(nodeId: string, _config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    // Ring modulation: carrier signal passes through gain node,
+    // modulator signal modulates the gain parameter
+    // This produces sum and difference frequencies characteristic of ring mod
+    const gainNode = this.audioContext.createGain();
+    gainNode.gain.value = 0; // Will be modulated by modulator input
+
+    this.nodes.set(nodeId, gainNode);
   }
 
   private createSplitter(nodeId: string) {
@@ -2521,6 +2543,17 @@ export class SignalProcessingEngine {
             sourceNode.connect(targetNode);
           } else if (actualTargetHandle === "inputB") {
             // Signal B modulates the gain parameter
+            sourceNode.connect((targetNode as GainNode).gain);
+          }
+          break;
+
+        case "ring-mod":
+          // Ring modulator: carrier passes through, modulator modulates gain
+          if (actualTargetHandle === "carrier") {
+            // Carrier signal passes through gain node
+            sourceNode.connect(targetNode);
+          } else if (actualTargetHandle === "modulator") {
+            // Modulator signal modulates the gain parameter
             sourceNode.connect((targetNode as GainNode).gain);
           }
           break;

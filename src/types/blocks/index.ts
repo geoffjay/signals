@@ -19,6 +19,7 @@ import { DISTORTION_DEFINITIONS, type DistortionBlockType } from "./distortion";
 import { TIMEBASED_DEFINITIONS, type TimeBasedBlockType } from "./timebased";
 import { ENVELOPE_DEFINITIONS, type EnvelopeBlockType } from "./envelope";
 import { LOFI_DEFINITIONS, type LoFiBlockType } from "./lofi";
+import { FREQUENCY_DEFINITIONS, type FrequencyBlockType } from "./frequency";
 import { INPUT_DEFINITIONS, type InputBlockType } from "./inputs";
 import { OUTPUT_DEFINITIONS, type OutputBlockType } from "./outputs";
 import { ROUTING_DEFINITIONS, type RoutingBlockType } from "./routing";
@@ -34,6 +35,7 @@ export type { DistortionBlockType } from "./distortion";
 export type { TimeBasedBlockType, LFOWaveformType, ReverbPresetType } from "./timebased";
 export type { EnvelopeBlockType } from "./envelope";
 export type { LoFiBlockType } from "./lofi";
+export type { FrequencyBlockType } from "./frequency";
 export type { InputBlockType } from "./inputs";
 export type { OutputBlockType } from "./outputs";
 export type { RoutingBlockType } from "./routing";
@@ -51,6 +53,7 @@ export type BlockType =
   | TimeBasedBlockType
   | EnvelopeBlockType
   | LoFiBlockType
+  | FrequencyBlockType
   | InputBlockType
   | OutputBlockType
   | RoutingBlockType
@@ -68,6 +71,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   ...TIMEBASED_DEFINITIONS,
   ...ENVELOPE_DEFINITIONS,
   ...LOFI_DEFINITIONS,
+  ...FREQUENCY_DEFINITIONS,
   ...INPUT_DEFINITIONS,
   ...OUTPUT_DEFINITIONS,
   ...ROUTING_DEFINITIONS,
@@ -156,6 +160,7 @@ export {
   TIMEBASED_DEFINITIONS,
   ENVELOPE_DEFINITIONS,
   LOFI_DEFINITIONS,
+  FREQUENCY_DEFINITIONS,
   INPUT_DEFINITIONS,
   OUTPUT_DEFINITIONS,
   ROUTING_DEFINITIONS,
