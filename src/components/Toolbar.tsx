@@ -60,6 +60,7 @@ import {
   Piano,
   Grid2X2,
   ArrowLeftRight,
+  Repeat,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -114,6 +115,7 @@ const BLOCK_ICONS: Record<
   flanger: Orbit,
   phaser: CircleDashed,
   vibrato: Vibrate,
+  reverb: Repeat,
   multiplexer: Combine,
   splitter: Split,
   oscilloscope: LineChart,
@@ -176,6 +178,7 @@ const blockGroups = [
       "flanger",
       "phaser",
       "vibrato",
+      "reverb",
       "low-pass-filter",
       "high-pass-filter",
       "band-pass-filter",

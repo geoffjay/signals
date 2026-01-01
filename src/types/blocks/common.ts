@@ -90,6 +90,18 @@ export interface BlockConfig {
   vibratoDepth?: number; // seconds (pitch variation via delay, 0.001 to 0.01)
   vibratoWaveform?: "sine" | "square" | "triangle" | "sawtooth";
 
+  // Reverb
+  reverbPreset?:
+    | "small-room"
+    | "medium-room"
+    | "large-hall"
+    | "cathedral"
+    | "plate"
+    | "spring";
+  reverbDecay?: number; // Decay multiplier (0.5 to 10)
+  reverbMix?: number; // dry/wet (0 to 1)
+  reverbPredelay?: number; // seconds (0 to 0.2)
+
   // Multiplexer
   numInputs?: number;
   selectorValue?: number;

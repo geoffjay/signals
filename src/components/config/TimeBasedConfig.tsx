@@ -508,3 +508,88 @@ export function VibratoConfig({
     </>
   );
 }
+
+/**
+ * Configuration for reverb block
+ */
+export function ReverbConfig({ config, onConfigChange }: ConfigComponentProps) {
+  return (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="reverbPreset">Room Type</Label>
+        <Select
+          value={config.reverbPreset ?? "medium-room"}
+          onValueChange={(value) =>
+            value &&
+            onConfigChange({
+              reverbPreset: value as
+                | "small-room"
+                | "medium-room"
+                | "large-hall"
+                | "cathedral"
+                | "plate"
+                | "spring",
+            })
+          }
+        >
+          <SelectTrigger id="reverbPreset">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="small-room">Small Room</SelectItem>
+            <SelectItem value="medium-room">Medium Room</SelectItem>
+            <SelectItem value="large-hall">Large Hall</SelectItem>
+            <SelectItem value="cathedral">Cathedral</SelectItem>
+            <SelectItem value="plate">Plate</SelectItem>
+            <SelectItem value="spring">Spring</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Type of reverb character
+        </p>
+      </div>
+
+      <ConfigField label="Decay" htmlFor="reverbDecay">
+        <NumberInput
+          id="reverbDecay"
+          min={0.5}
+          max={10}
+          step={0.1}
+          value={config.reverbDecay ?? 2.0}
+          onChange={(value) => onConfigChange({ reverbDecay: value })}
+        />
+        <p className="text-xs text-muted-foreground">
+          Reverb tail length multiplier
+        </p>
+      </ConfigField>
+
+      <ConfigField label="Mix (Dry/Wet)" htmlFor="reverbMix">
+        <NumberInput
+          id="reverbMix"
+          min={0}
+          max={1}
+          step={0.01}
+          value={config.reverbMix ?? 0.3}
+          onChange={(value) => onConfigChange({ reverbMix: value })}
+        />
+        <p className="text-xs text-muted-foreground">
+          0 = dry only, 1 = wet only
+        </p>
+      </ConfigField>
+
+      <ConfigField label="Pre-delay (sec)" htmlFor="reverbPredelay">
+        <NumberInput
+          id="reverbPredelay"
+          min={0}
+          max={0.2}
+          step={0.005}
+          value={config.reverbPredelay ?? 0.02}
+          onChange={(value) => onConfigChange({ reverbPredelay: value })}
+        />
+        <p className="text-xs text-muted-foreground">
+          Delay before reverb starts
+        </p>
+      </ConfigField>
+    </>
+  );
+}

@@ -29,7 +29,7 @@ export type { FilterBlockType } from "./filters";
 export type { ProcessorBlockType, MathBlockType } from "./processors";
 export type { DynamicsBlockType } from "./dynamics";
 export type { DistortionBlockType } from "./distortion";
-export type { TimeBasedBlockType, LFOWaveformType } from "./timebased";
+export type { TimeBasedBlockType, LFOWaveformType, ReverbPresetType } from "./timebased";
 export type { InputBlockType } from "./inputs";
 export type { OutputBlockType } from "./outputs";
 export type { RoutingBlockType } from "./routing";

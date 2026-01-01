@@ -20,6 +20,7 @@ import {
   FlangerConfig,
   PhaserConfig,
   VibratoConfig,
+  ReverbConfig,
 } from "./TimeBasedConfig";
 import { MultiplexerConfig, SplitterConfig } from "./RoutingConfig";
 import { OscilloscopeConfig } from "./OscilloscopeConfig";
@@ -59,6 +60,7 @@ export {
   FlangerConfig,
   PhaserConfig,
   VibratoConfig,
+  ReverbConfig,
   MultiplexerConfig,
   SplitterConfig,
   OscilloscopeConfig,
@@ -120,6 +122,7 @@ export const configComponentMap: Record<
   flanger: FlangerConfig,
   phaser: PhaserConfig,
   vibrato: VibratoConfig,
+  reverb: ReverbConfig,
 
   // Routing
   multiplexer: MultiplexerConfig,

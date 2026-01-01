@@ -6,6 +6,17 @@ import type { BlockDefinition } from "./common";
 export type LFOWaveformType = "sine" | "square" | "triangle" | "sawtooth";
 
 /**
+ * Reverb impulse response presets
+ */
+export type ReverbPresetType =
+  | "small-room"
+  | "medium-room"
+  | "large-hall"
+  | "cathedral"
+  | "plate"
+  | "spring";
+
+/**
  * Time-based effect block types
  */
 export type TimeBasedBlockType =
@@ -14,7 +25,8 @@ export type TimeBasedBlockType =
   | "chorus"
   | "flanger"
   | "phaser"
-  | "vibrato";
+  | "vibrato"
+  | "reverb";
 
 /**
  * Time-based effect block definitions
@@ -119,6 +131,19 @@ export const TIMEBASED_DEFINITIONS: Record<TimeBasedBlockType, BlockDefinition> 
         vibratoRate: 5,
         vibratoDepth: 0.003,
         vibratoWaveform: "sine" as LFOWaveformType,
+      },
+    },
+
+    reverb: {
+      type: "reverb",
+      label: "Reverb",
+      inputs: [{ id: "in", label: "In" }],
+      outputs: [{ id: "out", label: "Out" }],
+      defaultConfig: {
+        reverbPreset: "medium-room" as ReverbPresetType,
+        reverbDecay: 2.0,
+        reverbMix: 0.3,
+        reverbPredelay: 0.02,
       },
     },
   };

@@ -545,6 +545,10 @@ export class SignalProcessingEngine {
         this.createVibrato(nodeId, config);
         break;
 
+      case "reverb":
+        this.createReverb(nodeId, config);
+        break;
+
       case "splitter":
         this.createSplitter(nodeId);
         break;
@@ -1234,6 +1238,194 @@ export class SignalProcessingEngine {
     this.oscillators.set(`${nodeId}-lfo`, lfo);
   }
 
+  /**
+   * Generate an impulse response for convolution reverb
+   * Uses exponential decay with optional parameters for different room sizes
+   */
+  private generateImpulseResponse(
+    duration: number,
+    decay: number,
+    preset: string,
+  ): AudioBuffer {
+    if (!this.audioContext) throw new Error("AudioContext not initialized");
+
+    const sampleRate = this.audioContext.sampleRate;
+    const length = Math.floor(sampleRate * duration);
+    const buffer = this.audioContext.createBuffer(2, length, sampleRate);
+
+    // Get preset-specific parameters
+    const presetParams = this.getReverbPresetParams(preset);
+    const { earlyReflections, diffusion, highFreqDamping } = presetParams;
+
+    for (let channel = 0; channel < 2; channel++) {
+      const channelData = buffer.getChannelData(channel);
+
+      for (let i = 0; i < length; i++) {
+        const t = i / sampleRate;
+
+        // Base exponential decay
+        let sample = (Math.random() * 2 - 1) * Math.exp(-t * decay);
+
+        // Add early reflections for more realistic room simulation
+        if (t < earlyReflections) {
+          // Early reflections are louder and more distinct
+          const earlyMix = 1 - t / earlyReflections;
+          sample += (Math.random() * 2 - 1) * earlyMix * 0.5;
+        }
+
+        // Apply diffusion (randomize timing slightly per channel for stereo width)
+        if (diffusion > 0 && channel === 1) {
+          // Offset right channel slightly for stereo spread
+          const offset = Math.floor(sampleRate * 0.02 * diffusion);
+          if (i > offset) {
+            const prevSample = channelData[i - offset];
+            sample = sample * (1 - diffusion * 0.3) + prevSample * diffusion * 0.3;
+          }
+        }
+
+        // High frequency damping (simple lowpass-like effect)
+        if (highFreqDamping > 0 && i > 0) {
+          const prevSample = channelData[i - 1];
+          sample = sample * (1 - highFreqDamping) + prevSample * highFreqDamping;
+        }
+
+        channelData[i] = sample;
+      }
+    }
+
+    return buffer;
+  }
+
+  /**
+   * Get parameters for different reverb presets
+   */
+  private getReverbPresetParams(preset: string): {
+    duration: number;
+    decay: number;
+    earlyReflections: number;
+    diffusion: number;
+    highFreqDamping: number;
+  } {
+    switch (preset) {
+      case "small-room":
+        return {
+          duration: 0.5,
+          decay: 8,
+          earlyReflections: 0.02,
+          diffusion: 0.3,
+          highFreqDamping: 0.4,
+        };
+      case "medium-room":
+        return {
+          duration: 1.5,
+          decay: 3,
+          earlyReflections: 0.05,
+          diffusion: 0.5,
+          highFreqDamping: 0.3,
+        };
+      case "large-hall":
+        return {
+          duration: 3.0,
+          decay: 1.5,
+          earlyReflections: 0.1,
+          diffusion: 0.7,
+          highFreqDamping: 0.2,
+        };
+      case "cathedral":
+        return {
+          duration: 5.0,
+          decay: 0.8,
+          earlyReflections: 0.15,
+          diffusion: 0.9,
+          highFreqDamping: 0.15,
+        };
+      case "plate":
+        return {
+          duration: 2.0,
+          decay: 2,
+          earlyReflections: 0.01,
+          diffusion: 0.8,
+          highFreqDamping: 0.1,
+        };
+      case "spring":
+        return {
+          duration: 1.0,
+          decay: 4,
+          earlyReflections: 0.03,
+          diffusion: 0.2,
+          highFreqDamping: 0.5,
+        };
+      default:
+        // Default to medium room
+        return {
+          duration: 1.5,
+          decay: 3,
+          earlyReflections: 0.05,
+          diffusion: 0.5,
+          highFreqDamping: 0.3,
+        };
+    }
+  }
+
+  private createReverb(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const preset = (config.reverbPreset as string) ?? "medium-room";
+    const decay = config.reverbDecay ?? 2.0;
+    const mix = config.reverbMix ?? 0.3;
+    const predelay = config.reverbPredelay ?? 0.02;
+
+    // Get preset parameters
+    const presetParams = this.getReverbPresetParams(preset);
+
+    // Create input gain
+    const inputGain = this.audioContext.createGain();
+    inputGain.gain.value = 1.0;
+
+    // Create predelay
+    const predelayNode = this.audioContext.createDelay(0.5);
+    predelayNode.delayTime.value = predelay;
+
+    // Create convolver for reverb
+    const convolver = this.audioContext.createConvolver();
+    const impulseResponse = this.generateImpulseResponse(
+      presetParams.duration * (decay / 2),
+      presetParams.decay / decay,
+      preset,
+    );
+    convolver.buffer = impulseResponse;
+
+    // Create dry/wet mix
+    const dryGain = this.audioContext.createGain();
+    dryGain.gain.value = 1 - mix;
+
+    const wetGain = this.audioContext.createGain();
+    wetGain.gain.value = mix;
+
+    // Create output mixer
+    const outputGain = this.audioContext.createGain();
+    outputGain.gain.value = 1.0;
+
+    // Connect signal path
+    // Dry path: input -> dryGain -> output
+    inputGain.connect(dryGain);
+    dryGain.connect(outputGain);
+
+    // Wet path: input -> predelay -> convolver -> wetGain -> output
+    inputGain.connect(predelayNode);
+    predelayNode.connect(convolver);
+    convolver.connect(wetGain);
+    wetGain.connect(outputGain);
+
+    // Store components
+    this.nodes.set(nodeId, inputGain);
+    this.nodes.set(`${nodeId}-predelay`, predelayNode);
+    this.nodes.set(`${nodeId}-convolver`, convolver);
+    this.nodes.set(`${nodeId}-dry`, dryGain);
+    this.nodes.set(`${nodeId}-wet`, wetGain);
+    this.nodes.set(`${nodeId}-output`, outputGain);
+  }
+
   private createSplitter(nodeId: string) {
     if (!this.audioContext) return;
 
@@ -1850,6 +2042,7 @@ export class SignalProcessingEngine {
       "flanger",
       "phaser",
       "vibrato",
+      "reverb",
       "crossfader",
     ];
     if (
@@ -2077,6 +2270,14 @@ export class SignalProcessingEngine {
             if (lfoGain instanceof GainNode) {
               sourceNode.connect(lfoGain.gain);
             }
+          }
+          break;
+        }
+
+        case "reverb": {
+          // Reverb only has audio input, connect to main input
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
           }
           break;
         }
@@ -2468,6 +2669,44 @@ export class SignalProcessingEngine {
         }
         if (lfoGain instanceof GainNode) {
           lfoGain.gain.value = vibratoDepth;
+        }
+        break;
+      }
+
+      case "reverb": {
+        const reverbMix = config.reverbMix ?? 0.3;
+        const reverbPredelay = config.reverbPredelay ?? 0.02;
+        const reverbPreset = (config.reverbPreset as string) ?? "medium-room";
+        const reverbDecay = config.reverbDecay ?? 2.0;
+
+        const predelayNode = this.nodes.get(`${nodeId}-predelay`);
+        const dryNode = this.nodes.get(`${nodeId}-dry`);
+        const wetNode = this.nodes.get(`${nodeId}-wet`);
+        const convolver = this.nodes.get(`${nodeId}-convolver`);
+
+        // Update predelay
+        if (predelayNode instanceof DelayNode) {
+          predelayNode.delayTime.value = reverbPredelay;
+        }
+
+        // Update dry/wet mix
+        if (dryNode instanceof GainNode) {
+          dryNode.gain.value = 1 - reverbMix;
+        }
+        if (wetNode instanceof GainNode) {
+          wetNode.gain.value = reverbMix;
+        }
+
+        // Regenerate impulse response if preset or decay changed
+        // Note: We need to regenerate because the impulse response is baked at creation
+        if (convolver instanceof ConvolverNode && this.audioContext) {
+          const presetParams = this.getReverbPresetParams(reverbPreset);
+          const impulseResponse = this.generateImpulseResponse(
+            presetParams.duration * (reverbDecay / 2),
+            presetParams.decay / reverbDecay,
+            reverbPreset,
+          );
+          convolver.buffer = impulseResponse;
         }
         break;
       }
