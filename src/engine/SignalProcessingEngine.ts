@@ -98,13 +98,24 @@ export class SignalProcessingEngine {
     const currentNodeIds = new Set(Array.from(this.nodes.keys()));
     const newNodeIds = new Set(nodes.map((n) => n.id));
 
-    // Find nodes to remove (excluding internal helper nodes like FFT filters, inverters, and instrument internal nodes)
+    // Find nodes to remove (excluding internal helper nodes like FFT filters, inverters, effect sub-nodes, and instrument internal nodes)
+    // Effect sub-node patterns: time-based effects store multiple internal nodes with suffixes
+    const effectSubNodeSuffixes = [
+      "-predelay", "-convolver", "-dry", "-wet", "-output", // reverb, delay, chorus, flanger
+      "-delay", "-feedback", // delay, flanger, vibrato
+      "-lfo", "-lfoGain", "-depth", // tremolo, chorus, flanger, phaser, vibrato
+      "-allpass-", // phaser stages
+    ];
+    const isEffectSubNode = (id: string) =>
+      effectSubNodeSuffixes.some((suffix) => id.includes(suffix));
+
     const nodesToRemove = Array.from(currentNodeIds).filter(
       (id) =>
         !newNodeIds.has(id) &&
         !id.includes("-freq_out") && // FFT filter sub-nodes
         !id.includes("-inverter") && // Subtraction inverter nodes
-        !id.includes("::"), // Instrument internal nodes (use :: as namespace separator)
+        !id.includes("::") && // Instrument internal nodes (use :: as namespace separator)
+        !isEffectSubNode(id), // Effect internal sub-nodes
     );
 
     // Find nodes to add
@@ -247,6 +258,7 @@ export class SignalProcessingEngine {
     // First disconnect everything EXCEPT:
     // - FFT filter sub-nodes (preserve internal FFT structure)
     // - Instrument internal nodes (preserve internal instrument connections)
+    // - Effect sub-nodes (preserve internal effect connections like reverb, delay, etc.)
     this.nodes.forEach((node, nodeId) => {
       // Skip FFT filter sub-nodes - they maintain internal connections
       if (nodeId.includes("-freq_out")) {
@@ -255,6 +267,10 @@ export class SignalProcessingEngine {
       // Skip instrument internal nodes - they maintain internal connections
       // Internal nodes use :: as namespace separator (e.g., "instrument-1::node-2")
       if (nodeId.includes("::")) {
+        return;
+      }
+      // Skip effect sub-nodes - they maintain internal connections
+      if (isEffectSubNode(nodeId)) {
         return;
       }
       try {
@@ -409,6 +425,35 @@ export class SignalProcessingEngine {
             audioOutputNode.connect(this.audioContext.destination);
           } catch {
             // Already connected
+          }
+        }
+      }
+    });
+
+    // Reconnect reverb internal signal paths
+    // These internal connections get broken by the disconnect loop
+    nodes.forEach((node) => {
+      if (node.data.blockType === "reverb") {
+        const inputGain = this.nodes.get(node.id);
+        const predelayNode = this.nodes.get(`${node.id}-predelay`);
+        const convolver = this.nodes.get(`${node.id}-convolver`);
+        const dryGain = this.nodes.get(`${node.id}-dry`);
+        const wetGain = this.nodes.get(`${node.id}-wet`);
+        const outputGain = this.nodes.get(`${node.id}-output`);
+
+        if (inputGain && predelayNode && convolver && dryGain && wetGain && outputGain) {
+          try {
+            // Dry path: input -> dryGain -> output
+            inputGain.connect(dryGain);
+            dryGain.connect(outputGain);
+
+            // Wet path: input -> predelay -> convolver -> wetGain -> output
+            inputGain.connect(predelayNode);
+            (predelayNode as DelayNode).connect(convolver);
+            (convolver as ConvolverNode).connect(wetGain);
+            wetGain.connect(outputGain);
+          } catch {
+            // Connection failed
           }
         }
       }

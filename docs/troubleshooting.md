@@ -15,12 +15,14 @@ This document covers common issues and debugging techniques for the Signals appl
 3. **Console Logs:** Check browser console for `[Connection] Successfully connected` messages.
 
 **Explanation:** A compressor with aggressive settings (e.g., -24dB threshold, 12:1 ratio) will dramatically reduce dynamic range. For noise input:
+
 - Before compression: Signal varies widely (e.g., -1 to +1)
 - After compression: Signal is nearly constant (e.g., ~0.2)
 
 On an oscilloscope with -2 to +2 range, a constant 0.2 amplitude signal appears as a thin flat line near the center. This IS the compressed signal - compression flattens dynamics.
 
 **Solutions:**
+
 1. Reduce the compression ratio (e.g., 4:1 instead of 12:1)
 2. Raise the threshold (e.g., -12dB instead of -24dB)
 3. Increase the output gain after compression
@@ -49,33 +51,127 @@ On an oscilloscope with -2 to +2 range, a constant 0.2 amplitude signal appears 
 ## Web Audio API Constraints
 
 ### Oscillators Cannot Be Restarted
+
 Once an OscillatorNode is stopped, it cannot be started again. The engine creates new oscillators when playback restarts.
 
 ### AudioContext Requires User Gesture
+
 Browsers require a user interaction (click, key press) before audio can play. The play button handles this.
 
 ### DynamicsCompressorNode Behavior
+
 The Web Audio API's DynamicsCompressorNode:
+
 - Has built-in makeup gain that normalizes output
 - Threshold is in dB (negative values, e.g., -24)
 - Attack/Release are in seconds (e.g., 0.003 = 3ms)
 - Ratio is linear (e.g., 12 means 12:1 compression)
 
+## Adding New Processor Blocks
+
+### Time-Based Effects with Internal Sub-nodes (No Audio Output)
+
+**Symptom:** After adding a new time-based effect (like reverb, delay, chorus, flanger, phaser, vibrato), no audio is heard when connected to an audio output or oscilloscope, even though console logs show connections being made successfully.
+
+**Root Cause:** Time-based effects store multiple internal Web Audio nodes with suffixes (e.g., `-predelay`, `-convolver`, `-dry`, `-wet`, `-output`). The `updateGraph` method has logic that:
+
+1. Removes nodes not in the ReactFlow graph
+2. Disconnects all nodes before rebuilding connections
+
+The problem is that internal sub-nodes (like `reverb-1-output`) are not in the ReactFlow node list (only `reverb-1` is), so they get:
+
+1. **Incorrectly marked for removal** because they're not in `newNodeIds`
+2. **Disconnected** during the reconnection phase, breaking internal signal paths
+
+**Solution - Two Required Changes in `SignalProcessingEngine.ts`:**
+
+1. **Add effect sub-node suffixes to the exclusion list** (around line 101):
+
+```typescript
+// Effect sub-node patterns: time-based effects store multiple internal nodes with suffixes
+const effectSubNodeSuffixes = [
+  "-predelay",
+  "-convolver",
+  "-dry",
+  "-wet",
+  "-output", // reverb, delay, chorus, flanger
+  "-delay",
+  "-feedback", // delay, flanger, vibrato
+  "-lfo",
+  "-lfoGain",
+  "-depth", // tremolo, chorus, flanger, phaser, vibrato
+  "-allpass-", // phaser stages
+];
+const isEffectSubNode = (id: string) =>
+  effectSubNodeSuffixes.some((suffix) => id.includes(suffix));
+
+const nodesToRemove = Array.from(currentNodeIds).filter(
+  (id) =>
+    !newNodeIds.has(id) &&
+    !id.includes("-freq_out") && // FFT filter sub-nodes
+    !id.includes("-inverter") && // Subtraction inverter nodes
+    !id.includes("::") && // Instrument internal nodes
+    !isEffectSubNode(id), // Effect internal sub-nodes  <-- ADD THIS
+);
+```
+
+2. **Skip effect sub-nodes in the disconnect loop** (around line 261):
+
+```typescript
+this.nodes.forEach((node, nodeId) => {
+  if (nodeId.includes("-freq_out")) return;
+  if (nodeId.includes("::")) return;
+  if (isEffectSubNode(nodeId)) return; // <-- ADD THIS
+  try {
+    node.disconnect();
+  } catch {
+    // Already disconnected
+  }
+});
+```
+
+3. **Add the effect to `effectsWithOutputNode` array** if it has a separate output node (around line 2085):
+
+```typescript
+const effectsWithOutputNode = [
+  "delay",
+  "chorus",
+  "flanger",
+  "phaser",
+  "vibrato",
+  "reverb", // <-- ADD NEW EFFECTS HERE
+  "crossfader",
+];
+```
+
+**Checklist for Adding New Time-Based Effects:**
+
+- [ ] Create internal sub-nodes with consistent suffix patterns (e.g., `-output`, `-dry`, `-wet`)
+- [ ] Add any new suffix patterns to `effectSubNodeSuffixes` array
+- [ ] Add effect type to `effectsWithOutputNode` if it has a separate output node
+- [ ] Store the main input node as `this.nodes.set(nodeId, inputGain)`
+- [ ] Store the output node as `this.nodes.set(`${nodeId}-output`, outputGain)`
+- [ ] Add connection handling case in the `connectNodes` switch statement
+- [ ] Add config update handling case in `updateNodeConfig`
+
 ## Common Issues
 
 ### No Sound from Audio Output
+
 1. Check if the block is muted (default is muted for safety)
 2. Verify volume slider is not at 0
 3. Ensure AudioContext is running (click play)
 4. Check system audio settings
 
 ### Oscilloscope Shows Flat Line
+
 1. Verify signal source is connected and generating
 2. Check if intermediate processors are configured correctly
 3. Verify the analyser node is connected (check console logs)
 4. Adjust amplitude range if signal is very quiet
 
 ### FFT Analyzer Shows No Data
+
 1. Ensure input is connected
 2. Verify the signal has frequency content (DC won't show in spectrum)
 3. Check minDecibels/maxDecibels settings
@@ -90,10 +186,12 @@ The application logs connection information to the console:
 ```
 
 Special logging for specific block types:
+
 - `[FFT]` - FFT Analyzer connections and configuration
 - `[MUX]` - Multiplexer selector and input routing
 
 To inspect audio nodes programmatically, the engine stores references in:
+
 - `this.nodes` - All audio nodes by ID
 - `this.oscillators` - Oscillator nodes specifically
 - `this.analysers` - Analyser nodes for visualization
@@ -109,7 +207,7 @@ To inspect audio nodes programmatically, the engine stores references in:
 
 **Solution:** Create the instruments collection in PocketBase Admin:
 
-1. Open PocketBase Admin (http://localhost:8090/_/)
+1. Open PocketBase Admin (http://localhost:8090/\_/)
 2. Go to Collections
 3. Click "New collection"
 4. Use these settings:
@@ -136,6 +234,7 @@ To inspect audio nodes programmatically, the engine stores references in:
 **Cause:** User is not logged in or authentication token has expired.
 
 **Solution:**
+
 1. Log in to the application using the user menu
 2. If already logged in, try logging out and back in to refresh the token
 
@@ -151,7 +250,7 @@ To inspect audio nodes programmatically, the engine stores references in:
 
 **Solution:** Verify your collection schema in PocketBase Admin:
 
-1. Open PocketBase Admin (http://localhost:8090/_/)
+1. Open PocketBase Admin (http://localhost:8090/\_/)
 2. Go to Collections → instruments
 3. Check that the following fields exist with **exact names**:
    - `userId` - Type: **Relation** (to users collection)
