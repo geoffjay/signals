@@ -634,6 +634,10 @@ export class SignalProcessingEngine {
         this.createConstantSource(nodeId, config);
         break;
 
+      case "multi-slider":
+        this.createMultiSlider(nodeId, config);
+        break;
+
       case "numeric-meter":
         this.createAnalyser(nodeId, config);
         break;
@@ -1899,6 +1903,34 @@ export class SignalProcessingEngine {
     this.nodes.set(nodeId, constantSource);
   }
 
+  /**
+   * Multi-Slider - Creates multiple constant sources, one per slider
+   */
+  private createMultiSlider(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const numSliders = config.numSliders || 2;
+    const sliderConfigs = config.sliderConfigs || [];
+
+    // Create a constant source for each slider output
+    for (let i = 0; i < numSliders; i++) {
+      const sliderConfig = sliderConfigs[i] || { min: 0, max: 1, step: 0.01, value: 0.5 };
+      const source = this.audioContext.createConstantSource();
+      source.offset.value = sliderConfig.value;
+      source.start();
+
+      const outputId = `${nodeId}-out${i}`;
+      this.constantSources.set(outputId, source);
+      this.nodes.set(outputId, source);
+    }
+
+    // Store first output as main node reference for lookups
+    const firstOutput = this.nodes.get(`${nodeId}-out0`);
+    if (firstOutput) {
+      this.nodes.set(nodeId, firstOutput);
+    }
+  }
+
   private createAddNode(nodeId: string) {
     if (!this.audioContext) return;
 
@@ -2250,6 +2282,17 @@ export class SignalProcessingEngine {
     // Route from the appropriate constant source sub-node
     if (sourceBlockForKeyboard?.data?.blockType === "beat-pad") {
       if (actualSourceHandle === "trigger" || actualSourceHandle === "padIndex" || actualSourceHandle === "velocity") {
+        const subNode = this.nodes.get(`${actualSourceId}-${actualSourceHandle}`);
+        if (subNode) {
+          sourceNode = subNode;
+        }
+      }
+    }
+
+    // Special case: Multi-slider outputs (out0, out1, etc.)
+    // Route from the appropriate constant source sub-node
+    if (sourceBlockForKeyboard?.data?.blockType === "multi-slider") {
+      if (actualSourceHandle?.startsWith("out")) {
         const subNode = this.nodes.get(`${actualSourceId}-${actualSourceHandle}`);
         if (subNode) {
           sourceNode = subNode;
@@ -3014,6 +3057,20 @@ export class SignalProcessingEngine {
         const source = this.constantSources.get(nodeId);
         if (source instanceof ConstantSourceNode) {
           source.offset.value = config.value || 0;
+        }
+        break;
+      }
+
+      case "multi-slider": {
+        // Update all slider output constant sources
+        const numSliders = config.numSliders || 2;
+        const sliderConfigs = config.sliderConfigs || [];
+        for (let i = 0; i < numSliders; i++) {
+          const source = this.constantSources.get(`${nodeId}-out${i}`);
+          const sliderConfig = sliderConfigs[i] || { value: 0.5 };
+          if (source instanceof ConstantSourceNode) {
+            source.offset.value = sliderConfig.value;
+          }
         }
         break;
       }

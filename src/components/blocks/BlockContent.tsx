@@ -1,6 +1,7 @@
 import type { BlockType, BlockConfig } from "@/types/blocks";
 import {
   SliderControl,
+  MultiSliderControl,
   ButtonControl,
   ToggleControl,
   PulseControl,
@@ -20,6 +21,7 @@ interface BlockContentProps {
   analyser?: AnalyserNode;
   handlers: {
     onSliderChange: (value: number) => void;
+    onMultiSliderChange?: (sliderIndex: number, value: number) => void;
     onButtonPress: () => void;
     onButtonRelease: () => void;
     onToggle: (e: React.MouseEvent) => void;
@@ -59,6 +61,14 @@ export function BlockContent({
         <SliderControl
           config={config}
           onValueChange={handlers.onSliderChange}
+        />
+      );
+
+    case "multi-slider":
+      return (
+        <MultiSliderControl
+          config={config}
+          onValueChange={handlers.onMultiSliderChange ?? (() => {})}
         />
       );
 

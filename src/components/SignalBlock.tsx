@@ -52,6 +52,37 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     [id, setNodes],
   );
 
+  // Handler for multi-slider value changes
+  const handleMultiSliderChange = useCallback(
+    (sliderIndex: number, newValue: number) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            const nodeData = node.data as SignalBlockData;
+            const sliderConfigs = [...(nodeData.config.sliderConfigs || [])];
+            // Ensure the slider config exists
+            if (!sliderConfigs[sliderIndex]) {
+              sliderConfigs[sliderIndex] = { min: 0, max: 1, step: 0.01, value: 0.5 };
+            }
+            sliderConfigs[sliderIndex] = {
+              ...sliderConfigs[sliderIndex],
+              value: newValue,
+            };
+            return {
+              ...node,
+              data: {
+                ...nodeData,
+                config: { ...nodeData.config, sliderConfigs },
+              },
+            };
+          }
+          return node;
+        }),
+      );
+    },
+    [id, setNodes],
+  );
+
   // Handler for button press
   const handleButtonPress = useCallback(() => {
     setNodes((nds) =>
@@ -297,6 +328,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   // Collected handlers for BlockContent
   const handlers = {
     onSliderChange: handleSliderChange,
+    onMultiSliderChange: handleMultiSliderChange,
     onButtonPress: handleButtonPress,
     onButtonRelease: handleButtonRelease,
     onToggle: handleToggle,
@@ -321,10 +353,20 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   const displayLabel = blockData.config.customLabel || blockData.label;
   const customColor = blockData.config.customColor;
 
+  // Calculate dynamic min-width for multi-slider based on number of sliders
+  const getMinWidth = () => {
+    if (blockData.blockType === "multi-slider") {
+      const numSliders = blockData.config.numSliders || 2;
+      if (numSliders >= 8) return "min-w-[420px]";
+      if (numSliders >= 4) return "min-w-[260px]";
+    }
+    return "min-w-[180px]";
+  };
+
   return (
     <div
       className={`
-        border-2 rounded-lg min-w-[180px]
+        border-2 rounded-lg ${getMinWidth()}
         transition-all duration-200
         ${selected ? "border-primary shadow-lg" : "border-border"}
       `}
@@ -396,13 +438,25 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
 
         {/* Output Ports */}
         {hasOutputs && (
-          <div className="mt-2 space-y-1 flex flex-col items-end">
+          <div className={`mt-2 flex flex-col items-end ${
+            blockData.blockType === "multi-slider" && outputs.length > 2
+              ? "space-y-2 -mt-24"
+              : "space-y-1"
+          }`}>
             {outputs.map((output) => (
               <div
                 key={output.id}
-                className="relative flex items-center justify-end h-6"
+                className={`relative flex items-center justify-end ${
+                  blockData.blockType === "multi-slider" && outputs.length > 2
+                    ? "h-5"
+                    : "h-6"
+                }`}
               >
-                <span className="text-xs text-muted-foreground mr-3">
+                <span className={`text-muted-foreground mr-3 ${
+                  blockData.blockType === "multi-slider" && outputs.length > 2
+                    ? "text-[9px]"
+                    : "text-xs"
+                }`}>
                   {output.label}
                 </span>
                 <Handle

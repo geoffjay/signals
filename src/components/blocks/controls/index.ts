@@ -1,4 +1,5 @@
 export { SliderControl } from "./SliderControl";
+export { MultiSliderControl } from "./MultiSliderControl";
 export { ButtonControl } from "./ButtonControl";
 export { ToggleControl } from "./ToggleControl";
 export { PulseControl } from "./PulseControl";

@@ -5,6 +5,7 @@ import type { BlockDefinition } from "./common";
  */
 export type InputBlockType =
   | "slider"
+  | "multi-slider"
   | "button"
   | "toggle"
   | "pulse"
@@ -26,6 +27,22 @@ export const INPUT_DEFINITIONS: Record<InputBlockType, BlockDefinition> = {
       max: 1,
       step: 0.01,
       value: 0.5,
+    },
+  },
+  "multi-slider": {
+    type: "multi-slider",
+    label: "Multi-Slider",
+    inputs: [],
+    outputs: [
+      { id: "out0", label: "Out 0" },
+      { id: "out1", label: "Out 1" },
+    ],
+    defaultConfig: {
+      numSliders: 2,
+      sliderConfigs: [
+        { min: 0, max: 1, step: 0.01, value: 0.5 },
+        { min: 0, max: 1, step: 0.01, value: 0.5 },
+      ],
     },
   },
   button: {

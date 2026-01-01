@@ -66,6 +66,7 @@ import {
   Disc,
   Radio as SampleRate,
   Target,
+  Columns,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -157,12 +158,13 @@ const BLOCK_ICONS: Record<
   "bit-crusher": Disc,
   "sample-rate-reducer": SampleRate,
   "ring-mod": Target,
+  "multi-slider": Columns,
 };
 
 const blockGroups = [
   {
     title: "Inputs",
-    blocks: ["slider", "button", "toggle", "pulse", "keyboard", "beat-pad", "crossfader"] as BlockType[],
+    blocks: ["slider", "multi-slider", "button", "toggle", "pulse", "keyboard", "beat-pad", "crossfader"] as BlockType[],
   },
   {
     title: "Generators",

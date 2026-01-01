@@ -199,6 +199,15 @@ export interface BlockConfig {
 
   // Ring Modulator
   ringModMix?: number; // dry/wet (0 to 1)
+
+  // Multi-slider
+  numSliders?: number; // 2, 4, or 8
+  sliderConfigs?: Array<{
+    min: number;
+    max: number;
+    step: number;
+    value: number;
+  }>;
 }
 
 /**

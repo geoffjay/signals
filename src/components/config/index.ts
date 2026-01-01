@@ -37,6 +37,7 @@ import {
   BeatPadConfig,
   CrossfaderConfig,
 } from "./InputControlConfig";
+import { MultiSliderConfig } from "./MultiSliderConfig";
 import { NumericMeterConfig } from "./NumericMeterConfig";
 import { FFTAnalyzerConfig } from "./FFTAnalyzerConfig";
 
@@ -74,6 +75,7 @@ export {
   OscilloscopeConfig,
   AudioOutputConfig,
   SliderConfig,
+  MultiSliderConfig,
   ButtonConfig,
   ToggleConfig,
   PulseConfig,
@@ -154,6 +156,7 @@ export const configComponentMap: Record<
 
   // Inputs
   slider: SliderConfig,
+  "multi-slider": MultiSliderConfig,
   button: ButtonConfig,
   toggle: ToggleConfig,
   pulse: PulseConfig,

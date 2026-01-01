@@ -120,6 +120,15 @@ export function getBlockOutputs(
     return outputs;
   }
 
+  if (type === "multi-slider") {
+    const numSliders = config.numSliders || 2;
+    const outputs = [];
+    for (let i = 0; i < numSliders; i++) {
+      outputs.push({ id: `out${i}`, label: `Out ${i}` });
+    }
+    return outputs;
+  }
+
   if (type === "fft-analyzer") {
     const mode = config.fftMode || "spectrum";
 
