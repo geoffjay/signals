@@ -61,6 +61,10 @@ import {
   Grid2X2,
   ArrowLeftRight,
   Repeat,
+  TrendingDown as Envelope,
+  PlayCircle,
+  Disc,
+  Radio as SampleRate,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -147,6 +151,10 @@ const BLOCK_ICONS: Record<
   keyboard: Piano,
   "beat-pad": Grid2X2,
   crossfader: ArrowLeftRight,
+  "envelope-follower": Envelope,
+  adsr: PlayCircle,
+  "bit-crusher": Disc,
+  "sample-rate-reducer": SampleRate,
 };
 
 const blockGroups = [
@@ -179,6 +187,10 @@ const blockGroups = [
       "phaser",
       "vibrato",
       "reverb",
+      "envelope-follower",
+      "adsr",
+      "bit-crusher",
+      "sample-rate-reducer",
       "low-pass-filter",
       "high-pass-filter",
       "band-pass-filter",

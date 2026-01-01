@@ -22,6 +22,8 @@ import {
   VibratoConfig,
   ReverbConfig,
 } from "./TimeBasedConfig";
+import { EnvelopeFollowerConfig, ADSRConfig } from "./EnvelopeConfig";
+import { BitCrusherConfig, SampleRateReducerConfig } from "./LoFiConfig";
 import { MultiplexerConfig, SplitterConfig } from "./RoutingConfig";
 import { OscilloscopeConfig } from "./OscilloscopeConfig";
 import { AudioOutputConfig } from "./AudioOutputConfig";
@@ -61,6 +63,10 @@ export {
   PhaserConfig,
   VibratoConfig,
   ReverbConfig,
+  EnvelopeFollowerConfig,
+  ADSRConfig,
+  BitCrusherConfig,
+  SampleRateReducerConfig,
   MultiplexerConfig,
   SplitterConfig,
   OscilloscopeConfig,
@@ -123,6 +129,14 @@ export const configComponentMap: Record<
   phaser: PhaserConfig,
   vibrato: VibratoConfig,
   reverb: ReverbConfig,
+
+  // Envelope processing
+  "envelope-follower": EnvelopeFollowerConfig,
+  adsr: ADSRConfig,
+
+  // Lo-Fi effects
+  "bit-crusher": BitCrusherConfig,
+  "sample-rate-reducer": SampleRateReducerConfig,
 
   // Routing
   multiplexer: MultiplexerConfig,

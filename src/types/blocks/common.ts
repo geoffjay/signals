@@ -178,6 +178,24 @@ export interface BlockConfig {
 
   // Instrument blocks
   instrumentId?: string;
+
+  // Envelope Follower
+  envelopeAttack?: number; // seconds (0.001 to 1)
+  envelopeRelease?: number; // seconds (0.01 to 2)
+
+  // ADSR Envelope
+  adsrAttack?: number; // seconds (0.001 to 5)
+  adsrDecay?: number; // seconds (0.001 to 5)
+  adsrSustain?: number; // level (0 to 1)
+  adsrRelease?: number; // seconds (0.001 to 10)
+
+  // Bit Crusher
+  crusherBits?: number; // 1 to 16
+  crusherMix?: number; // dry/wet (0 to 1)
+
+  // Sample Rate Reducer
+  reducerSampleRate?: number; // Hz (100 to 44100)
+  reducerMix?: number; // dry/wet (0 to 1)
 }
 
 /**

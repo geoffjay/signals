@@ -5,15 +5,24 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
 // AudioWorklet processor files - single source of truth
-const WORKLET_PROCESSORS = ["divide-processor", "math-processors"] as const;
+const WORKLET_PROCESSORS = [
+  "divide-processor",
+  "math-processors",
+  "envelope-processors",
+  "lofi-processors",
+] as const;
 
 // Strip TypeScript syntax for dev serving
 function stripTypeScript(content: string): string {
   return content
     .replace(/\/\/\/\s*<reference.*?\/>/g, "") // Remove triple-slash directives
-    .replace(/^\s*(private|public|protected)\s+\w+\s*:\s*\w+(\[\])*\s*;?\s*$/gm, "") // Remove class property declarations
-    .replace(/:\s*Float32Array\[\]\[\]/g, "") // Remove type annotations
+    .replace(/^\s*(private|public|protected)\s+(\w+)\s*:\s*\w+(\[\])*\s*;?\s*$/gm, "") // Remove class property declarations without initializer
+    .replace(/^\s*(private|public|protected)\s+(\w+)\s*:\s*[^=\n]+\s*=\s*/gm, "  $2 = ") // Remove access modifier + type annotation with initializer
+    .replace(/^\s*(private|public|protected)\s+(\w+)\s*=/gm, "  $2 =") // Remove access modifier on property with initializer (no type)
+    .replace(/^\s*(private|public|protected)\s+(\w+)\s*\(/gm, "  $2(") // Remove access modifier on methods
+    .replace(/:\s*Float32Array\[\]\[\]/g, "") // Remove Float32Array[][] type annotations
     .replace(/(\w+)\?(?=\s*[,):])/g, "$1") // Remove optional parameter marker (e.g., options? -> options)
+    .replace(/:\s*(?:"[^"]*"(?:\s*\|\s*"[^"]*")*)\s*(?==)/g, " ") // Remove union of string literals (e.g., : "idle" | "attack" = )
     .replace(/:\s*\w+(\[\])*(\s*\|\s*\w+(\[\])*)*(?=\s*[,)={])/g, "") // Remove other type annotations
     .replace(/\s+as\s+unknown\s+as\s+\{[^}]+\}/g, ""); // Remove type assertions like "as unknown as { prop: type }"
 }

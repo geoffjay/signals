@@ -54,6 +54,26 @@ export class SignalProcessingEngine {
       console.error("Failed to load math-processors AudioWorklet:", e);
     }
 
+    // Register AudioWorklet processors for envelope processing
+    try {
+      const basePath = import.meta.env.BASE_URL || "/";
+      await this.audioContext.audioWorklet.addModule(
+        `${basePath}envelope-processors.js`,
+      );
+    } catch (e) {
+      console.error("Failed to load envelope-processors AudioWorklet:", e);
+    }
+
+    // Register AudioWorklet processors for lo-fi effects
+    try {
+      const basePath = import.meta.env.BASE_URL || "/";
+      await this.audioContext.audioWorklet.addModule(
+        `${basePath}lofi-processors.js`,
+      );
+    } catch (e) {
+      console.error("Failed to load lofi-processors AudioWorklet:", e);
+    }
+
     this.isRunning = true;
   }
 
@@ -105,6 +125,7 @@ export class SignalProcessingEngine {
       "-delay", "-feedback", // delay, flanger, vibrato
       "-lfo", "-lfoGain", "-depth", // tremolo, chorus, flanger, phaser, vibrato
       "-allpass-", // phaser stages
+      "-audio", "-envelope", // envelope follower outputs
     ];
     const isEffectSubNode = (id: string) =>
       effectSubNodeSuffixes.some((suffix) => id.includes(suffix));
@@ -720,6 +741,22 @@ export class SignalProcessingEngine {
 
       case "crossfader":
         this.createCrossfader(nodeId, config);
+        break;
+
+      case "envelope-follower":
+        this.createEnvelopeFollower(nodeId, config);
+        break;
+
+      case "adsr":
+        this.createADSR(nodeId, config);
+        break;
+
+      case "bit-crusher":
+        this.createBitCrusher(nodeId, config);
+        break;
+
+      case "sample-rate-reducer":
+        this.createSampleRateReducer(nodeId, config);
         break;
     }
   }
@@ -1471,6 +1508,128 @@ export class SignalProcessingEngine {
     this.nodes.set(`${nodeId}-output`, outputGain);
   }
 
+  private createEnvelopeFollower(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const attack = config.envelopeAttack ?? 0.01;
+    const release = config.envelopeRelease ?? 0.1;
+
+    try {
+      // Create AudioWorkletNode for envelope follower
+      // Has 1 input and 2 outputs (audio passthrough and envelope)
+      const envelopeNode = new AudioWorkletNode(
+        this.audioContext,
+        "envelope-follower-processor",
+        {
+          numberOfInputs: 1,
+          numberOfOutputs: 2,
+          outputChannelCount: [1, 1],
+          processorOptions: {
+            attack,
+            release,
+          },
+        },
+      );
+
+      // Store the main node (for input connections)
+      this.nodes.set(nodeId, envelopeNode);
+      // Also store output node references for connection routing
+      this.nodes.set(`${nodeId}-audio`, envelopeNode);
+      this.nodes.set(`${nodeId}-envelope`, envelopeNode);
+    } catch (e) {
+      console.error("Failed to create envelope-follower AudioWorkletNode:", e);
+    }
+  }
+
+  private createADSR(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const attack = config.adsrAttack ?? 0.01;
+    const decay = config.adsrDecay ?? 0.1;
+    const sustain = config.adsrSustain ?? 0.7;
+    const release = config.adsrRelease ?? 0.5;
+
+    try {
+      // Create AudioWorkletNode for ADSR
+      // Has 2 inputs (gate, audio) and 1 output
+      const adsrNode = new AudioWorkletNode(
+        this.audioContext,
+        "adsr-processor",
+        {
+          numberOfInputs: 2,
+          numberOfOutputs: 1,
+          outputChannelCount: [1],
+          processorOptions: {
+            attack,
+            decay,
+            sustain,
+            release,
+          },
+        },
+      );
+
+      this.nodes.set(nodeId, adsrNode);
+    } catch (e) {
+      console.error("Failed to create adsr AudioWorkletNode:", e);
+    }
+  }
+
+  private createBitCrusher(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const bits = config.crusherBits ?? 8;
+    const mix = config.crusherMix ?? 1.0;
+
+    try {
+      // Create AudioWorkletNode for bit crusher
+      const bitCrusherNode = new AudioWorkletNode(
+        this.audioContext,
+        "bit-crusher-processor",
+        {
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          outputChannelCount: [1],
+          processorOptions: {
+            bits,
+            mix,
+          },
+        },
+      );
+
+      this.nodes.set(nodeId, bitCrusherNode);
+    } catch (e) {
+      console.error("Failed to create bit-crusher AudioWorkletNode:", e);
+    }
+  }
+
+  private createSampleRateReducer(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const targetSampleRate = config.reducerSampleRate ?? 8000;
+    const mix = config.reducerMix ?? 1.0;
+
+    try {
+      // Create AudioWorkletNode for sample rate reducer
+      const reducerNode = new AudioWorkletNode(
+        this.audioContext,
+        "sample-rate-reducer-processor",
+        {
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          outputChannelCount: [1],
+          processorOptions: {
+            targetSampleRate,
+            mix,
+          },
+        },
+      );
+
+      this.nodes.set(nodeId, reducerNode);
+    } catch (e) {
+      console.error("Failed to create sample-rate-reducer AudioWorkletNode:", e);
+    }
+  }
+
   private createSplitter(nodeId: string) {
     if (!this.audioContext) return;
 
@@ -2100,6 +2259,17 @@ export class SignalProcessingEngine {
       }
     }
 
+    // Special case: Envelope follower has two outputs (audio and envelope)
+    // Track which output index to use for envelope-follower connections
+    let envelopeFollowerOutputIndex: number | undefined;
+    if (sourceBlock?.data?.blockType === "envelope-follower") {
+      if (actualSourceHandle === "audio") {
+        envelopeFollowerOutputIndex = 0;
+      } else if (actualSourceHandle === "envelope") {
+        envelopeFollowerOutputIndex = 1;
+      }
+    }
+
     const targetNode = this.nodes.get(actualTargetId);
 
     if (!sourceNode || !targetNode) {
@@ -2423,12 +2593,54 @@ export class SignalProcessingEngine {
           break;
         }
 
+        case "envelope-follower": {
+          // Envelope follower has a single input
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          }
+          break;
+        }
+
+        case "adsr": {
+          // ADSR has gate and optional audio input
+          // Input 0 = gate, Input 1 = audio
+          if (actualTargetHandle === "gate") {
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode, 0, 1);
+          }
+          break;
+        }
+
+        case "bit-crusher": {
+          // Bit crusher has audio input and optional bits parameter input
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          }
+          // Note: bits parameter modulation would require postMessage to the worklet
+          break;
+        }
+
+        case "sample-rate-reducer": {
+          // Sample rate reducer has audio input and optional rate parameter input
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          }
+          // Note: rate parameter modulation would require postMessage to the worklet
+          break;
+        }
+
         default:
           // Default connection for all other block types
           console.log(
             `[Connection] Default connect: ${actualSourceId}(${actualSourceHandle}) -> ${actualTargetId}(${actualTargetHandle}), blockType=${blockType}`,
           );
-          sourceNode.connect(targetNode);
+          // Handle envelope-follower multi-output connections
+          if (envelopeFollowerOutputIndex !== undefined) {
+            sourceNode.connect(targetNode, envelopeFollowerOutputIndex, 0);
+          } else {
+            sourceNode.connect(targetNode);
+          }
           console.log(`[Connection] Successfully connected`);
           break;
       }
@@ -3008,6 +3220,57 @@ export class SignalProcessingEngine {
                 break;
             }
           }
+        }
+        break;
+      }
+
+      case "envelope-follower": {
+        const attack = config.envelopeAttack ?? 0.01;
+        const release = config.envelopeRelease ?? 0.1;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setAttack", value: attack });
+          node.port.postMessage({ type: "setRelease", value: release });
+        }
+        break;
+      }
+
+      case "adsr": {
+        const attack = config.adsrAttack ?? 0.01;
+        const decay = config.adsrDecay ?? 0.1;
+        const sustain = config.adsrSustain ?? 0.7;
+        const release = config.adsrRelease ?? 0.5;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setAttack", value: attack });
+          node.port.postMessage({ type: "setDecay", value: decay });
+          node.port.postMessage({ type: "setSustain", value: sustain });
+          node.port.postMessage({ type: "setRelease", value: release });
+        }
+        break;
+      }
+
+      case "bit-crusher": {
+        const bits = config.crusherBits ?? 8;
+        const mix = config.crusherMix ?? 1.0;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setBits", value: bits });
+          node.port.postMessage({ type: "setMix", value: mix });
+        }
+        break;
+      }
+
+      case "sample-rate-reducer": {
+        const targetSampleRate = config.reducerSampleRate ?? 8000;
+        const mix = config.reducerMix ?? 1.0;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({
+            type: "setTargetSampleRate",
+            value: targetSampleRate,
+          });
+          node.port.postMessage({ type: "setMix", value: mix });
         }
         break;
       }
