@@ -8,6 +8,7 @@ interface SignalFlowState {
   nodes: Node[];
   edges: Edge[];
   selectedNodeId: string | null;
+  configDrawerNodeId: string | null;
   isPlaying: boolean;
   nodeIdCounter: number;
 
@@ -23,6 +24,8 @@ interface SignalFlowState {
   setNodes: (nodes: Node[] | ((nodes: Node[]) => Node[])) => void;
   setEdges: (edges: Edge[] | ((edges: Edge[]) => Edge[])) => void;
   setSelectedNodeId: (id: string | null) => void;
+  setConfigDrawerNodeId: (id: string | null) => void;
+  openConfigDrawer: (id: string) => void;
   setIsPlaying: (playing: boolean) => void;
   incrementNodeIdCounter: () => number;
   addNode: (node: Node) => void;
@@ -57,6 +60,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
       nodes: [],
       edges: [],
       selectedNodeId: null,
+      configDrawerNodeId: null,
       isPlaying: false,
       nodeIdCounter: 0,
 
@@ -87,6 +91,10 @@ export const useSignalFlowStore = create<SignalFlowState>()(
       },
 
       setSelectedNodeId: (id) => set({ selectedNodeId: id }),
+
+      setConfigDrawerNodeId: (id) => set({ configDrawerNodeId: id }),
+
+      openConfigDrawer: (id) => set({ configDrawerNodeId: id, selectedNodeId: id }),
 
       setIsPlaying: (playing) => set({ isPlaying: playing }),
 
@@ -128,6 +136,8 @@ export const useSignalFlowStore = create<SignalFlowState>()(
           ),
           selectedNodeId:
             state.selectedNodeId === nodeId ? null : state.selectedNodeId,
+          configDrawerNodeId:
+            state.configDrawerNodeId === nodeId ? null : state.configDrawerNodeId,
           isDirty: true, // Mark as dirty when nodes are deleted
         }));
       },
@@ -197,6 +207,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
             edges: project.projectData.edges,
             nodeIdCounter: project.projectData.nodeIdCounter,
             selectedNodeId: project.projectData.selectedNodeId,
+            configDrawerNodeId: null,
             currentProjectId: project.id,
             currentProjectName: project.name,
             isDirty: false,
@@ -213,6 +224,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
           nodes: [],
           edges: [],
           selectedNodeId: null,
+          configDrawerNodeId: null,
           nodeIdCounter: 0,
           currentProjectId: null,
           currentProjectName: "Untitled Project",
@@ -259,6 +271,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
           edges: projectData.edges,
           nodeIdCounter: projectData.nodeIdCounter,
           selectedNodeId: projectData.selectedNodeId,
+          configDrawerNodeId: null,
           currentProjectId: null, // Imported projects are not linked to cloud storage
           currentProjectName: name,
           isDirty: true, // Mark as dirty since it's not saved to cloud

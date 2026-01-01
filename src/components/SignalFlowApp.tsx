@@ -44,10 +44,12 @@ export function SignalFlowApp() {
     nodes: storeNodes,
     edges: storeEdges,
     selectedNodeId,
+    configDrawerNodeId,
     isPlaying,
     setNodes: setStoreNodes,
     setEdges: setStoreEdges,
     setSelectedNodeId,
+    setConfigDrawerNodeId,
     setIsPlaying,
     incrementNodeIdCounter,
     lastExternalUpdate,
@@ -261,17 +263,22 @@ export function SignalFlowApp() {
   );
 
   const deleteSelectedNode = useCallback(() => {
-    if (!selectedNodeId) return;
+    // Delete the node shown in the config drawer (if any)
+    const nodeIdToDelete = configDrawerNodeId;
+    if (!nodeIdToDelete) return;
 
-    setNodes((nds) => nds.filter((node) => node.id !== selectedNodeId));
+    setNodes((nds) => nds.filter((node) => node.id !== nodeIdToDelete));
     setEdges((eds) =>
       eds.filter(
         (edge) =>
-          edge.source !== selectedNodeId && edge.target !== selectedNodeId,
+          edge.source !== nodeIdToDelete && edge.target !== nodeIdToDelete,
       ),
     );
-    setSelectedNodeId(null);
-  }, [selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
+    setConfigDrawerNodeId(null);
+    if (selectedNodeId === nodeIdToDelete) {
+      setSelectedNodeId(null);
+    }
+  }, [configDrawerNodeId, selectedNodeId, setNodes, setEdges, setConfigDrawerNodeId, setSelectedNodeId]);
 
   const togglePlayback = useCallback(() => {
     setIsPlaying(!isPlaying);
@@ -507,7 +514,7 @@ export function SignalFlowApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges, isPlaying]);
 
-  const selectedNode = nodes.find((node) => node.id === selectedNodeId);
+  const configDrawerNode = nodes.find((node) => node.id === configDrawerNodeId);
 
   const proOptions = { hideAttribution: true };
 
@@ -554,13 +561,13 @@ export function SignalFlowApp() {
           {/* Right Configuration Drawer - Absolutely positioned overlay */}
           <div className="absolute top-0 right-4 bottom-4 pointer-events-none overflow-hidden">
             <ConfigDrawer
-              node={selectedNode as Node<SignalBlockData> | undefined}
+              node={configDrawerNode as Node<SignalBlockData> | undefined}
               edges={edges}
               onConfigChange={(config) =>
-                selectedNode && updateNodeConfig(selectedNode.id, config)
+                configDrawerNode && updateNodeConfig(configDrawerNode.id, config)
               }
               onDelete={deleteSelectedNode}
-              onClose={() => setSelectedNodeId(null)}
+              onClose={() => setConfigDrawerNodeId(null)}
             />
           </div>
         </div>

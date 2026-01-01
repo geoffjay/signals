@@ -8,11 +8,13 @@
  * - Contains the full instrument definition for audio engine expansion
  */
 
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Package } from "lucide-react";
+import { Package, Settings } from "lucide-react";
 import type { InstrumentDefinition, ExternalPort } from "@/types/instruments";
 import type { BlockConfig } from "@/types/blocks";
+import { Button } from "../ui/button";
+import { useSignalFlowStore } from "@/store/signalFlowStore";
 
 export interface InstrumentBlockData extends Record<string, unknown> {
   blockType: "instrument";
@@ -26,9 +28,10 @@ export interface InstrumentBlockData extends Record<string, unknown> {
   externalPorts: ExternalPort[];
 }
 
-export const InstrumentBlock = memo(({ data, selected }: NodeProps) => {
+export const InstrumentBlock = memo(({ id, data, selected }: NodeProps) => {
   const blockData = data as InstrumentBlockData;
   const { externalPorts, instrumentDefinition } = blockData;
+  const openConfigDrawer = useSignalFlowStore((state) => state.openConfigDrawer);
 
   const inputPorts = externalPorts.filter((p) => p.type === "input");
   const outputPorts = externalPorts.filter((p) => p.type === "output");
@@ -42,6 +45,15 @@ export const InstrumentBlock = memo(({ data, selected }: NodeProps) => {
 
   // Instrument-specific background color (slightly different from primitives)
   const instrumentBgColor = customColor || "rgba(99, 102, 241, 0.1)"; // Indigo tint
+
+  // Handler for config button click
+  const handleConfigClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      openConfigDrawer(id);
+    },
+    [id, openConfigDrawer],
+  );
 
   return (
     <div
@@ -63,11 +75,21 @@ export const InstrumentBlock = memo(({ data, selected }: NodeProps) => {
             : "rgba(99, 102, 241, 0.15)",
         }}
       >
-        <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-medium text-foreground">
-            {displayLabel}
-          </span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Package className="w-4 h-4 text-indigo-400" />
+            <span className="text-sm font-medium text-foreground">
+              {displayLabel}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 shrink-0"
+            onClick={handleConfigClick}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
         {instrumentDefinition.metadata.description && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-1">

@@ -1,5 +1,6 @@
 import { memo, useCallback, useRef } from "react";
 import { Handle, Position, type NodeProps, useReactFlow } from "@xyflow/react";
+import { Settings } from "lucide-react";
 import {
   type BlockType,
   type BlockConfig,
@@ -7,6 +8,8 @@ import {
   getBlockOutputs,
 } from "@/types/blocks";
 import { BlockContent } from "./blocks";
+import { Button } from "./ui/button";
+import { useSignalFlowStore } from "@/store/signalFlowStore";
 
 export interface SignalBlockData extends Record<string, unknown> {
   blockType: BlockType;
@@ -22,6 +25,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   const outputs = getBlockOutputs(blockData.blockType, blockData.config);
   const { setNodes } = useReactFlow();
   const pulseTimeoutRef = useRef<number | null>(null);
+  const openConfigDrawer = useSignalFlowStore((state) => state.openConfigDrawer);
 
   const hasInputs = inputs.length > 0;
   const hasOutputs = outputs.length > 0;
@@ -304,6 +308,15 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     onCrossfaderChange: handleCrossfaderChange,
   };
 
+  // Handler for config button click
+  const handleConfigClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      openConfigDrawer(id);
+    },
+    [id, openConfigDrawer],
+  );
+
   // Use custom label if set, otherwise use default block label
   const displayLabel = blockData.config.customLabel || blockData.label;
   const customColor = blockData.config.customColor;
@@ -326,8 +339,18 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
           backgroundColor: customColor ? "rgba(0, 0, 0, 0.15)" : undefined,
         }}
       >
-        <div className="text-sm font-medium text-foreground">
-          {displayLabel}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium text-foreground">
+            {displayLabel}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 shrink-0"
+            onClick={handleConfigClick}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
