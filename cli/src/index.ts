@@ -3,11 +3,20 @@
  * Signals CLI - Command line interface for managing instruments and interacting with PocketBase.
  *
  * Usage:
+ *   # Email/Password Authentication
  *   bun run cli -- auth                           # Authenticate (prompts for credentials)
  *   bun run cli -- auth --user <email> --pass <password>  # Authenticate with credentials
+ *
+ *   # OAuth2 Authentication (opens browser)
+ *   bun run cli -- auth --provider=google         # Authenticate with Google
+ *   bun run cli -- auth --provider=github         # Authenticate with GitHub
+ *   bun run cli -- auth providers                 # List available OAuth providers
+ *
+ *   # Auth Management
  *   bun run cli -- auth status                    # Check authentication status
  *   bun run cli -- auth logout                    # Log out
  *
+ *   # Instruments
  *   bun run cli -- instruments list               # List your instruments
  *   bun run cli -- instruments list --all         # List all accessible instruments
  *   bun run cli -- instruments list --public      # List public instruments

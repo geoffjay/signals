@@ -1,15 +1,17 @@
 /**
  * Authentication command for the CLI.
- * Handles login, logout, and status checking.
+ * Handles login, logout, status checking, and OAuth2 authentication.
  */
 
 import { Command } from "commander";
 import {
   authenticate,
+  authenticateWithOAuth,
   clearAuthState,
   isAuthenticated,
   getCurrentUser,
   refreshAuth,
+  listOAuthProviders,
 } from "../client";
 
 /**
@@ -73,9 +75,24 @@ async function prompt(message: string, hidden = false): Promise<string> {
 }
 
 /**
- * Login action
+ * Login action - supports both email/password and OAuth2
  */
-async function loginAction(options: { user?: string; pass?: string }): Promise<void> {
+async function loginAction(options: { user?: string; pass?: string; provider?: string }): Promise<void> {
+  // If provider is specified, use OAuth2
+  if (options.provider) {
+    const success = await authenticateWithOAuth(options.provider);
+
+    if (success) {
+      const user = getCurrentUser();
+      console.log(`✓ Authenticated successfully as ${user?.email}`);
+      process.exit(0);
+    } else {
+      console.error("✗ Authentication failed");
+      process.exit(1);
+    }
+  }
+
+  // Otherwise use email/password
   // Get credentials from options, env vars, or prompt
   let email = options.user || process.env.GJ_ADMIN_USER;
   let password = options.pass || process.env.GJ_ADMIN_PASS;
@@ -104,6 +121,29 @@ async function loginAction(options: { user?: string; pass?: string }): Promise<v
     console.error("✗ Authentication failed");
     process.exit(1);
   }
+}
+
+/**
+ * List available OAuth providers action
+ */
+async function providersAction(): Promise<void> {
+  const providers = await listOAuthProviders();
+
+  if (providers.length === 0) {
+    console.log("No OAuth providers are configured.");
+    console.log("Configure providers in your PocketBase admin panel.");
+    return;
+  }
+
+  console.log("Available OAuth providers:\n");
+  for (const provider of providers) {
+    console.log(`  ${provider.name}`);
+    console.log(`    Display Name: ${provider.displayName}`);
+    console.log("");
+  }
+  console.log("Usage: bun run cli -- auth --provider=<name>\n");
+  console.log("Required redirect URI for OAuth providers:");
+  console.log("  http://localhost:8085/callback");
 }
 
 /**
@@ -151,6 +191,7 @@ export function createAuthCommand(): Command {
   auth
     .option("-u, --user <email>", "User email")
     .option("-p, --pass <password>", "User password")
+    .option("--provider <name>", "OAuth2 provider (e.g., google, github)")
     .action(loginAction);
 
   // Subcommands
@@ -159,6 +200,7 @@ export function createAuthCommand(): Command {
     .description("Log in to PocketBase")
     .option("-u, --user <email>", "User email")
     .option("-p, --pass <password>", "User password")
+    .option("--provider <name>", "OAuth2 provider (e.g., google, github)")
     .action(loginAction);
 
   auth
@@ -170,6 +212,11 @@ export function createAuthCommand(): Command {
     .command("status")
     .description("Check authentication status")
     .action(statusAction);
+
+  auth
+    .command("providers")
+    .description("List available OAuth2 providers")
+    .action(providersAction);
 
   return auth;
 }
