@@ -581,7 +581,7 @@ export function SignalFlowApp() {
         {/* Left Toolbar - Animated container */}
         <div
           className={`
-            overflow-hidden transition-all duration-300 ease-in-out
+            h-full overflow-y-auto overflow-x-hidden transition-all duration-300 ease-in-out
             ${isToolbarVisible ? "w-64 opacity-100" : "w-0 opacity-0"}
           `}
         >
