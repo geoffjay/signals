@@ -199,6 +199,13 @@
   }
 }
 
+/* Fix for lucide icons in custom ReactFlow control buttons */
+/* Only target buttons that aren't the built-in zoom/fit controls */
+.react-flow__controls-button:not(.react-flow__controls-zoomin):not(.react-flow__controls-zoomout):not(.react-flow__controls-fitview):not(.react-flow__controls-interactive) svg {
+  fill: none !important;
+  stroke: currentColor;
+}
+
 @layer utilities {
   .bg-radial-gradient {
     background-image: radial-gradient(

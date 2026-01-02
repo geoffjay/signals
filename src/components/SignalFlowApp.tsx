@@ -1,8 +1,9 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import {
   ReactFlow,
   Background,
   Controls,
+  ControlButton,
   MiniMap,
   addEdge,
   useNodesState,
@@ -13,6 +14,7 @@ import {
   ReactFlowProvider,
   type ReactFlowInstance,
 } from "@xyflow/react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import "@xyflow/react/dist/style.css";
 
 import {
@@ -55,6 +57,9 @@ export function SignalFlowApp() {
     lastExternalUpdate,
   } = useSignalFlowStore();
   const { theme } = useTheme();
+
+  // Toolbar visibility state
+  const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
   // ReactFlow state for UI updates
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(storeNodes);
@@ -278,7 +283,14 @@ export function SignalFlowApp() {
     if (selectedNodeId === nodeIdToDelete) {
       setSelectedNodeId(null);
     }
-  }, [configDrawerNodeId, selectedNodeId, setNodes, setEdges, setConfigDrawerNodeId, setSelectedNodeId]);
+  }, [
+    configDrawerNodeId,
+    selectedNodeId,
+    setNodes,
+    setEdges,
+    setConfigDrawerNodeId,
+    setSelectedNodeId,
+  ]);
 
   const togglePlayback = useCallback(() => {
     setIsPlaying(!isPlaying);
@@ -322,7 +334,10 @@ export function SignalFlowApp() {
   useEffect(() => {
     if (isPlaying) {
       // Set up sequencer step change callback
-      engineRef.current.onSequencerStepChange = (nodeId: string, step: number) => {
+      engineRef.current.onSequencerStepChange = (
+        nodeId: string,
+        step: number,
+      ) => {
         isInternalNodeUpdate.current = true;
         setNodes((nds) =>
           nds.map((node) => {
@@ -563,11 +578,22 @@ export function SignalFlowApp() {
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Toolbar */}
-        <Toolbar />
+        {/* Left Toolbar - Animated container */}
+        <div
+          className={`
+            overflow-hidden transition-all duration-300 ease-in-out
+            ${isToolbarVisible ? "w-64 opacity-100" : "w-0 opacity-0"}
+          `}
+        >
+          <div className="w-64 h-full">
+            <Toolbar />
+          </div>
+        </div>
 
         {/* Center Canvas with margin and rounded corners */}
-        <div className="flex-1 relative pb-4 pr-4">
+        <div
+          className={`flex-1 relative pb-4 pr-4 transition-all duration-300 ease-in-out ${!isToolbarVisible ? "pl-4" : ""}`}
+        >
           <div
             className="h-full w-full rounded-3xl overflow-hidden border border-border shadow-canvas bg-card"
             ref={reactFlowWrapper}
@@ -591,7 +617,18 @@ export function SignalFlowApp() {
               fitView
             >
               <Background />
-              <Controls />
+              <Controls showInteractive={false}>
+                <ControlButton
+                  onClick={() => setIsToolbarVisible(!isToolbarVisible)}
+                  title={isToolbarVisible ? "Hide toolbar" : "Show toolbar"}
+                >
+                  {isToolbarVisible ? (
+                    <PanelLeftClose size={12} strokeWidth={1.5} />
+                  ) : (
+                    <PanelLeftOpen size={12} strokeWidth={1.5} />
+                  )}
+                </ControlButton>
+              </Controls>
               <MiniMap pannable zoomable />
             </ReactFlow>
           </div>
@@ -602,7 +639,8 @@ export function SignalFlowApp() {
               node={configDrawerNode as Node<SignalBlockData> | undefined}
               edges={edges}
               onConfigChange={(config) =>
-                configDrawerNode && updateNodeConfig(configDrawerNode.id, config)
+                configDrawerNode &&
+                updateNodeConfig(configDrawerNode.id, config)
               }
               onDelete={deleteSelectedNode}
               onClose={() => setConfigDrawerNodeId(null)}
