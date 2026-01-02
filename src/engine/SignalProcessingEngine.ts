@@ -145,6 +145,8 @@ export class SignalProcessingEngine {
       "-lfo", "-lfoGain", "-depth", // tremolo, chorus, flanger, phaser, vibrato
       "-allpass-", // phaser stages
       "-audio", "-envelope", // envelope follower outputs
+      "-in-", "-out-", // note-to-freq-poly input/output nodes
+      "-C", "-C#", "-D", "-D#", "-E", "-F", "-F#", "-G", "-G#", "-A", "-A#", "-B", // note-to-freq note nodes
     ];
     const isEffectSubNode = (id: string) =>
       effectSubNodeSuffixes.some((suffix) => id.includes(suffix));
@@ -846,6 +848,15 @@ export class SignalProcessingEngine {
 
       case "matrix-router":
         this.createMatrixRouter(nodeId, config);
+        break;
+
+      // Utility blocks
+      case "note-to-freq":
+        this.createNoteToFreq(nodeId, config);
+        break;
+
+      case "note-to-freq-poly":
+        this.createNoteToFreqPoly(nodeId, config);
         break;
     }
   }
@@ -2354,6 +2365,81 @@ export class SignalProcessingEngine {
     }
   }
 
+  /**
+   * Note frequency table (Hz) for each note across octaves 0-8
+   * Based on A4 = 440 Hz standard tuning
+   */
+  private static NOTE_FREQUENCIES: Record<string, number[]> = {
+    C: [16.35, 32.7, 65.41, 130.81, 261.63, 523.25, 1046.5, 2093, 4186],
+    "C#": [17.32, 34.65, 69.3, 138.59, 277.18, 554.37, 1108.73, 2217.46, 4434.92],
+    D: [18.35, 36.71, 73.42, 146.83, 293.66, 587.33, 1174.66, 2349.32, 4698.63],
+    "D#": [19.45, 38.89, 77.78, 155.56, 311.13, 622.25, 1244.51, 2489, 4978],
+    E: [20.6, 41.2, 82.41, 164.81, 329.63, 659.25, 1318.51, 2637, 5274],
+    F: [21.83, 43.65, 87.31, 174.61, 349.23, 698.46, 1396.91, 2793.83, 5587.65],
+    "F#": [23.12, 46.25, 92.5, 185, 369.99, 739.99, 1479.98, 2959.96, 5919.91],
+    G: [24.5, 49, 98, 196, 392, 783.99, 1567.98, 3135.96, 6271.93],
+    "G#": [25.96, 51.91, 103.83, 207.65, 415.3, 830.61, 1661.22, 3322.44, 6644.88],
+    A: [27.5, 55, 110, 220, 440, 880, 1760, 3520, 7040],
+    "A#": [29.14, 58.27, 116.54, 233.08, 466.16, 932.33, 1864.66, 3729.31, 7458.62],
+    B: [30.87, 61.74, 123.47, 246.94, 493.88, 987.77, 1975.53, 3951, 7902.13],
+  };
+
+  private static NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+  /**
+   * Create a note-to-frequency converter block.
+   * Each of the 12 note inputs (C, C#, D, etc.) is multiplied by its frequency
+   * for the selected octave, and all are summed to the output.
+   */
+  private createNoteToFreq(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const octave = config.noteToFreqOctave ?? 4;
+
+    // Create output sum node
+    const outputNode = this.audioContext.createGain();
+    outputNode.gain.value = 1.0;
+    this.nodes.set(nodeId, outputNode);
+
+    // Create a gain node for each note input
+    // The gain value is the frequency for that note at the selected octave
+    for (const noteName of SignalProcessingEngine.NOTE_NAMES) {
+      const noteGain = this.audioContext.createGain();
+      const frequency = SignalProcessingEngine.NOTE_FREQUENCIES[noteName]?.[octave] ?? 0;
+      noteGain.gain.value = frequency;
+      noteGain.connect(outputNode);
+      this.nodes.set(`${nodeId}-${noteName}`, noteGain);
+    }
+  }
+
+  /**
+   * Create a polyphonic note-to-frequency converter block.
+   * Each of the 12 note inputs (C, C#, D, etc.) has its own output,
+   * outputting the frequency for that note at the selected octave when triggered.
+   */
+  private createNoteToFreqPoly(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const octave = config.noteToFreqOctave ?? 4;
+
+    // Create a gain node for each note (input -> output pair)
+    // The gain value is the frequency for that note at the selected octave
+    for (const noteName of SignalProcessingEngine.NOTE_NAMES) {
+      const noteGain = this.audioContext.createGain();
+      const frequency = SignalProcessingEngine.NOTE_FREQUENCIES[noteName]?.[octave] ?? 0;
+      noteGain.gain.value = frequency;
+      // Store as both input and output node (same node serves both purposes)
+      this.nodes.set(`${nodeId}-in-${noteName}`, noteGain);
+      this.nodes.set(`${nodeId}-out-${noteName}`, noteGain);
+    }
+
+    // Set main node reference to first note's gain
+    const firstNote = this.nodes.get(`${nodeId}-in-C`);
+    if (firstNote) {
+      this.nodes.set(nodeId, firstNote);
+    }
+  }
+
   private createAnalyser(nodeId: string, config: BlockConfig) {
     if (!this.audioContext) return;
 
@@ -2904,6 +2990,15 @@ export class SignalProcessingEngine {
       }
     }
 
+    // Special case: Note-to-freq-poly outputs (C, C#, D, etc.)
+    // Each note output routes from its corresponding gain node
+    if (sourceBlock?.data?.blockType === "note-to-freq-poly") {
+      const noteOutputNode = this.nodes.get(`${actualSourceId}-out-${actualSourceHandle}`);
+      if (noteOutputNode) {
+        sourceNode = noteOutputNode;
+      }
+    }
+
     const targetNode = this.nodes.get(actualTargetId);
 
     if (!sourceNode || !targetNode) {
@@ -3411,6 +3506,26 @@ export class SignalProcessingEngine {
                 sourceNode.connect(inputGain);
               }
             }
+          }
+          break;
+        }
+
+        case "note-to-freq": {
+          // Note-to-freq: 12 note inputs (C, C#, D, D#, E, F, F#, G, G#, A, A#, B)
+          // Each input connects to its corresponding gain node
+          const noteGain = this.nodes.get(`${actualTargetId}-${actualTargetHandle}`);
+          if (noteGain) {
+            sourceNode.connect(noteGain);
+          }
+          break;
+        }
+
+        case "note-to-freq-poly": {
+          // Note-to-freq-poly: 12 note inputs (C, C#, D, D#, E, F, F#, G, G#, A, A#, B)
+          // Each input connects to its corresponding gain node
+          const noteGainPoly = this.nodes.get(`${actualTargetId}-in-${actualTargetHandle}`);
+          if (noteGainPoly) {
+            sourceNode.connect(noteGainPoly);
           }
           break;
         }
@@ -4194,6 +4309,34 @@ export class SignalProcessingEngine {
               const gain = routing[i]?.[o] ?? 0;
               routeGain.gain.value = gain;
             }
+          }
+        }
+        break;
+      }
+
+      case "note-to-freq": {
+        // Update the gain (frequency) for each note based on the selected octave
+        const octave = config.noteToFreqOctave ?? 4;
+
+        for (const noteName of SignalProcessingEngine.NOTE_NAMES) {
+          const noteGain = this.nodes.get(`${nodeId}-${noteName}`);
+          if (noteGain instanceof GainNode) {
+            const frequency = SignalProcessingEngine.NOTE_FREQUENCIES[noteName]?.[octave] ?? 0;
+            noteGain.gain.value = frequency;
+          }
+        }
+        break;
+      }
+
+      case "note-to-freq-poly": {
+        // Update the gain (frequency) for each note based on the selected octave
+        const octavePoly = config.noteToFreqOctave ?? 4;
+
+        for (const noteName of SignalProcessingEngine.NOTE_NAMES) {
+          const noteGainPoly = this.nodes.get(`${nodeId}-in-${noteName}`);
+          if (noteGainPoly instanceof GainNode) {
+            const frequency = SignalProcessingEngine.NOTE_FREQUENCIES[noteName]?.[octavePoly] ?? 0;
+            noteGainPoly.gain.value = frequency;
           }
         }
         break;

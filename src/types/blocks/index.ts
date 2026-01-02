@@ -24,6 +24,7 @@ import { INPUT_DEFINITIONS, type InputBlockType } from "./inputs";
 import { OUTPUT_DEFINITIONS, type OutputBlockType } from "./outputs";
 import { ROUTING_DEFINITIONS, type RoutingBlockType } from "./routing";
 import { FFT_DEFINITIONS, type FFTBlockType } from "./fft";
+import { UTILITY_DEFINITIONS, type UtilityBlockType } from "./utility";
 import type { BlockConfig, BlockDefinition } from "./common";
 
 // Re-export type unions
@@ -40,6 +41,8 @@ export type { InputBlockType } from "./inputs";
 export type { OutputBlockType } from "./outputs";
 export type { RoutingBlockType } from "./routing";
 export type { FFTBlockType } from "./fft";
+export type { UtilityBlockType } from "./utility";
+export { NOTE_FREQUENCIES, NOTE_NAMES, getNoteFrequency } from "./utility";
 
 /**
  * Combined block type - union of all block types
@@ -57,7 +60,8 @@ export type BlockType =
   | InputBlockType
   | OutputBlockType
   | RoutingBlockType
-  | FFTBlockType;
+  | FFTBlockType
+  | UtilityBlockType;
 
 /**
  * Combined block definitions - all block types in one record
@@ -76,6 +80,7 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
   ...OUTPUT_DEFINITIONS,
   ...ROUTING_DEFINITIONS,
   ...FFT_DEFINITIONS,
+  ...UTILITY_DEFINITIONS,
 };
 
 /**
@@ -232,4 +237,5 @@ export {
   OUTPUT_DEFINITIONS,
   ROUTING_DEFINITIONS,
   FFT_DEFINITIONS,
+  UTILITY_DEFINITIONS,
 };

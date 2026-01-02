@@ -53,6 +53,7 @@ import { MultiSliderConfig } from "./MultiSliderConfig";
 import { SequencerConfig } from "./SequencerConfig";
 import { NumericMeterConfig } from "./NumericMeterConfig";
 import { FFTAnalyzerConfig } from "./FFTAnalyzerConfig";
+import { NoteToFreqConfig } from "./NoteToFreqConfig";
 
 // Re-export types
 export type { ConfigComponentProps } from "./types";
@@ -107,6 +108,7 @@ export {
   SequencerConfig,
   NumericMeterConfig,
   FFTAnalyzerConfig,
+  NoteToFreqConfig,
 };
 
 /**
@@ -204,6 +206,10 @@ export const configComponentMap: Record<
 
   // FFT
   "fft-analyzer": FFTAnalyzerConfig,
+
+  // Utility
+  "note-to-freq": NoteToFreqConfig,
+  "note-to-freq-poly": NoteToFreqConfig,
 
   // Math operations (no config)
   add: null,

@@ -10,7 +10,8 @@ export type BlockCategory =
   | "input"
   | "output"
   | "routing"
-  | "fft";
+  | "fft"
+  | "utility";
 
 /**
  * Block configuration interface containing all possible configuration options.
@@ -256,6 +257,9 @@ export interface BlockConfig {
   matrixInputs?: number; // 2, 4, or 8
   matrixOutputs?: number; // 2, 4, or 8
   matrixRouting?: number[][]; // [input][output] = gain (0 or 1)
+
+  // Note to Frequency converter
+  noteToFreqOctave?: number; // 0-8, default 4 (A4 = 440 Hz)
 }
 
 /**

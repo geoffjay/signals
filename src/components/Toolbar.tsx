@@ -83,6 +83,7 @@ import {
   CircleMinus as XorGate,
   CircleOff,
   LayoutDashboard,
+  Music2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -190,6 +191,8 @@ const BLOCK_ICONS: Record<
   "ring-mod": Target,
   "multi-slider": Columns,
   sequencer: ListMusic,
+  "note-to-freq": Music2,
+  "note-to-freq-poly": Music2,
 };
 
 const blockGroups = [
@@ -280,6 +283,10 @@ const blockGroups = [
       "not-gate",
       "matrix-router",
     ] as BlockType[],
+  },
+  {
+    title: "Utility",
+    blocks: ["note-to-freq", "note-to-freq-poly"] as BlockType[],
   },
   {
     title: "Outputs",
