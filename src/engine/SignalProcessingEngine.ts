@@ -145,8 +145,10 @@ export class SignalProcessingEngine {
       "-lfo", "-lfoGain", "-depth", // tremolo, chorus, flanger, phaser, vibrato
       "-allpass-", // phaser stages
       "-audio", "-envelope", // envelope follower outputs
-      "-in-", "-out-", // note-to-freq-poly input/output nodes
+      "-out-", // note-to-freq-poly output nodes
       "-C", "-C#", "-D", "-D#", "-E", "-F", "-F#", "-G", "-G#", "-A", "-A#", "-B", // note-to-freq note nodes
+      "-in", "-master", // mixer/merge/routing input and master nodes (also covers note-to-freq-poly -in-)
+      "-inputA", "-inputB", // crossfader input nodes
     ];
     const isEffectSubNode = (id: string) =>
       effectSubNodeSuffixes.some((suffix) => id.includes(suffix));
@@ -2129,7 +2131,7 @@ export class SignalProcessingEngine {
       const gainNode = this.audioContext.createGain();
       gainNode.gain.value = gains[i] ?? 1.0;
       channelGains.push(gainNode);
-      this.nodes.set(`${nodeId}-ch${i}`, gainNode);
+      this.nodes.set(`${nodeId}-in${i}`, gainNode); // Use -in prefix for consistent routing
     }
 
     // Create master gain node
@@ -2141,6 +2143,7 @@ export class SignalProcessingEngine {
 
     this.nodes.set(nodeId, master);
     this.nodes.set(`${nodeId}-master`, master);
+    this.nodes.set(`${nodeId}-output`, master); // For consistent source routing
   }
 
   /**
