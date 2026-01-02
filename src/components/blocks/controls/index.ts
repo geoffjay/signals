@@ -6,3 +6,4 @@ export { PulseControl } from "./PulseControl";
 export { KeyboardControl } from "./KeyboardControl";
 export { BeatPadControl } from "./BeatPadControl";
 export { CrossfaderControl, calculateCrossfadeGains } from "./CrossfaderControl";
+export { SequencerControl } from "./SequencerControl";

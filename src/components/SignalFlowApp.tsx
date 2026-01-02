@@ -321,6 +321,31 @@ export function SignalFlowApp() {
   // Handle playback state changes
   useEffect(() => {
     if (isPlaying) {
+      // Set up sequencer step change callback
+      engineRef.current.onSequencerStepChange = (nodeId: string, step: number) => {
+        isInternalNodeUpdate.current = true;
+        setNodes((nds) =>
+          nds.map((node) => {
+            if (node.id === nodeId && node.data.blockType === "sequencer") {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  config: {
+                    ...(node.data.config as BlockConfig),
+                    seqCurrentStep: step,
+                  },
+                },
+              };
+            }
+            return node;
+          }),
+        );
+        setTimeout(() => {
+          isInternalNodeUpdate.current = false;
+        }, 0);
+      };
+
       // Start audio engine (async to properly resume AudioContext)
       (async () => {
         await engineRef.current.start();
@@ -353,6 +378,8 @@ export function SignalFlowApp() {
         }, 0);
       })();
     } else {
+      // Clear sequencer callback
+      engineRef.current.onSequencerStepChange = null;
       engineRef.current.stop();
 
       // Clear analysers from oscilloscope, numeric-meter, and fft-analyzer nodes
@@ -439,6 +466,17 @@ export function SignalFlowApp() {
         if (prevKey !== currentKey) {
           engineRef.current.updateNodeConfig(node.id, blockType, config);
           prevMultiOutputValuesRef.current.set(node.id, currentKey);
+        }
+      }
+
+      // Handle sequencer (grid changes affect trigger outputs)
+      if (blockType === "sequencer") {
+        const gridKey = JSON.stringify(config.seqGrid || []);
+        const prevKey = prevMultiOutputValuesRef.current.get(node.id);
+
+        if (prevKey !== gridKey) {
+          engineRef.current.updateNodeConfig(node.id, blockType, config);
+          prevMultiOutputValuesRef.current.set(node.id, gridKey);
         }
       }
     });

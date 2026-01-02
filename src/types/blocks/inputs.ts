@@ -11,7 +11,8 @@ export type InputBlockType =
   | "pulse"
   | "keyboard"
   | "beat-pad"
-  | "crossfader";
+  | "crossfader"
+  | "sequencer";
 
 /**
  * Input control block definitions
@@ -137,6 +138,34 @@ export const INPUT_DEFINITIONS: Record<InputBlockType, BlockDefinition> = {
       position: 0.5,
       // Curve type: linear, equal-power, or cut
       curveType: "equal-power" as "linear" | "equal-power" | "cut",
+    },
+  },
+  sequencer: {
+    type: "sequencer",
+    label: "Sequencer",
+    inputs: [],
+    // Default outputs for triggers mode with 4 rows
+    outputs: [
+      { id: "trig0", label: "T0" },
+      { id: "trig1", label: "T1" },
+      { id: "trig2", label: "T2" },
+      { id: "trig3", label: "T3" },
+      { id: "step", label: "Step" },
+    ],
+    defaultConfig: {
+      seqBpm: 120,
+      seqSteps: 16,
+      seqRows: 4,
+      seqMode: "triggers" as "triggers" | "note",
+      seqGrid: [
+        Array(16).fill(false),
+        Array(16).fill(false),
+        Array(16).fill(false),
+        Array(16).fill(false),
+      ],
+      seqCurrentStep: 0,
+      // Default note values (C4, D4, E4, F4 frequencies)
+      seqNoteValues: [261.63, 293.66, 329.63, 349.23],
     },
   },
 };

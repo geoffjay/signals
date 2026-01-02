@@ -325,6 +325,46 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     [id, setNodes],
   );
 
+  // Handler for sequencer cell toggle
+  const handleSequencerCellToggle = useCallback(
+    (row: number, step: number) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            const nodeData = node.data as SignalBlockData;
+            const grid = nodeData.config.seqGrid || [];
+            const rows = nodeData.config.seqRows || 4;
+            const steps = nodeData.config.seqSteps || 16;
+
+            // Create a new grid with the toggled cell
+            const newGrid: boolean[][] = [];
+            for (let r = 0; r < rows; r++) {
+              const rowData = grid[r] || [];
+              newGrid[r] = [];
+              for (let s = 0; s < steps; s++) {
+                if (r === row && s === step) {
+                  newGrid[r][s] = !rowData[s];
+                } else {
+                  newGrid[r][s] = rowData[s] || false;
+                }
+              }
+            }
+
+            return {
+              ...node,
+              data: {
+                ...nodeData,
+                config: { ...nodeData.config, seqGrid: newGrid },
+              },
+            };
+          }
+          return node;
+        }),
+      );
+    },
+    [id, setNodes],
+  );
+
   // Collected handlers for BlockContent
   const handlers = {
     onSliderChange: handleSliderChange,
@@ -338,6 +378,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
     onPadPress: handlePadPress,
     onPadRelease: handlePadRelease,
     onCrossfaderChange: handleCrossfaderChange,
+    onSequencerCellToggle: handleSequencerCellToggle,
   };
 
   // Handler for config button click
@@ -353,12 +394,18 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   const displayLabel = blockData.config.customLabel || blockData.label;
   const customColor = blockData.config.customColor;
 
-  // Calculate dynamic min-width for multi-slider based on number of sliders
+  // Calculate dynamic min-width for multi-slider and sequencer based on config
   const getMinWidth = () => {
     if (blockData.blockType === "multi-slider") {
       const numSliders = blockData.config.numSliders || 2;
       if (numSliders >= 8) return "min-w-[420px]";
       if (numSliders >= 4) return "min-w-[260px]";
+    }
+    if (blockData.blockType === "sequencer") {
+      const steps = blockData.config.seqSteps || 16;
+      // 16 steps need more width, 8 steps less
+      if (steps >= 16) return "min-w-[320px]";
+      return "min-w-[220px]";
     }
     return "min-w-[180px]";
   };

@@ -98,6 +98,33 @@ export function getBlockInputs(
     return inputs;
   }
 
+  if (type === "mixer") {
+    const numChannels = config.mixerChannels || 2;
+    const inputs = [];
+    for (let i = 0; i < numChannels; i++) {
+      inputs.push({ id: `in${i}`, label: `In ${i}` });
+    }
+    return inputs;
+  }
+
+  if (type === "merge") {
+    const numChannels = config.mergeChannels || 2;
+    const inputs = [];
+    for (let i = 0; i < numChannels; i++) {
+      inputs.push({ id: `in${i}`, label: `In ${i}` });
+    }
+    return inputs;
+  }
+
+  if (type === "matrix-router") {
+    const numInputs = config.matrixInputs || 2;
+    const inputs = [];
+    for (let i = 0; i < numInputs; i++) {
+      inputs.push({ id: `in${i}`, label: `In ${i}` });
+    }
+    return inputs;
+  }
+
   return definition.inputs;
 }
 
@@ -129,6 +156,28 @@ export function getBlockOutputs(
     return outputs;
   }
 
+  if (type === "sequencer") {
+    const mode = config.seqMode || "triggers";
+    const numRows = config.seqRows || 4;
+
+    if (mode === "triggers") {
+      // One trigger output per row plus step output
+      const outputs = [];
+      for (let i = 0; i < numRows; i++) {
+        outputs.push({ id: `trig${i}`, label: `T${i}` });
+      }
+      outputs.push({ id: "step", label: "Step" });
+      return outputs;
+    } else {
+      // Note mode: single trigger, note value, and step
+      return [
+        { id: "trigger", label: "Trig" },
+        { id: "note", label: "Note" },
+        { id: "step", label: "Step" },
+      ];
+    }
+  }
+
   if (type === "fft-analyzer") {
     const mode = config.fftMode || "spectrum";
 
@@ -154,6 +203,15 @@ export function getBlockOutputs(
       default:
         return [];
     }
+  }
+
+  if (type === "matrix-router") {
+    const numOutputs = config.matrixOutputs || 2;
+    const outputs = [];
+    for (let i = 0; i < numOutputs; i++) {
+      outputs.push({ id: `out${i}`, label: `Out ${i}` });
+    }
+    return outputs;
   }
 
   return definition.outputs;

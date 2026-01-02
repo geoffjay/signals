@@ -8,6 +8,7 @@ import {
   KeyboardControl,
   BeatPadControl,
   CrossfaderControl,
+  SequencerControl,
 } from "./controls";
 import {
   OscilloscopeBlock,
@@ -31,6 +32,7 @@ interface BlockContentProps {
     onPadPress?: (padIndex: number, velocity: number) => void;
     onPadRelease?: () => void;
     onCrossfaderChange?: (position: number) => void;
+    onSequencerCellToggle?: (row: number, step: number) => void;
   };
 }
 
@@ -110,6 +112,14 @@ export function BlockContent({
         <CrossfaderControl
           config={config}
           onPositionChange={handlers.onCrossfaderChange ?? (() => {})}
+        />
+      );
+
+    case "sequencer":
+      return (
+        <SequencerControl
+          config={config}
+          onCellToggle={handlers.onSequencerCellToggle ?? (() => {})}
         />
       );
 

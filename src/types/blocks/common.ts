@@ -208,6 +208,54 @@ export interface BlockConfig {
     step: number;
     value: number;
   }>;
+
+  // Sequencer
+  seqBpm?: number; // 20-300, default 120
+  seqSteps?: number; // 8 or 16, default 16
+  seqRows?: number; // 4 or 8, default 4
+  seqMode?: "triggers" | "note"; // Output mode
+  seqGrid?: boolean[][]; // [row][step] - which cells are active
+  seqCurrentStep?: number; // Current playhead position (0 to steps-1)
+  seqNoteValues?: number[]; // Frequency/pitch value for each row
+
+  // Mixer
+  mixerChannels?: number; // 2, 4, or 8
+  mixerGains?: number[]; // Individual channel gains (0-2)
+  mixerMasterGain?: number; // Master output gain (0-2)
+
+  // Merge
+  mergeChannels?: number; // 2, 4, or 8
+
+  // Switch/Gate
+  switchThreshold?: number; // Control threshold (0-1)
+  switchInvert?: boolean; // Invert gate behavior
+
+  // A/B Switch
+  abThreshold?: number; // Threshold for switching (0-1)
+
+  // Sample & Hold
+  sampleHoldThreshold?: number; // Trigger threshold (0-1)
+
+  // Comparator
+  comparatorMode?: "greater" | "less" | "equal" | "notEqual";
+  comparatorThreshold?: number; // Fixed comparison value
+  comparatorUseThreshold?: boolean; // Compare against threshold vs input B
+  comparatorOutputHigh?: number; // Output when condition is true
+  comparatorOutputLow?: number; // Output when condition is false
+
+  // Panner
+  panPosition?: number; // -1 (left) to 1 (right)
+  panLaw?: "linear" | "equal-power";
+
+  // Logic Gates
+  gateThreshold?: number; // Signal threshold for boolean conversion
+  gateOutputHigh?: number; // Output when true
+  gateOutputLow?: number; // Output when false
+
+  // Matrix Router
+  matrixInputs?: number; // 2, 4, or 8
+  matrixOutputs?: number; // 2, 4, or 8
+  matrixRouting?: number[][]; // [input][output] = gain (0 or 1)
 }
 
 /**

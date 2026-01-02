@@ -11,6 +11,8 @@ export class SignalProcessingEngine {
   private oscillators: Map<string, OscillatorNode> = new Map();
   private analysers: Map<string, AnalyserNode> = new Map();
   private constantSources: Map<string, ConstantSourceNode> = new Map();
+  private sequencerNodes: Map<string, { config: BlockConfig; lastStepTime: number }> = new Map();
+  private sequencerTimerId: number | null = null;
   private reactFlowNodes: Node[] = [];
   private reactFlowEdges: Edge[] = [];
   private isRunning = false;
@@ -74,11 +76,27 @@ export class SignalProcessingEngine {
       console.error("Failed to load lofi-processors AudioWorklet:", e);
     }
 
+    // Register AudioWorklet processors for routing operations
+    try {
+      const basePath = import.meta.env.BASE_URL || "/";
+      await this.audioContext.audioWorklet.addModule(
+        `${basePath}routing-processors.js`,
+      );
+    } catch (e) {
+      console.error("Failed to load routing-processors AudioWorklet:", e);
+    }
+
     this.isRunning = true;
+
+    // Start sequencer timing loop
+    this.startSequencerLoop();
   }
 
   stop() {
     if (!this.isRunning) return;
+
+    // Stop sequencer timing loop
+    this.stopSequencerLoop();
 
     // Stop all oscillators
     this.oscillators.forEach((osc) => {
@@ -103,6 +121,7 @@ export class SignalProcessingEngine {
     this.nodes.clear();
     this.analysers.clear();
     this.instrumentInstances.clear();
+    this.sequencerNodes.clear();
 
     this.isRunning = false;
   }
@@ -747,6 +766,10 @@ export class SignalProcessingEngine {
         this.createCrossfader(nodeId, config);
         break;
 
+      case "sequencer":
+        this.createSequencer(nodeId, config);
+        break;
+
       case "envelope-follower":
         this.createEnvelopeFollower(nodeId, config);
         break;
@@ -766,6 +789,63 @@ export class SignalProcessingEngine {
       // Frequency/Pitch effects
       case "ring-mod":
         this.createRingModulator(nodeId, config);
+        break;
+
+      // Advanced Routing
+      case "mixer":
+        this.createMixer(nodeId, config);
+        break;
+
+      case "merge":
+        this.createMerge(nodeId, config);
+        break;
+
+      case "switch":
+        this.createSwitch(nodeId, config);
+        break;
+
+      case "ab-switch":
+        this.createABSwitch(nodeId, config);
+        break;
+
+      case "sample-hold":
+        this.createSampleHold(nodeId, config);
+        break;
+
+      case "comparator":
+        this.createComparator(nodeId, config);
+        break;
+
+      case "panner":
+        this.createPanner(nodeId, config);
+        break;
+
+      case "stereo-splitter":
+        this.createStereoSplitter(nodeId);
+        break;
+
+      case "stereo-merger":
+        this.createStereoMerger(nodeId);
+        break;
+
+      case "and-gate":
+        this.createLogicGate(nodeId, "and-gate-processor", config);
+        break;
+
+      case "or-gate":
+        this.createLogicGate(nodeId, "or-gate-processor", config);
+        break;
+
+      case "xor-gate":
+        this.createLogicGate(nodeId, "xor-gate-processor", config);
+        break;
+
+      case "not-gate":
+        this.createNotGate(nodeId, config);
+        break;
+
+      case "matrix-router":
+        this.createMatrixRouter(nodeId, config);
         break;
     }
   }
@@ -1845,6 +1925,435 @@ export class SignalProcessingEngine {
     }
   }
 
+  /**
+   * Sequencer - Creates outputs for step sequencer
+   * In triggers mode: one trigger output per row + step output
+   * In note mode: trigger, note, and step outputs
+   */
+  private createSequencer(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const mode = config.seqMode || "triggers";
+    const numRows = config.seqRows || 4;
+
+    if (mode === "triggers") {
+      // Create a trigger output for each row
+      for (let i = 0; i < numRows; i++) {
+        const triggerSource = this.audioContext.createConstantSource();
+        triggerSource.offset.value = 0;
+        triggerSource.start();
+
+        this.constantSources.set(`${nodeId}-trig${i}`, triggerSource);
+        this.nodes.set(`${nodeId}-trig${i}`, triggerSource);
+      }
+
+      // Step output
+      const stepSource = this.audioContext.createConstantSource();
+      stepSource.offset.value = 0;
+      stepSource.start();
+
+      this.constantSources.set(`${nodeId}-step`, stepSource);
+      this.nodes.set(`${nodeId}-step`, stepSource);
+
+      // Main node reference
+      const firstTrigger = this.nodes.get(`${nodeId}-trig0`);
+      if (firstTrigger) {
+        this.nodes.set(nodeId, firstTrigger);
+      }
+    } else {
+      // Note mode: trigger, note, step outputs
+      const triggerSource = this.audioContext.createConstantSource();
+      triggerSource.offset.value = 0;
+      triggerSource.start();
+
+      const noteSource = this.audioContext.createConstantSource();
+      noteSource.offset.value = 0;
+      noteSource.start();
+
+      const stepSource = this.audioContext.createConstantSource();
+      stepSource.offset.value = 0;
+      stepSource.start();
+
+      this.constantSources.set(`${nodeId}-trigger`, triggerSource);
+      this.constantSources.set(`${nodeId}-note`, noteSource);
+      this.constantSources.set(`${nodeId}-step`, stepSource);
+
+      this.nodes.set(`${nodeId}-trigger`, triggerSource);
+      this.nodes.set(`${nodeId}-note`, noteSource);
+      this.nodes.set(`${nodeId}-step`, stepSource);
+      this.nodes.set(nodeId, triggerSource);
+    }
+
+    // Store sequencer info for timing loop
+    this.sequencerNodes.set(nodeId, {
+      config,
+      lastStepTime: 0,
+    });
+  }
+
+  /**
+   * Start the sequencer timing loop
+   */
+  private startSequencerLoop() {
+    if (this.sequencerTimerId !== null) return;
+
+    this.sequencerTimerId = window.setInterval(() => {
+      this.processSequencers();
+    }, 10); // Check every 10ms for precision
+  }
+
+  /**
+   * Stop the sequencer timing loop
+   */
+  private stopSequencerLoop() {
+    if (this.sequencerTimerId !== null) {
+      window.clearInterval(this.sequencerTimerId);
+      this.sequencerTimerId = null;
+    }
+  }
+
+  /**
+   * Process all sequencers - advance steps based on BPM timing
+   */
+  private processSequencers() {
+    if (!this.audioContext) return;
+
+    const now = this.audioContext.currentTime;
+
+    if (this.sequencerNodes.size === 0) {
+      return; // No sequencers to process
+    }
+
+    this.sequencerNodes.forEach((seqInfo, nodeId) => {
+      const config = seqInfo.config;
+      const bpm = config.seqBpm || 120;
+      const steps = config.seqSteps || 16;
+      const mode = config.seqMode || "triggers";
+      const numRows = config.seqRows || 4;
+      const grid = config.seqGrid || [];
+      const noteValues = config.seqNoteValues || [261.63, 293.66, 329.63, 349.23];
+
+      // Calculate step duration (16th notes)
+      const stepDuration = 60 / bpm / 4;
+
+      // Check if it's time to advance
+      if (seqInfo.lastStepTime === 0) {
+        // First step - initialize
+        seqInfo.lastStepTime = now;
+      }
+
+      if (now - seqInfo.lastStepTime >= stepDuration) {
+        // Advance to next step
+        const currentStep = (config.seqCurrentStep || 0);
+        const nextStep = (currentStep + 1) % steps;
+
+        // Update step output
+        const stepSource = this.constantSources.get(`${nodeId}-step`);
+        if (stepSource) {
+          stepSource.offset.value = nextStep;
+        }
+
+        // Update trigger outputs based on grid
+        if (mode === "triggers") {
+          for (let row = 0; row < numRows; row++) {
+            const trigSource = this.constantSources.get(`${nodeId}-trig${row}`);
+            if (trigSource) {
+              const isActive = grid[row]?.[nextStep] ?? false;
+              trigSource.offset.value = isActive ? 1 : 0;
+            }
+          }
+        } else {
+          // Note mode
+          const triggerSource = this.constantSources.get(`${nodeId}-trigger`);
+          const noteSource = this.constantSources.get(`${nodeId}-note`);
+
+          // Check if any cell is active in this step
+          let anyActive = false;
+          let activeNote = 0;
+          for (let row = 0; row < numRows; row++) {
+            if (grid[row]?.[nextStep]) {
+              anyActive = true;
+              activeNote = noteValues[row] || 261.63;
+              break; // Use first active note (lowest row)
+            }
+          }
+
+          if (triggerSource) {
+            triggerSource.offset.value = anyActive ? 1 : 0;
+          }
+          if (noteSource && anyActive) {
+            noteSource.offset.value = activeNote;
+          }
+        }
+
+        // Update timing and current step in stored config
+        seqInfo.lastStepTime = now;
+        seqInfo.config.seqCurrentStep = nextStep;
+
+        // Notify UI of step change by updating the config
+        // This is handled via the onStepChange callback if set
+        if (this.onSequencerStepChange) {
+          this.onSequencerStepChange(nodeId, nextStep);
+        }
+      }
+    });
+  }
+
+  // Callback for UI updates
+  public onSequencerStepChange: ((nodeId: string, step: number) => void) | null = null;
+
+  /**
+   * Create a mixer with multiple inputs and individual gain controls
+   */
+  private createMixer(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const numChannels = config.mixerChannels || 2;
+    const gains = config.mixerGains || Array(numChannels).fill(1.0);
+    const masterGain = config.mixerMasterGain ?? 1.0;
+
+    // Create individual gain nodes for each channel
+    const channelGains: GainNode[] = [];
+    for (let i = 0; i < numChannels; i++) {
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = gains[i] ?? 1.0;
+      channelGains.push(gainNode);
+      this.nodes.set(`${nodeId}-ch${i}`, gainNode);
+    }
+
+    // Create master gain node
+    const master = this.audioContext.createGain();
+    master.gain.value = masterGain;
+
+    // Connect all channel gains to master
+    channelGains.forEach((g) => g.connect(master));
+
+    this.nodes.set(nodeId, master);
+    this.nodes.set(`${nodeId}-master`, master);
+  }
+
+  /**
+   * Create a merge node that sums multiple inputs
+   */
+  private createMerge(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const numChannels = config.mergeChannels || 2;
+
+    // Create a simple gain node that sums inputs
+    // Each input will connect to this gain node
+    const sumNode = this.audioContext.createGain();
+    sumNode.gain.value = 1.0 / numChannels; // Normalize by number of inputs
+
+    // Store references for each input channel
+    for (let i = 0; i < numChannels; i++) {
+      this.nodes.set(`${nodeId}-in${i}`, sumNode);
+    }
+
+    this.nodes.set(nodeId, sumNode);
+  }
+
+  /**
+   * Create a switch/gate that passes or blocks signal
+   */
+  private createSwitch(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const threshold = config.switchThreshold ?? 0.5;
+    const invert = config.switchInvert ?? false;
+
+    const node = new AudioWorkletNode(this.audioContext, "switch-processor", {
+      numberOfInputs: 2,
+      numberOfOutputs: 1,
+      processorOptions: { threshold, invert },
+    });
+
+    this.nodes.set(nodeId, node);
+  }
+
+  /**
+   * Create an A/B switch that selects between two inputs
+   */
+  private createABSwitch(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const threshold = config.abThreshold ?? 0.5;
+
+    const node = new AudioWorkletNode(this.audioContext, "ab-switch-processor", {
+      numberOfInputs: 3,
+      numberOfOutputs: 1,
+      processorOptions: { threshold },
+    });
+
+    this.nodes.set(nodeId, node);
+  }
+
+  /**
+   * Create a sample and hold that captures value on trigger
+   */
+  private createSampleHold(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const threshold = config.sampleHoldThreshold ?? 0.5;
+
+    const node = new AudioWorkletNode(this.audioContext, "sample-hold-processor", {
+      numberOfInputs: 2,
+      numberOfOutputs: 1,
+      processorOptions: { threshold },
+    });
+
+    this.nodes.set(nodeId, node);
+  }
+
+  /**
+   * Create a comparator that outputs high/low based on comparison
+   */
+  private createComparator(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const mode = config.comparatorMode ?? "greater";
+    const threshold = config.comparatorThreshold ?? 0;
+    const useThreshold = config.comparatorUseThreshold ?? false;
+    const outputHigh = config.comparatorOutputHigh ?? 1.0;
+    const outputLow = config.comparatorOutputLow ?? 0.0;
+
+    const node = new AudioWorkletNode(this.audioContext, "comparator-processor", {
+      numberOfInputs: 2,
+      numberOfOutputs: 1,
+      processorOptions: { mode, threshold, useThreshold, outputHigh, outputLow },
+    });
+
+    this.nodes.set(nodeId, node);
+  }
+
+  /**
+   * Create a panner that converts mono to stereo
+   */
+  private createPanner(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const position = config.panPosition ?? 0;
+    const law = config.panLaw ?? "equal-power";
+
+    const node = new AudioWorkletNode(this.audioContext, "panner-processor", {
+      numberOfInputs: 2,
+      numberOfOutputs: 2,
+      processorOptions: { position, law },
+    });
+
+    this.nodes.set(nodeId, node);
+    this.nodes.set(`${nodeId}-left`, node);
+    this.nodes.set(`${nodeId}-right`, node);
+  }
+
+  /**
+   * Create a stereo splitter that splits stereo to dual mono
+   */
+  private createStereoSplitter(nodeId: string) {
+    if (!this.audioContext) return;
+
+    const splitter = this.audioContext.createChannelSplitter(2);
+
+    this.nodes.set(nodeId, splitter);
+    this.nodes.set(`${nodeId}-left`, splitter);
+    this.nodes.set(`${nodeId}-right`, splitter);
+  }
+
+  /**
+   * Create a stereo merger that merges dual mono to stereo
+   */
+  private createStereoMerger(nodeId: string) {
+    if (!this.audioContext) return;
+
+    const merger = this.audioContext.createChannelMerger(2);
+
+    this.nodes.set(nodeId, merger);
+  }
+
+  /**
+   * Create a logic gate (AND, OR, XOR)
+   */
+  private createLogicGate(nodeId: string, processorName: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const threshold = config.gateThreshold ?? 0.5;
+    const outputHigh = config.gateOutputHigh ?? 1.0;
+    const outputLow = config.gateOutputLow ?? 0.0;
+
+    const node = new AudioWorkletNode(this.audioContext, processorName, {
+      numberOfInputs: 2,
+      numberOfOutputs: 1,
+      processorOptions: { threshold, outputHigh, outputLow },
+    });
+
+    this.nodes.set(nodeId, node);
+  }
+
+  /**
+   * Create a NOT gate
+   */
+  private createNotGate(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const threshold = config.gateThreshold ?? 0.5;
+    const outputHigh = config.gateOutputHigh ?? 1.0;
+    const outputLow = config.gateOutputLow ?? 0.0;
+
+    const node = new AudioWorkletNode(this.audioContext, "not-gate-processor", {
+      numberOfInputs: 1,
+      numberOfOutputs: 1,
+      processorOptions: { threshold, outputHigh, outputLow },
+    });
+
+    this.nodes.set(nodeId, node);
+  }
+
+  /**
+   * Create a matrix router with configurable input-to-output routing
+   */
+  private createMatrixRouter(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const numInputs = config.matrixInputs || 2;
+    const numOutputs = config.matrixOutputs || 2;
+    const routing = config.matrixRouting || [];
+
+    // Create gain nodes for each input-output pair
+    // routing[inputIdx][outputIdx] = gain (0 or 1)
+    const outputSumNodes: GainNode[] = [];
+
+    // Create output sum nodes
+    for (let o = 0; o < numOutputs; o++) {
+      const sumNode = this.audioContext.createGain();
+      sumNode.gain.value = 1.0;
+      outputSumNodes.push(sumNode);
+      this.nodes.set(`${nodeId}-out${o}`, sumNode);
+    }
+
+    // Create gain nodes for each input and connect to outputs based on routing
+    for (let i = 0; i < numInputs; i++) {
+      const inputNode = this.audioContext.createGain();
+      inputNode.gain.value = 1.0;
+      this.nodes.set(`${nodeId}-in${i}`, inputNode);
+
+      // Connect this input to outputs based on routing matrix
+      for (let o = 0; o < numOutputs; o++) {
+        const routeGain = routing[i]?.[o] ?? 0;
+        if (routeGain > 0) {
+          const routeNode = this.audioContext.createGain();
+          routeNode.gain.value = routeGain;
+          inputNode.connect(routeNode);
+          routeNode.connect(outputSumNodes[o]);
+        }
+      }
+    }
+
+    // Set main node reference to first output
+    if (outputSumNodes.length > 0) {
+      this.nodes.set(nodeId, outputSumNodes[0]);
+    }
+  }
+
   private createAnalyser(nodeId: string, config: BlockConfig) {
     if (!this.audioContext) return;
 
@@ -2300,6 +2809,22 @@ export class SignalProcessingEngine {
       }
     }
 
+    // Special case: Sequencer outputs (trig0, trig1, ..., step, trigger, note)
+    // Route from the appropriate constant source sub-node
+    if (sourceBlockForKeyboard?.data?.blockType === "sequencer") {
+      if (
+        actualSourceHandle?.startsWith("trig") ||
+        actualSourceHandle === "step" ||
+        actualSourceHandle === "trigger" ||
+        actualSourceHandle === "note"
+      ) {
+        const subNode = this.nodes.get(`${actualSourceId}-${actualSourceHandle}`);
+        if (subNode) {
+          sourceNode = subNode;
+        }
+      }
+    }
+
     // Special case: Effects with separate output nodes
     // These blocks use a separate output node for the mixed signal
     const sourceBlock = this.reactFlowNodes.find(
@@ -2332,6 +2857,50 @@ export class SignalProcessingEngine {
         envelopeFollowerOutputIndex = 0;
       } else if (actualSourceHandle === "envelope") {
         envelopeFollowerOutputIndex = 1;
+      }
+    }
+
+    // Special case: Panner has stereo outputs (left and right)
+    // Route from the main node with specific channel
+    let pannerOutputChannel: number | undefined;
+    if (sourceBlock?.data?.blockType === "panner") {
+      if (actualSourceHandle === "left") {
+        pannerOutputChannel = 0;
+      } else if (actualSourceHandle === "right") {
+        pannerOutputChannel = 1;
+      }
+    }
+
+    // Special case: Stereo splitter outputs (left and right channels)
+    if (sourceBlock?.data?.blockType === "stereo-splitter") {
+      if (actualSourceHandle === "left") {
+        const leftNode = this.nodes.get(`${actualSourceId}-left`);
+        if (leftNode) {
+          sourceNode = leftNode;
+        }
+      } else if (actualSourceHandle === "right") {
+        const rightNode = this.nodes.get(`${actualSourceId}-right`);
+        if (rightNode) {
+          sourceNode = rightNode;
+        }
+      }
+    }
+
+    // Special case: Matrix router outputs (out0, out1, etc.)
+    if (sourceBlock?.data?.blockType === "matrix-router") {
+      if (actualSourceHandle?.startsWith("out")) {
+        const subNode = this.nodes.get(`${actualSourceId}-${actualSourceHandle}`);
+        if (subNode) {
+          sourceNode = subNode;
+        }
+      }
+    }
+
+    // Special case: Mixer has output node
+    if (sourceBlock?.data?.blockType === "mixer") {
+      const outputNode = this.nodes.get(`${actualSourceId}-output`);
+      if (outputNode) {
+        sourceNode = outputNode;
       }
     }
 
@@ -2706,6 +3275,146 @@ export class SignalProcessingEngine {
           break;
         }
 
+        // ===== NEW ROUTING BLOCKS =====
+
+        case "mixer": {
+          // Mixer: multiple inputs (in0, in1, etc.) connect to individual gain nodes
+          if (actualTargetHandle?.startsWith("in")) {
+            const inputNum = parseInt(actualTargetHandle.slice(2), 10);
+            if (!isNaN(inputNum)) {
+              const inputGain = this.nodes.get(`${actualTargetId}-in${inputNum}`);
+              if (inputGain) {
+                sourceNode.connect(inputGain);
+              }
+            }
+          }
+          break;
+        }
+
+        case "merge": {
+          // Merge: multiple inputs sum together - all connect to same gain node
+          if (actualTargetHandle?.startsWith("in")) {
+            sourceNode.connect(targetNode);
+          }
+          break;
+        }
+
+        case "switch": {
+          // Switch: signal input and control input
+          // AudioWorklet with 2 inputs: 0 = signal, 1 = control
+          if (actualTargetHandle === "signal") {
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (actualTargetHandle === "control") {
+            sourceNode.connect(targetNode, 0, 1);
+          }
+          break;
+        }
+
+        case "ab-switch": {
+          // A/B Switch: inputA, inputB, and control
+          // AudioWorklet with 3 inputs: 0 = A, 1 = B, 2 = control
+          if (actualTargetHandle === "inputA") {
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (actualTargetHandle === "inputB") {
+            sourceNode.connect(targetNode, 0, 1);
+          } else if (actualTargetHandle === "control") {
+            sourceNode.connect(targetNode, 0, 2);
+          }
+          break;
+        }
+
+        case "sample-hold": {
+          // Sample & Hold: signal and trigger inputs
+          // AudioWorklet with 2 inputs: 0 = signal, 1 = trigger
+          if (actualTargetHandle === "signal") {
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (actualTargetHandle === "trigger") {
+            sourceNode.connect(targetNode, 0, 1);
+          }
+          break;
+        }
+
+        case "comparator": {
+          // Comparator: two inputs to compare
+          // AudioWorklet with 2 inputs: 0 = inputA, 1 = inputB
+          if (actualTargetHandle === "inputA") {
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (actualTargetHandle === "inputB") {
+            sourceNode.connect(targetNode, 0, 1);
+          }
+          break;
+        }
+
+        case "panner": {
+          // Panner: signal input and optional pan CV
+          // AudioWorklet with 2 inputs: 0 = signal, 1 = pan CV
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (actualTargetHandle === "pan") {
+            sourceNode.connect(targetNode, 0, 1);
+          }
+          break;
+        }
+
+        case "stereo-splitter": {
+          // Stereo splitter: single stereo input
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          }
+          break;
+        }
+
+        case "stereo-merger": {
+          // Stereo merger: left and right inputs go to channel merger
+          if (actualTargetHandle === "left") {
+            const merger = this.nodes.get(`${actualTargetId}-merger`);
+            if (merger instanceof ChannelMergerNode) {
+              sourceNode.connect(merger, 0, 0);
+            }
+          } else if (actualTargetHandle === "right") {
+            const merger = this.nodes.get(`${actualTargetId}-merger`);
+            if (merger instanceof ChannelMergerNode) {
+              sourceNode.connect(merger, 0, 1);
+            }
+          }
+          break;
+        }
+
+        case "and-gate":
+        case "or-gate":
+        case "xor-gate": {
+          // Logic gates: two inputs
+          // AudioWorklet with 2 inputs: 0 = inputA, 1 = inputB
+          if (actualTargetHandle === "inputA") {
+            sourceNode.connect(targetNode, 0, 0);
+          } else if (actualTargetHandle === "inputB") {
+            sourceNode.connect(targetNode, 0, 1);
+          }
+          break;
+        }
+
+        case "not-gate": {
+          // NOT gate: single input
+          if (actualTargetHandle === "in") {
+            sourceNode.connect(targetNode);
+          }
+          break;
+        }
+
+        case "matrix-router": {
+          // Matrix router: multiple inputs (in0, in1, etc.)
+          if (actualTargetHandle?.startsWith("in")) {
+            const inputNum = parseInt(actualTargetHandle.slice(2), 10);
+            if (!isNaN(inputNum)) {
+              const inputGain = this.nodes.get(`${actualTargetId}-in${inputNum}`);
+              if (inputGain) {
+                sourceNode.connect(inputGain);
+              }
+            }
+          }
+          break;
+        }
+
         default:
           // Default connection for all other block types
           console.log(
@@ -2714,6 +3423,9 @@ export class SignalProcessingEngine {
           // Handle envelope-follower multi-output connections
           if (envelopeFollowerOutputIndex !== undefined) {
             sourceNode.connect(targetNode, envelopeFollowerOutputIndex, 0);
+          } else if (pannerOutputChannel !== undefined) {
+            // Panner outputs to specific channel
+            sourceNode.connect(targetNode, pannerOutputChannel, 0);
           } else {
             sourceNode.connect(targetNode);
           }
@@ -3075,6 +3787,15 @@ export class SignalProcessingEngine {
         break;
       }
 
+      case "sequencer": {
+        // Update sequencer config stored in sequencerNodes
+        const seqInfo = this.sequencerNodes.get(nodeId);
+        if (seqInfo) {
+          seqInfo.config = config;
+        }
+        break;
+      }
+
       case "pulse": {
         const source = this.constantSources.get(nodeId);
         if (source instanceof ConstantSourceNode) {
@@ -3361,6 +4082,119 @@ export class SignalProcessingEngine {
             value: targetSampleRate,
           });
           node.port.postMessage({ type: "setMix", value: mix });
+        }
+        break;
+      }
+
+      // ===== NEW ROUTING BLOCKS =====
+
+      case "mixer": {
+        // Update individual channel gains and master gain
+        const numChannels = config.mixerChannels || 2;
+        const gains = config.mixerGains || [];
+        const masterGain = config.mixerMasterGain ?? 1.0;
+
+        for (let i = 0; i < numChannels; i++) {
+          const inputGain = this.nodes.get(`${nodeId}-in${i}`);
+          if (inputGain instanceof GainNode) {
+            inputGain.gain.value = gains[i] ?? 1.0;
+          }
+        }
+
+        const outputNode = this.nodes.get(`${nodeId}-output`);
+        if (outputNode instanceof GainNode) {
+          outputNode.gain.value = masterGain;
+        }
+        break;
+      }
+
+      case "switch": {
+        const threshold = config.switchThreshold ?? 0.5;
+        const invert = config.switchInvert ?? false;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setThreshold", value: threshold });
+          node.port.postMessage({ type: "setInvert", value: invert });
+        }
+        break;
+      }
+
+      case "ab-switch": {
+        const threshold = config.abThreshold ?? 0.5;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setThreshold", value: threshold });
+        }
+        break;
+      }
+
+      case "sample-hold": {
+        const threshold = config.sampleHoldThreshold ?? 0.5;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setThreshold", value: threshold });
+        }
+        break;
+      }
+
+      case "comparator": {
+        const mode = config.comparatorMode ?? "greater";
+        const threshold = config.comparatorThreshold ?? 0;
+        const useThreshold = config.comparatorUseThreshold ?? false;
+        const outputHigh = config.comparatorOutputHigh ?? 1.0;
+        const outputLow = config.comparatorOutputLow ?? 0.0;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setMode", value: mode });
+          node.port.postMessage({ type: "setThreshold", value: threshold });
+          node.port.postMessage({ type: "setUseThreshold", value: useThreshold });
+          node.port.postMessage({ type: "setOutputHigh", value: outputHigh });
+          node.port.postMessage({ type: "setOutputLow", value: outputLow });
+        }
+        break;
+      }
+
+      case "panner": {
+        const position = config.panPosition ?? 0;
+        const law = config.panLaw ?? "equal-power";
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setPosition", value: position });
+          node.port.postMessage({ type: "setLaw", value: law });
+        }
+        break;
+      }
+
+      case "and-gate":
+      case "or-gate":
+      case "xor-gate":
+      case "not-gate": {
+        const threshold = config.gateThreshold ?? 0.5;
+        const outputHigh = config.gateOutputHigh ?? 1.0;
+        const outputLow = config.gateOutputLow ?? 0.0;
+
+        if (node instanceof AudioWorkletNode) {
+          node.port.postMessage({ type: "setThreshold", value: threshold });
+          node.port.postMessage({ type: "setOutputHigh", value: outputHigh });
+          node.port.postMessage({ type: "setOutputLow", value: outputLow });
+        }
+        break;
+      }
+
+      case "matrix-router": {
+        // Update routing matrix gains
+        const numInputs = config.matrixInputs || 2;
+        const numOutputs = config.matrixOutputs || 2;
+        const routing = config.matrixRouting || [];
+
+        for (let i = 0; i < numInputs; i++) {
+          for (let o = 0; o < numOutputs; o++) {
+            const routeGain = this.nodes.get(`${nodeId}-route-${i}-${o}`);
+            if (routeGain instanceof GainNode) {
+              const gain = routing[i]?.[o] ?? 0;
+              routeGain.gain.value = gain;
+            }
+          }
         }
         break;
       }

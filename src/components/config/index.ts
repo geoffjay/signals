@@ -25,7 +25,19 @@ import {
 import { EnvelopeFollowerConfig, ADSRConfig } from "./EnvelopeConfig";
 import { BitCrusherConfig, SampleRateReducerConfig } from "./LoFiConfig";
 import { RingModConfig } from "./RingModConfig";
-import { MultiplexerConfig, SplitterConfig } from "./RoutingConfig";
+import {
+  MultiplexerConfig,
+  SplitterConfig,
+  MixerConfig,
+  MergeConfig,
+  SwitchConfig,
+  ABSwitchConfig,
+  SampleHoldConfig,
+  ComparatorConfig,
+  PannerConfig,
+  LogicGateConfig,
+  MatrixRouterConfig,
+} from "./RoutingConfig";
 import { OscilloscopeConfig } from "./OscilloscopeConfig";
 import { AudioOutputConfig } from "./AudioOutputConfig";
 import {
@@ -38,6 +50,7 @@ import {
   CrossfaderConfig,
 } from "./InputControlConfig";
 import { MultiSliderConfig } from "./MultiSliderConfig";
+import { SequencerConfig } from "./SequencerConfig";
 import { NumericMeterConfig } from "./NumericMeterConfig";
 import { FFTAnalyzerConfig } from "./FFTAnalyzerConfig";
 
@@ -72,6 +85,15 @@ export {
   RingModConfig,
   MultiplexerConfig,
   SplitterConfig,
+  MixerConfig,
+  MergeConfig,
+  SwitchConfig,
+  ABSwitchConfig,
+  SampleHoldConfig,
+  ComparatorConfig,
+  PannerConfig,
+  LogicGateConfig,
+  MatrixRouterConfig,
   OscilloscopeConfig,
   AudioOutputConfig,
   SliderConfig,
@@ -82,6 +104,7 @@ export {
   KeyboardConfig,
   BeatPadConfig,
   CrossfaderConfig,
+  SequencerConfig,
   NumericMeterConfig,
   FFTAnalyzerConfig,
 };
@@ -148,6 +171,20 @@ export const configComponentMap: Record<
   // Routing
   multiplexer: MultiplexerConfig,
   splitter: SplitterConfig,
+  mixer: MixerConfig,
+  merge: MergeConfig,
+  switch: SwitchConfig,
+  "ab-switch": ABSwitchConfig,
+  "sample-hold": SampleHoldConfig,
+  comparator: ComparatorConfig,
+  panner: PannerConfig,
+  "stereo-splitter": null, // No config needed
+  "stereo-merger": null, // No config needed
+  "and-gate": LogicGateConfig,
+  "or-gate": LogicGateConfig,
+  "xor-gate": LogicGateConfig,
+  "not-gate": LogicGateConfig,
+  "matrix-router": MatrixRouterConfig,
 
   // Outputs
   oscilloscope: OscilloscopeConfig,
@@ -163,6 +200,7 @@ export const configComponentMap: Record<
   keyboard: KeyboardConfig,
   "beat-pad": BeatPadConfig,
   crossfader: CrossfaderConfig,
+  sequencer: SequencerConfig,
 
   // FFT
   "fft-analyzer": FFTAnalyzerConfig,

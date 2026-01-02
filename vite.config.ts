@@ -10,6 +10,7 @@ const WORKLET_PROCESSORS = [
   "math-processors",
   "envelope-processors",
   "lofi-processors",
+  "routing-processors",
 ] as const;
 
 // Strip TypeScript syntax for dev serving
