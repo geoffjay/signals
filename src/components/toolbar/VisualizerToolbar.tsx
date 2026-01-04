@@ -91,6 +91,13 @@ export function VisualizerToolbar() {
     scanlinesIntensity: visualizerConfig.effects.scanlinesIntensity ?? 0.5,
     pixelationEnabled: visualizerConfig.effects.pixelationEnabled ?? false,
     pixelationGranularity: visualizerConfig.effects.pixelationGranularity ?? 8,
+    dotScreenEnabled: visualizerConfig.effects.dotScreenEnabled ?? false,
+    dotScreenScale: visualizerConfig.effects.dotScreenScale ?? 1.5,
+    sepiaEnabled: visualizerConfig.effects.sepiaEnabled ?? false,
+    sepiaIntensity: visualizerConfig.effects.sepiaIntensity ?? 0.5,
+    hueSaturationEnabled: visualizerConfig.effects.hueSaturationEnabled ?? false,
+    hueShift: visualizerConfig.effects.hueShift ?? 0,
+    saturation: visualizerConfig.effects.saturation ?? 0,
   };
 
   return (
@@ -385,6 +392,138 @@ export function VisualizerToolbar() {
               className="w-full"
             />
           </div>
+        )}
+
+        {/* Dot Screen Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Dot Screen</Label>
+            <p className="text-[9px] text-muted-foreground">Halftone pattern</p>
+          </div>
+          <Switch
+            checked={effects.dotScreenEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ dotScreenEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Dot Screen Scale */}
+        {effects.dotScreenEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Scale</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {effects.dotScreenScale.toFixed(1)}
+              </span>
+            </div>
+            <Slider
+              value={[effects.dotScreenScale]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ dotScreenScale: val });
+              }}
+              min={0.5}
+              max={5}
+              step={0.1}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Sepia Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Sepia</Label>
+            <p className="text-[9px] text-muted-foreground">Vintage brown tone</p>
+          </div>
+          <Switch
+            checked={effects.sepiaEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ sepiaEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Sepia Intensity */}
+        {effects.sepiaEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {effects.sepiaIntensity.toFixed(2)}
+              </span>
+            </div>
+            <Slider
+              value={[effects.sepiaIntensity]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ sepiaIntensity: val });
+              }}
+              min={0}
+              max={1}
+              step={0.01}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Hue/Saturation Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Hue/Saturation</Label>
+            <p className="text-[9px] text-muted-foreground">Color adjustment</p>
+          </div>
+          <Switch
+            checked={effects.hueSaturationEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ hueSaturationEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Hue/Saturation Controls */}
+        {effects.hueSaturationEnabled && (
+          <>
+            <div className="space-y-1.5 pl-1">
+              <div className="flex items-center justify-between">
+                <Label className="text-[10px] text-muted-foreground">Hue Shift</Label>
+                <span className="text-[10px] text-muted-foreground">
+                  {(effects.hueShift * 180).toFixed(0)}°
+                </span>
+              </div>
+              <Slider
+                value={[effects.hueShift]}
+                onValueChange={(value) => {
+                  const val = Array.isArray(value) ? value[0] : value;
+                  setVisualizerEffects({ hueShift: val });
+                }}
+                min={-1}
+                max={1}
+                step={0.01}
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-1.5 pl-1">
+              <div className="flex items-center justify-between">
+                <Label className="text-[10px] text-muted-foreground">Saturation</Label>
+                <span className="text-[10px] text-muted-foreground">
+                  {effects.saturation >= 0 ? "+" : ""}{effects.saturation.toFixed(2)}
+                </span>
+              </div>
+              <Slider
+                value={[effects.saturation]}
+                onValueChange={(value) => {
+                  const val = Array.isArray(value) ? value[0] : value;
+                  setVisualizerEffects({ saturation: val });
+                }}
+                min={-1}
+                max={1}
+                step={0.01}
+                className="w-full"
+              />
+            </div>
+          </>
         )}
       </div>
 

@@ -30,6 +30,13 @@ export interface VisualizerEffects {
   scanlinesIntensity: number;
   pixelationEnabled: boolean;
   pixelationGranularity: number;
+  dotScreenEnabled: boolean;
+  dotScreenScale: number;
+  sepiaEnabled: boolean;
+  sepiaIntensity: number;
+  hueSaturationEnabled: boolean;
+  hueShift: number;
+  saturation: number;
 }
 
 export interface VisualizerConfig {
@@ -134,6 +141,13 @@ export const useSignalFlowStore = create<SignalFlowState>()(
           scanlinesIntensity: 0.5,
           pixelationEnabled: false,
           pixelationGranularity: 8,
+          dotScreenEnabled: false,
+          dotScreenScale: 1.5,
+          sepiaEnabled: false,
+          sepiaIntensity: 0.5,
+          hueSaturationEnabled: false,
+          hueShift: 0,
+          saturation: 0,
         },
         barCount: 64,
         particleCount: 50,

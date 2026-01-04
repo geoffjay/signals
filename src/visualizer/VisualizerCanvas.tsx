@@ -9,6 +9,9 @@ import {
   Glitch,
   Scanline,
   Pixelation,
+  DotScreen,
+  Sepia,
+  HueSaturation,
 } from "@react-three/postprocessing";
 import { BlendFunction, GlitchMode } from "postprocessing";
 import { OrthographicCamera } from "@react-three/drei";
@@ -60,6 +63,13 @@ function useVisualizerContext() {
           scanlinesIntensity: 0.5,
           pixelationEnabled: false,
           pixelationGranularity: 8,
+          dotScreenEnabled: false,
+          dotScreenScale: 1.5,
+          sepiaEnabled: false,
+          sepiaIntensity: 0.5,
+          hueSaturationEnabled: false,
+          hueShift: 0,
+          saturation: 0,
         },
         barCount: 64,
         particleCount: 50,
@@ -607,6 +617,164 @@ function AmbientParticles({ count = 50 }: { count?: number }) {
   return <instancedMesh ref={meshRef} args={[geometry, material, count]} />;
 }
 
+// Effects component - only renders EffectComposer when effects are enabled
+interface EffectsProps {
+  effects: {
+    bloomEnabled: boolean;
+    bloomIntensity: number;
+    chromaticAberrationEnabled: boolean;
+    chromaticAberrationOffset: number;
+    vignetteEnabled: boolean;
+    vignetteIntensity: number;
+    noiseEnabled: boolean;
+    noiseIntensity: number;
+    glitchEnabled: boolean;
+    glitchIntensity: number;
+    scanlinesEnabled: boolean;
+    scanlinesIntensity: number;
+    pixelationEnabled: boolean;
+    pixelationGranularity: number;
+    dotScreenEnabled: boolean;
+    dotScreenScale: number;
+    sepiaEnabled: boolean;
+    sepiaIntensity: number;
+    hueSaturationEnabled: boolean;
+    hueShift: number;
+    saturation: number;
+  };
+}
+
+function Effects({ effects }: EffectsProps) {
+  // Check if any effect is enabled
+  const anyEffectEnabled =
+    effects.bloomEnabled ||
+    effects.chromaticAberrationEnabled ||
+    effects.vignetteEnabled ||
+    effects.noiseEnabled ||
+    effects.glitchEnabled ||
+    effects.scanlinesEnabled ||
+    effects.pixelationEnabled ||
+    effects.dotScreenEnabled ||
+    effects.sepiaEnabled ||
+    effects.hueSaturationEnabled;
+
+  // Don't render EffectComposer if no effects are enabled
+  if (!anyEffectEnabled) {
+    return null;
+  }
+
+  // Build effects array with only enabled effects
+  const activeEffects: React.ReactElement[] = [];
+
+  if (effects.bloomEnabled) {
+    activeEffects.push(
+      <Bloom
+        key="bloom"
+        intensity={effects.bloomIntensity}
+        luminanceThreshold={0}
+        luminanceSmoothing={0.9}
+        mipmapBlur
+      />
+    );
+  }
+
+  if (effects.chromaticAberrationEnabled) {
+    activeEffects.push(
+      <ChromaticAberration
+        key="chromatic"
+        offset={new THREE.Vector2(effects.chromaticAberrationOffset, effects.chromaticAberrationOffset)}
+        radialModulation={false}
+        modulationOffset={0}
+      />
+    );
+  }
+
+  if (effects.vignetteEnabled) {
+    activeEffects.push(
+      <Vignette
+        key="vignette"
+        offset={0.5}
+        darkness={effects.vignetteIntensity}
+        blendFunction={BlendFunction.NORMAL}
+      />
+    );
+  }
+
+  if (effects.noiseEnabled) {
+    activeEffects.push(
+      <Noise
+        key="noise"
+        premultiply
+        blendFunction={BlendFunction.ADD}
+        opacity={effects.noiseIntensity}
+      />
+    );
+  }
+
+  if (effects.glitchEnabled) {
+    activeEffects.push(
+      <Glitch
+        key="glitch"
+        delay={new THREE.Vector2(1.5, 3.5)}
+        duration={new THREE.Vector2(0.6 * effects.glitchIntensity, 1.0 * effects.glitchIntensity)}
+        strength={new THREE.Vector2(0.3 * effects.glitchIntensity, 1.0 * effects.glitchIntensity)}
+        mode={GlitchMode.SPORADIC}
+        active={true}
+      />
+    );
+  }
+
+  if (effects.scanlinesEnabled) {
+    activeEffects.push(
+      <Scanline
+        key="scanline"
+        blendFunction={BlendFunction.OVERLAY}
+        density={1.25 + effects.scanlinesIntensity}
+        opacity={effects.scanlinesIntensity * 0.5}
+      />
+    );
+  }
+
+  if (effects.pixelationEnabled) {
+    activeEffects.push(
+      <Pixelation key="pixelation" granularity={effects.pixelationGranularity} />
+    );
+  }
+
+  if (effects.dotScreenEnabled) {
+    activeEffects.push(
+      <DotScreen
+        key="dotscreen"
+        blendFunction={BlendFunction.NORMAL}
+        scale={effects.dotScreenScale}
+        angle={0}
+      />
+    );
+  }
+
+  if (effects.sepiaEnabled) {
+    activeEffects.push(
+      <Sepia key="sepia" intensity={effects.sepiaIntensity} />
+    );
+  }
+
+  if (effects.hueSaturationEnabled) {
+    activeEffects.push(
+      <HueSaturation
+        key="huesaturation"
+        hue={effects.hueShift * Math.PI}
+        saturation={effects.saturation}
+      />
+    );
+  }
+
+  return (
+    <EffectComposer>
+      {activeEffects}
+    </EffectComposer>
+  );
+}
+
 // Main scene component
 function VisualizerScene() {
   const { config } = useVisualizerContext();
@@ -627,6 +795,13 @@ function VisualizerScene() {
     scanlinesIntensity: config.effects.scanlinesIntensity ?? 0.5,
     pixelationEnabled: config.effects.pixelationEnabled ?? false,
     pixelationGranularity: config.effects.pixelationGranularity ?? 8,
+    dotScreenEnabled: config.effects.dotScreenEnabled ?? false,
+    dotScreenScale: config.effects.dotScreenScale ?? 1.5,
+    sepiaEnabled: config.effects.sepiaEnabled ?? false,
+    sepiaIntensity: config.effects.sepiaIntensity ?? 0.5,
+    hueSaturationEnabled: config.effects.hueSaturationEnabled ?? false,
+    hueShift: config.effects.hueShift ?? 0,
+    saturation: config.effects.saturation ?? 0,
   };
 
   // Render the appropriate visualizer based on type
@@ -661,51 +836,7 @@ function VisualizerScene() {
       <ambientLight intensity={0.5} />
       {renderVisualizer()}
       <AmbientParticles count={30} />
-      <EffectComposer>
-        <Bloom
-          intensity={effects.bloomEnabled ? effects.bloomIntensity : 0}
-          luminanceThreshold={0}
-          luminanceSmoothing={0.9}
-          mipmapBlur
-        />
-        <ChromaticAberration
-          offset={
-            effects.chromaticAberrationEnabled
-              ? new THREE.Vector2(
-                  effects.chromaticAberrationOffset,
-                  effects.chromaticAberrationOffset
-                )
-              : new THREE.Vector2(0, 0)
-          }
-          radialModulation={false}
-          modulationOffset={0}
-        />
-        <Vignette
-          offset={0.5}
-          darkness={effects.vignetteEnabled ? effects.vignetteIntensity : 0}
-          blendFunction={BlendFunction.NORMAL}
-        />
-        <Noise
-          premultiply
-          blendFunction={BlendFunction.ADD}
-          opacity={effects.noiseEnabled ? effects.noiseIntensity : 0}
-        />
-        <Glitch
-          delay={new THREE.Vector2(1.5, 3.5)}
-          duration={new THREE.Vector2(0.6 * effects.glitchIntensity, 1.0 * effects.glitchIntensity)}
-          strength={new THREE.Vector2(0.3 * effects.glitchIntensity, 1.0 * effects.glitchIntensity)}
-          mode={GlitchMode.SPORADIC}
-          active={effects.glitchEnabled}
-        />
-        <Scanline
-          blendFunction={BlendFunction.OVERLAY}
-          density={effects.scanlinesEnabled ? 1.25 + effects.scanlinesIntensity : 0}
-          opacity={effects.scanlinesEnabled ? effects.scanlinesIntensity * 0.5 : 0}
-        />
-        <Pixelation
-          granularity={effects.pixelationEnabled ? effects.pixelationGranularity : 0}
-        />
-      </EffectComposer>
+      <Effects effects={effects} />
     </>
   );
 }
