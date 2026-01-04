@@ -1,6 +1,7 @@
 import { type Node, type Edge } from "@xyflow/react";
 import { type BlockType, type BlockConfig } from "@/types/blocks";
 import type { InstrumentDefinition, PortMapping } from "@/types/instruments";
+import { useExternalConnectionStore } from "@/store/externalConnectionStore";
 
 export class SignalProcessingEngine {
   private audioContext: AudioContext | null = null;
@@ -13,6 +14,8 @@ export class SignalProcessingEngine {
   private constantSources: Map<string, ConstantSourceNode> = new Map();
   private sequencerNodes: Map<string, { config: BlockConfig; lastStepTime: number }> = new Map();
   private sequencerTimerId: number | null = null;
+  private externalConnectionAnimationId: number | null = null;
+  private externalConnectionNodes: Map<string, { config: BlockConfig; analysers: AnalyserNode[] }> = new Map();
   private reactFlowNodes: Node[] = [];
   private reactFlowEdges: Edge[] = [];
   private isRunning = false;
@@ -99,6 +102,9 @@ export class SignalProcessingEngine {
 
     // Start sequencer timing loop
     this.startSequencerLoop();
+
+    // Start external connection sampling loop
+    this.startExternalConnectionSampling();
   }
 
   /**
@@ -134,6 +140,9 @@ export class SignalProcessingEngine {
     // Stop sequencer timing loop
     this.stopSequencerLoop();
 
+    // Stop external connection sampling loop
+    this.stopExternalConnectionSampling();
+
     // Stop all oscillators
     this.oscillators.forEach((osc) => {
       try {
@@ -158,6 +167,10 @@ export class SignalProcessingEngine {
     this.analysers.clear();
     this.instrumentInstances.clear();
     this.sequencerNodes.clear();
+    this.externalConnectionNodes.clear();
+
+    // Clear external connection registry
+    useExternalConnectionStore.getState().clearAll();
 
     // Clean up master analyser
     if (this.masterAnalyser) {
@@ -366,6 +379,23 @@ export class SignalProcessingEngine {
           this.nodes.delete(`${nodeId}${suffix}`);
         }
       });
+
+      // Clean up external-connections sub-nodes and registry
+      const extConnNode = this.externalConnectionNodes.get(nodeId);
+      if (extConnNode) {
+        // Clean up analysers and registry
+        extConnNode.analysers.forEach((analyser, inputIndex) => {
+          try {
+            analyser.disconnect();
+          } catch {
+            // Already disconnected
+          }
+          this.nodes.delete(`${nodeId}-in${inputIndex}`);
+          this.analysers.delete(`${nodeId}-analyser-${inputIndex}`);
+          useExternalConnectionStore.getState().unregisterConnection(nodeId, inputIndex);
+        });
+        this.externalConnectionNodes.delete(nodeId);
+      }
 
       this.nodes.delete(nodeId);
       this.analysers.delete(nodeId);
@@ -975,6 +1005,10 @@ export class SignalProcessingEngine {
 
       case "note-to-freq-poly":
         this.createNoteToFreqPoly(nodeId, config);
+        break;
+
+      case "external-connections":
+        this.createExternalConnections(nodeId, config);
         break;
     }
   }
@@ -2142,6 +2176,56 @@ export class SignalProcessingEngine {
   }
 
   /**
+   * Start the external connection sampling loop
+   * Uses requestAnimationFrame for smooth updates synchronized with display
+   */
+  private startExternalConnectionSampling() {
+    const sample = () => {
+      this.sampleExternalConnections();
+      this.externalConnectionAnimationId = requestAnimationFrame(sample);
+    };
+    sample();
+  }
+
+  /**
+   * Stop the external connection sampling loop
+   */
+  private stopExternalConnectionSampling() {
+    if (this.externalConnectionAnimationId !== null) {
+      cancelAnimationFrame(this.externalConnectionAnimationId);
+      this.externalConnectionAnimationId = null;
+    }
+  }
+
+  /**
+   * Sample all external connections and update the store
+   */
+  private sampleExternalConnections() {
+    const store = useExternalConnectionStore.getState();
+
+    this.externalConnectionNodes.forEach((extNode, nodeId) => {
+      const { analysers } = extNode;
+
+      analysers.forEach((analyser, inputIndex) => {
+        // Get time domain data
+        const dataArray = new Uint8Array(analyser.fftSize);
+        analyser.getByteTimeDomainData(dataArray);
+
+        // Calculate RMS (root mean square) value for signal level
+        let sumSquares = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const normalized = (dataArray[i] - 128) / 128; // Normalize to -1 to 1
+          sumSquares += normalized * normalized;
+        }
+        const rms = Math.sqrt(sumSquares / dataArray.length);
+
+        // Update the store with the value
+        store.updateValue(nodeId, inputIndex, rms);
+      });
+    });
+  }
+
+  /**
    * Process all sequencers - advance steps based on BPM timing
    */
   private processSequencers() {
@@ -2281,6 +2365,43 @@ export class SignalProcessingEngine {
     }
 
     this.nodes.set(nodeId, sumNode);
+  }
+
+  /**
+   * Create an external connections block that samples input signals
+   * and exposes their values to other parts of the application
+   */
+  private createExternalConnections(nodeId: string, config: BlockConfig) {
+    if (!this.audioContext) return;
+
+    const numConnections = config.extConnectionCount || 1;
+    const names = config.extConnectionNames || [];
+    const analysers: AnalyserNode[] = [];
+
+    // Create an analyser for each input
+    for (let i = 0; i < numConnections; i++) {
+      const analyser = this.audioContext.createAnalyser();
+      analyser.fftSize = 256; // Small FFT for fast time-domain sampling
+      analyser.smoothingTimeConstant = 0.5;
+
+      // Connect analyser to a silent gain node to ensure audio processing
+      const dummyGain = this.audioContext.createGain();
+      dummyGain.gain.value = 0;
+      analyser.connect(dummyGain);
+      dummyGain.connect(this.audioContext.destination);
+
+      analysers.push(analyser);
+      this.nodes.set(`${nodeId}-in${i}`, analyser);
+      this.analysers.set(`${nodeId}-analyser-${i}`, analyser);
+
+      // Register this connection in the store
+      const name = names[i] || `ext${i}`;
+      useExternalConnectionStore.getState().registerConnection(nodeId, i, name);
+    }
+
+    // Store the main node reference (first analyser) and track all analysers
+    this.nodes.set(nodeId, analysers[0] || this.audioContext.createGain());
+    this.externalConnectionNodes.set(nodeId, { config, analysers });
   }
 
   /**
@@ -3568,6 +3689,20 @@ export class SignalProcessingEngine {
           break;
         }
 
+        case "external-connections": {
+          // External connections: multiple inputs connect to individual analysers
+          if (actualTargetHandle?.startsWith("in")) {
+            const inputNum = parseInt(actualTargetHandle.slice(2), 10);
+            if (!isNaN(inputNum)) {
+              const inputAnalyser = this.nodes.get(`${actualTargetId}-in${inputNum}`);
+              if (inputAnalyser) {
+                sourceNode.connect(inputAnalyser);
+              }
+            }
+          }
+          break;
+        }
+
         case "switch": {
           // Switch: signal input and control input
           // AudioWorklet with 2 inputs: 0 = signal, 1 = control
@@ -4423,6 +4558,24 @@ export class SignalProcessingEngine {
         const outputNode = this.nodes.get(`${nodeId}-output`);
         if (outputNode instanceof GainNode) {
           outputNode.gain.value = masterGain;
+        }
+        break;
+      }
+
+      case "external-connections": {
+        // Update connection names in the registry
+        const numConnections = config.extConnectionCount || 1;
+        const names = config.extConnectionNames || [];
+
+        for (let i = 0; i < numConnections; i++) {
+          const name = names[i] || `ext${i}`;
+          useExternalConnectionStore.getState().updateName(nodeId, i, name);
+        }
+
+        // Update tracked config
+        const extNode = this.externalConnectionNodes.get(nodeId);
+        if (extNode) {
+          extNode.config = config;
         }
         break;
       }

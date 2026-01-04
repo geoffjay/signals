@@ -140,6 +140,15 @@ export function getBlockInputs(
     return [{ id: "in", label: "In" }];
   }
 
+  if (type === "external-connections") {
+    const numConnections = config.extConnectionCount || 1;
+    const inputs = [];
+    for (let i = 0; i < numConnections; i++) {
+      inputs.push({ id: `in${i}`, label: `In ${i}` });
+    }
+    return inputs;
+  }
+
   return definition.inputs;
 }
 

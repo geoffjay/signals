@@ -449,6 +449,7 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
       >
         {/* Block-specific content (controls, visualizations) */}
         <BlockContent
+          nodeId={id}
           blockType={blockData.blockType}
           config={blockData.config}
           analyser={blockData.analyser}

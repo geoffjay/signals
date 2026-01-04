@@ -52,6 +52,7 @@ import {
 import { MultiSliderConfig } from "./MultiSliderConfig";
 import { SequencerConfig } from "./SequencerConfig";
 import { NumericMeterConfig } from "./NumericMeterConfig";
+import { ExternalConnectionsConfig } from "./ExternalConnectionsConfig";
 import { FFTAnalyzerConfig } from "./FFTAnalyzerConfig";
 import { NoteToFreqConfig } from "./NoteToFreqConfig";
 
@@ -109,6 +110,7 @@ export {
   NumericMeterConfig,
   FFTAnalyzerConfig,
   NoteToFreqConfig,
+  ExternalConnectionsConfig,
 };
 
 /**
@@ -192,6 +194,7 @@ export const configComponentMap: Record<
   oscilloscope: OscilloscopeConfig,
   "audio-output": AudioOutputConfig,
   "numeric-meter": NumericMeterConfig,
+  "external-connections": ExternalConnectionsConfig,
 
   // Inputs
   slider: SliderConfig,

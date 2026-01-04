@@ -261,6 +261,11 @@ export interface BlockConfig {
 
   // Note to Frequency converter
   noteToFreqOctave?: number; // 0-8, default 4 (A4 = 440 Hz)
+
+  // External Connections
+  extConnectionCount?: number; // 1-16, default 1
+  extConnectionNames?: string[]; // Names for each connection
+  extConnectionValues?: number[]; // Current sampled values (runtime)
 }
 
 /**

@@ -79,6 +79,7 @@ import {
   CircleOff,
   LayoutDashboard,
   Music2,
+  Cable,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -189,6 +190,7 @@ const BLOCK_ICONS: Record<
   sequencer: ListMusic,
   "note-to-freq": Music2,
   "note-to-freq-poly": Music2,
+  "external-connections": Cable,
 };
 
 const blockGroups = [
@@ -291,6 +293,7 @@ const blockGroups = [
       "numeric-meter",
       "fft-analyzer",
       "audio-output",
+      "external-connections",
     ] as BlockType[],
   },
 ];

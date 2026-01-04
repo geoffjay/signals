@@ -9,6 +9,7 @@ import {
   BeatPadControl,
   CrossfaderControl,
   SequencerControl,
+  ExternalConnectionsControl,
 } from "./controls";
 import {
   OscilloscopeBlock,
@@ -17,6 +18,7 @@ import {
 } from "./visualizations";
 
 interface BlockContentProps {
+  nodeId: string;
   blockType: BlockType;
   config: BlockConfig;
   analyser?: AnalyserNode;
@@ -41,6 +43,7 @@ interface BlockContentProps {
  * based on block type (controls, visualizations, or nothing)
  */
 export function BlockContent({
+  nodeId,
   blockType,
   config,
   analyser,
@@ -120,6 +123,14 @@ export function BlockContent({
         <SequencerControl
           config={config}
           onCellToggle={handlers.onSequencerCellToggle ?? (() => {})}
+        />
+      );
+
+    case "external-connections":
+      return (
+        <ExternalConnectionsControl
+          nodeId={nodeId}
+          config={config}
         />
       );
 

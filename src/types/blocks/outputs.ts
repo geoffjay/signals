@@ -3,7 +3,7 @@ import type { BlockDefinition } from "./common";
 /**
  * Output/visualization block types
  */
-export type OutputBlockType = "oscilloscope" | "audio-output" | "numeric-meter";
+export type OutputBlockType = "oscilloscope" | "audio-output" | "numeric-meter" | "external-connections";
 
 /**
  * Output block definitions
@@ -40,6 +40,16 @@ export const OUTPUT_DEFINITIONS: Record<OutputBlockType, BlockDefinition> = {
     defaultConfig: {
       decimals: 3,
       unit: "",
+    },
+  },
+  "external-connections": {
+    type: "external-connections",
+    label: "External Connections",
+    inputs: [{ id: "in0", label: "In 0" }], // Dynamic, defaults to 1 input
+    outputs: [],
+    defaultConfig: {
+      extConnectionCount: 1,
+      extConnectionNames: ["ext0"],
     },
   },
 };
