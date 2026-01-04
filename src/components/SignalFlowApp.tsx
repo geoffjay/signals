@@ -309,7 +309,7 @@ export function SignalFlowApp() {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't delete nodes when user is focused on form controls
+      // Don't handle shortcuts when user is focused on form controls
       const activeElement = document.activeElement;
       const isFormControl =
         activeElement &&
@@ -317,6 +317,66 @@ export function SignalFlowApp() {
           activeElement.tagName === "TEXTAREA" ||
           activeElement.tagName === "SELECT" ||
           activeElement.getAttribute("contenteditable") === "true");
+
+      // Use metaKey on macOS, ctrlKey on Windows/Linux
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const modifierKey = isMac ? event.metaKey : event.ctrlKey;
+
+      // Cmd/Ctrl+Enter: Toggle playback
+      if (modifierKey && event.key === "Enter") {
+        event.preventDefault();
+        togglePlayback();
+        return;
+      }
+
+      // Cmd/Ctrl++: Zoom in
+      if (modifierKey && (event.key === "+" || event.key === "=")) {
+        event.preventDefault();
+        reactFlowInstanceRef.current?.zoomIn();
+        return;
+      }
+
+      // Cmd/Ctrl+-: Zoom out
+      if (modifierKey && event.key === "-") {
+        event.preventDefault();
+        reactFlowInstanceRef.current?.zoomOut();
+        return;
+      }
+
+      // Cmd/Ctrl+\: Fit view
+      if (modifierKey && event.key === "\\") {
+        event.preventDefault();
+        reactFlowInstanceRef.current?.fitView();
+        return;
+      }
+
+      // Cmd/Ctrl+[: Hide tools sidebar
+      if (modifierKey && event.key === "[") {
+        event.preventDefault();
+        setIsToolbarVisible(false);
+        return;
+      }
+
+      // Cmd/Ctrl+]: Show tools sidebar
+      if (modifierKey && event.key === "]") {
+        event.preventDefault();
+        setIsToolbarVisible(true);
+        return;
+      }
+
+      // Tab: Open config drawer if a block is selected
+      if (event.key === "Tab" && selectedNodeId && !isFormControl) {
+        event.preventDefault();
+        setConfigDrawerNodeId(selectedNodeId);
+        return;
+      }
+
+      // Escape: Close config drawer
+      if (event.key === "Escape" && configDrawerNodeId) {
+        event.preventDefault();
+        setConfigDrawerNodeId(null);
+        return;
+      }
 
       // Only allow Delete key (not Backspace) to delete nodes
       // Backspace is reserved for text editing
@@ -328,7 +388,7 @@ export function SignalFlowApp() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedNodeId, deleteSelectedNode]);
+  }, [selectedNodeId, configDrawerNodeId, deleteSelectedNode, togglePlayback, setConfigDrawerNodeId, setIsToolbarVisible]);
 
   // Handle playback state changes
   useEffect(() => {

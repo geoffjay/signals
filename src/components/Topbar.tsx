@@ -13,7 +13,7 @@ export function Topbar({ isPlaying, onTogglePlayback }: TopbarProps) {
       <Button
         onClick={onTogglePlayback}
         size="sm"
-        variant={isPlaying ? "destructive" : "default"}
+        variant="ghost"
         className="h-8 w-8 p-0"
       >
         {isPlaying ? (
