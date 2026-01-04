@@ -6,8 +6,11 @@ import {
   ChromaticAberration,
   Vignette,
   Noise,
+  Glitch,
+  Scanline,
+  Pixelation,
 } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
+import { BlendFunction, GlitchMode } from "postprocessing";
 import { OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
 import type { SignalProcessingEngine } from "@/engine/SignalProcessingEngine";
@@ -51,6 +54,12 @@ function useVisualizerContext() {
           vignetteIntensity: 0.5,
           noiseEnabled: false,
           noiseIntensity: 0.15,
+          glitchEnabled: false,
+          glitchIntensity: 0.5,
+          scanlinesEnabled: false,
+          scanlinesIntensity: 0.5,
+          pixelationEnabled: false,
+          pixelationGranularity: 8,
         },
         barCount: 64,
         particleCount: 50,
@@ -612,6 +621,12 @@ function VisualizerScene() {
     vignetteIntensity: config.effects.vignetteIntensity ?? 0.5,
     noiseEnabled: config.effects.noiseEnabled ?? false,
     noiseIntensity: config.effects.noiseIntensity ?? 0.15,
+    glitchEnabled: config.effects.glitchEnabled ?? false,
+    glitchIntensity: config.effects.glitchIntensity ?? 0.5,
+    scanlinesEnabled: config.effects.scanlinesEnabled ?? false,
+    scanlinesIntensity: config.effects.scanlinesIntensity ?? 0.5,
+    pixelationEnabled: config.effects.pixelationEnabled ?? false,
+    pixelationGranularity: config.effects.pixelationGranularity ?? 8,
   };
 
   // Render the appropriate visualizer based on type
@@ -674,6 +689,21 @@ function VisualizerScene() {
           premultiply
           blendFunction={BlendFunction.ADD}
           opacity={effects.noiseEnabled ? effects.noiseIntensity : 0}
+        />
+        <Glitch
+          delay={new THREE.Vector2(1.5, 3.5)}
+          duration={new THREE.Vector2(0.6 * effects.glitchIntensity, 1.0 * effects.glitchIntensity)}
+          strength={new THREE.Vector2(0.3 * effects.glitchIntensity, 1.0 * effects.glitchIntensity)}
+          mode={GlitchMode.SPORADIC}
+          active={effects.glitchEnabled}
+        />
+        <Scanline
+          blendFunction={BlendFunction.OVERLAY}
+          density={effects.scanlinesEnabled ? 1.25 + effects.scanlinesIntensity : 0}
+          opacity={effects.scanlinesEnabled ? effects.scanlinesIntensity * 0.5 : 0}
+        />
+        <Pixelation
+          granularity={effects.pixelationEnabled ? effects.pixelationGranularity : 0}
         />
       </EffectComposer>
     </>

@@ -85,6 +85,12 @@ export function VisualizerToolbar() {
     vignetteIntensity: visualizerConfig.effects.vignetteIntensity ?? 0.5,
     noiseEnabled: visualizerConfig.effects.noiseEnabled ?? false,
     noiseIntensity: visualizerConfig.effects.noiseIntensity ?? 0.15,
+    glitchEnabled: visualizerConfig.effects.glitchEnabled ?? false,
+    glitchIntensity: visualizerConfig.effects.glitchIntensity ?? 0.5,
+    scanlinesEnabled: visualizerConfig.effects.scanlinesEnabled ?? false,
+    scanlinesIntensity: visualizerConfig.effects.scanlinesIntensity ?? 0.5,
+    pixelationEnabled: visualizerConfig.effects.pixelationEnabled ?? false,
+    pixelationGranularity: visualizerConfig.effects.pixelationGranularity ?? 8,
   };
 
   return (
@@ -265,6 +271,117 @@ export function VisualizerToolbar() {
               min={0}
               max={1}
               step={0.01}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Glitch Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Glitch</Label>
+            <p className="text-[9px] text-muted-foreground">Digital artifacts</p>
+          </div>
+          <Switch
+            checked={effects.glitchEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ glitchEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Glitch Intensity */}
+        {effects.glitchEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {effects.glitchIntensity.toFixed(2)}
+              </span>
+            </div>
+            <Slider
+              value={[effects.glitchIntensity]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ glitchIntensity: val });
+              }}
+              min={0}
+              max={2}
+              step={0.01}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Scanlines Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Scanlines</Label>
+            <p className="text-[9px] text-muted-foreground">CRT monitor effect</p>
+          </div>
+          <Switch
+            checked={effects.scanlinesEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ scanlinesEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Scanlines Intensity */}
+        {effects.scanlinesEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {effects.scanlinesIntensity.toFixed(2)}
+              </span>
+            </div>
+            <Slider
+              value={[effects.scanlinesIntensity]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ scanlinesIntensity: val });
+              }}
+              min={0}
+              max={2}
+              step={0.01}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Pixelation Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Pixelation</Label>
+            <p className="text-[9px] text-muted-foreground">Retro 8-bit look</p>
+          </div>
+          <Switch
+            checked={effects.pixelationEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ pixelationEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Pixelation Granularity */}
+        {effects.pixelationEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Granularity</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {effects.pixelationGranularity.toFixed(0)}
+              </span>
+            </div>
+            <Slider
+              value={[effects.pixelationGranularity]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ pixelationGranularity: val });
+              }}
+              min={2}
+              max={32}
+              step={1}
               className="w-full"
             />
           </div>

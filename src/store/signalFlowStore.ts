@@ -24,6 +24,12 @@ export interface VisualizerEffects {
   vignetteIntensity: number;
   noiseEnabled: boolean;
   noiseIntensity: number;
+  glitchEnabled: boolean;
+  glitchIntensity: number;
+  scanlinesEnabled: boolean;
+  scanlinesIntensity: number;
+  pixelationEnabled: boolean;
+  pixelationGranularity: number;
 }
 
 export interface VisualizerConfig {
@@ -122,6 +128,12 @@ export const useSignalFlowStore = create<SignalFlowState>()(
           vignetteIntensity: 0.5,
           noiseEnabled: false,
           noiseIntensity: 0.15,
+          glitchEnabled: false,
+          glitchIntensity: 0.5,
+          scanlinesEnabled: false,
+          scanlinesIntensity: 0.5,
+          pixelationEnabled: false,
+          pixelationGranularity: 8,
         },
         barCount: 64,
         particleCount: 50,
