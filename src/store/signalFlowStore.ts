@@ -4,6 +4,8 @@ import { type Node, type Edge } from "@xyflow/react";
 import { type SignalBlockData } from "@/components/SignalBlock";
 import { projectApi, type ProjectMetadata } from "@/lib/projectApi";
 
+export type AppMode = "signal" | "visualizer";
+
 interface SignalFlowState {
   nodes: Node[];
   edges: Edge[];
@@ -11,6 +13,9 @@ interface SignalFlowState {
   configDrawerNodeId: string | null;
   isPlaying: boolean;
   nodeIdCounter: number;
+
+  // App mode (signal generation vs audio visualizer)
+  appMode: AppMode;
 
   // Project management
   currentProjectId: string | null;
@@ -32,6 +37,8 @@ interface SignalFlowState {
   updateNodeConfig: (nodeId: string, updates: Partial<SignalBlockData>) => void;
   deleteNode: (nodeId: string) => void;
   updateNodeData: (nodeId: string, data: Partial<SignalBlockData>) => void;
+  setAppMode: (mode: AppMode) => void;
+  toggleAppMode: () => void;
 
   // Project persistence
   saveProject: (name: string, description?: string) => Promise<void>;
@@ -63,6 +70,9 @@ export const useSignalFlowStore = create<SignalFlowState>()(
       configDrawerNodeId: null,
       isPlaying: false,
       nodeIdCounter: 0,
+
+      // App mode
+      appMode: "signal",
 
       // Project management state
       currentProjectId: null,
@@ -156,6 +166,14 @@ export const useSignalFlowStore = create<SignalFlowState>()(
               : node,
           ),
           isDirty: true, // Mark as dirty when node data changes
+        }));
+      },
+
+      setAppMode: (mode) => set({ appMode: mode }),
+
+      toggleAppMode: () => {
+        set((state) => ({
+          appMode: state.appMode === "signal" ? "visualizer" : "signal",
         }));
       },
 
@@ -294,6 +312,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
         selectedNodeId: state.selectedNodeId,
         isPlaying: state.isPlaying,
         nodeIdCounter: state.nodeIdCounter,
+        appMode: state.appMode,
       }),
     },
   ),

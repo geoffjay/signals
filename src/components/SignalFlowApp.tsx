@@ -34,6 +34,7 @@ import { useTheme } from "@/components/theme-provider";
 import { SignalProcessingEngine } from "@/engine/SignalProcessingEngine";
 import { useSignalFlowStore } from "@/store/signalFlowStore";
 import { draftStorage, instrumentApi } from "@/lib/instrumentApi";
+import { VisualizerCanvas } from "@/visualizer";
 
 const nodeTypes = {
   signalBlock: SignalBlock,
@@ -48,6 +49,7 @@ export function SignalFlowApp() {
     selectedNodeId,
     configDrawerNodeId,
     isPlaying,
+    appMode,
     setNodes: setStoreNodes,
     setEdges: setStoreEdges,
     setSelectedNodeId,
@@ -658,54 +660,60 @@ export function SignalFlowApp() {
             className="h-full w-full rounded-3xl overflow-hidden border border-border shadow-canvas bg-card"
             ref={reactFlowWrapper}
           >
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              colorMode={theme}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onNodeClick={onNodeClick}
-              onPaneClick={onPaneClick}
-              onDrop={onDrop}
-              onDragOver={onDragOver}
-              onInit={(instance) => {
-                reactFlowInstanceRef.current = instance;
-              }}
-              nodeTypes={nodeTypes}
-              proOptions={proOptions}
-              fitView
-            >
-              <Background />
-              <Controls showInteractive={false}>
-                <ControlButton
-                  onClick={() => setIsToolbarVisible(!isToolbarVisible)}
-                  title={isToolbarVisible ? "Hide toolbar" : "Show toolbar"}
-                >
-                  {isToolbarVisible ? (
-                    <PanelLeftClose size={12} strokeWidth={1.5} />
-                  ) : (
-                    <PanelLeftOpen size={12} strokeWidth={1.5} />
-                  )}
-                </ControlButton>
-              </Controls>
-              <MiniMap pannable zoomable />
-            </ReactFlow>
+            {appMode === "signal" ? (
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                colorMode={theme}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onNodeClick={onNodeClick}
+                onPaneClick={onPaneClick}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
+                onInit={(instance) => {
+                  reactFlowInstanceRef.current = instance;
+                }}
+                nodeTypes={nodeTypes}
+                proOptions={proOptions}
+                fitView
+              >
+                <Background />
+                <Controls showInteractive={false}>
+                  <ControlButton
+                    onClick={() => setIsToolbarVisible(!isToolbarVisible)}
+                    title={isToolbarVisible ? "Hide toolbar" : "Show toolbar"}
+                  >
+                    {isToolbarVisible ? (
+                      <PanelLeftClose size={12} strokeWidth={1.5} />
+                    ) : (
+                      <PanelLeftOpen size={12} strokeWidth={1.5} />
+                    )}
+                  </ControlButton>
+                </Controls>
+                <MiniMap pannable zoomable />
+              </ReactFlow>
+            ) : (
+              <VisualizerCanvas />
+            )}
           </div>
 
-          {/* Right Configuration Drawer - Absolutely positioned overlay */}
-          <div className="absolute top-0 right-4 bottom-4 pointer-events-none overflow-hidden">
-            <ConfigDrawer
-              node={configDrawerNode as Node<SignalBlockData> | undefined}
-              edges={edges}
-              onConfigChange={(config) =>
-                configDrawerNode &&
-                updateNodeConfig(configDrawerNode.id, config)
-              }
-              onDelete={deleteSelectedNode}
-              onClose={() => setConfigDrawerNodeId(null)}
-            />
-          </div>
+          {/* Right Configuration Drawer - Absolutely positioned overlay (only in signal mode) */}
+          {appMode === "signal" && (
+            <div className="absolute top-0 right-4 bottom-4 pointer-events-none overflow-hidden">
+              <ConfigDrawer
+                node={configDrawerNode as Node<SignalBlockData> | undefined}
+                edges={edges}
+                onConfigChange={(config) =>
+                  configDrawerNode &&
+                  updateNodeConfig(configDrawerNode.id, config)
+                }
+                onDelete={deleteSelectedNode}
+                onClose={() => setConfigDrawerNodeId(null)}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
