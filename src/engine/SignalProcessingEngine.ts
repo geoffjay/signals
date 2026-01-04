@@ -16,6 +16,12 @@ export class SignalProcessingEngine {
   private reactFlowNodes: Node[] = [];
   private reactFlowEdges: Edge[] = [];
   private isRunning = false;
+
+  // Master analyser for visualizer - captures all audio going to speakers
+  private masterAnalyser: AnalyserNode | null = null;
+  private masterGain: GainNode | null = null;
+  private frequencyData: Uint8Array | null = null;
+  private timeDomainData: Uint8Array | null = null;
   // Track expanded instruments: instrumentNodeId -> { definition, internalNodeIds }
   private instrumentInstances: Map<
     string,
@@ -88,8 +94,38 @@ export class SignalProcessingEngine {
 
     this.isRunning = true;
 
+    // Initialize master analyser for visualizer
+    this.initializeMasterAnalyser();
+
     // Start sequencer timing loop
     this.startSequencerLoop();
+  }
+
+  /**
+   * Initialize the master analyser node that captures all audio output
+   * This is used by the visualizer to display audio-reactive graphics
+   */
+  private initializeMasterAnalyser() {
+    if (!this.audioContext) return;
+
+    // Create master gain node - all audio outputs connect to this
+    this.masterGain = this.audioContext.createGain();
+    this.masterGain.gain.value = 1.0;
+
+    // Create master analyser with good settings for visualization
+    this.masterAnalyser = this.audioContext.createAnalyser();
+    this.masterAnalyser.fftSize = 2048; // Good balance between frequency resolution and performance
+    this.masterAnalyser.smoothingTimeConstant = 0.8; // Smooth out rapid changes
+    this.masterAnalyser.minDecibels = -90;
+    this.masterAnalyser.maxDecibels = -10;
+
+    // Initialize data arrays
+    this.frequencyData = new Uint8Array(this.masterAnalyser.frequencyBinCount);
+    this.timeDomainData = new Uint8Array(this.masterAnalyser.fftSize);
+
+    // Connect: masterGain -> masterAnalyser -> destination
+    this.masterGain.connect(this.masterAnalyser);
+    this.masterAnalyser.connect(this.audioContext.destination);
   }
 
   stop() {
@@ -123,7 +159,61 @@ export class SignalProcessingEngine {
     this.instrumentInstances.clear();
     this.sequencerNodes.clear();
 
+    // Clean up master analyser
+    if (this.masterAnalyser) {
+      this.masterAnalyser.disconnect();
+      this.masterAnalyser = null;
+    }
+    if (this.masterGain) {
+      this.masterGain.disconnect();
+      this.masterGain = null;
+    }
+    this.frequencyData = null;
+    this.timeDomainData = null;
+
     this.isRunning = false;
+  }
+
+  /**
+   * Get the master gain node for audio output routing
+   * Audio outputs should connect to this instead of directly to destination
+   */
+  getMasterGain(): GainNode | null {
+    return this.masterGain;
+  }
+
+  /**
+   * Get frequency data from the master analyser (for visualizer)
+   * Returns an array of frequency bin magnitudes (0-255)
+   */
+  getFrequencyData(): Uint8Array | null {
+    if (!this.masterAnalyser || !this.frequencyData) return null;
+    this.masterAnalyser.getByteFrequencyData(this.frequencyData);
+    return this.frequencyData;
+  }
+
+  /**
+   * Get time domain (waveform) data from the master analyser (for visualizer)
+   * Returns an array of waveform samples (0-255, with 128 being zero crossing)
+   */
+  getTimeDomainData(): Uint8Array | null {
+    if (!this.masterAnalyser || !this.timeDomainData) return null;
+    this.masterAnalyser.getByteTimeDomainData(this.timeDomainData);
+    return this.timeDomainData;
+  }
+
+  /**
+   * Check if the engine is currently running
+   */
+  getIsRunning(): boolean {
+    return this.isRunning;
+  }
+
+  /**
+   * Get the frequency bin count from the master analyser
+   */
+  getFrequencyBinCount(): number {
+    return this.masterAnalyser?.frequencyBinCount ?? 0;
   }
 
   updateGraph(nodes: Node[], edges: Edge[]) {
@@ -469,27 +559,29 @@ export class SignalProcessingEngine {
 
         if (stereoMode) {
           // Stereo mode: reconnect internal stereo routing
-          const masterGain = this.nodes.get(node.id);
+          const masterGainNode = this.nodes.get(node.id);
           const leftGain = this.nodes.get(`${node.id}-left`);
           const rightGain = this.nodes.get(`${node.id}-right`);
           const merger = this.nodes.get(`${node.id}-merger`);
 
-          if (masterGain && leftGain && rightGain && merger && this.audioContext) {
+          if (masterGainNode && leftGain && rightGain && merger && this.audioContext) {
             try {
               leftGain.connect(merger, 0, 0); // Left -> merger channel 0
               rightGain.connect(merger, 0, 1); // Right -> merger channel 1
-              merger.connect(masterGain);
-              masterGain.connect(this.audioContext.destination);
+              merger.connect(masterGainNode);
+              const outputNode = this.masterGain || this.audioContext.destination;
+              masterGainNode.connect(outputNode);
             } catch {
               // Already connected
             }
           }
         } else {
-          // Mono mode: simple reconnect to destination
+          // Mono mode: simple reconnect to master analyser
           const audioOutputNode = this.nodes.get(node.id);
           if (audioOutputNode && this.audioContext) {
             try {
-              audioOutputNode.connect(this.audioContext.destination);
+              const outputNode = this.masterGain || this.audioContext.destination;
+              audioOutputNode.connect(outputNode);
             } catch {
               // Already connected
             }
@@ -2524,9 +2616,10 @@ export class SignalProcessingEngine {
       const masterGain = this.audioContext.createGain();
       masterGain.gain.value = config.muted ? 0 : config.volume || 0.5;
 
-      // Connect merger to master gain, then to destination
+      // Connect merger to master gain, then to master analyser (or destination if not available)
       merger.connect(masterGain);
-      masterGain.connect(this.audioContext.destination);
+      const outputNode = this.masterGain || this.audioContext.destination;
+      masterGain.connect(outputNode);
 
       // Store nodes for routing
       this.nodes.set(nodeId, masterGain); // Main node reference
@@ -2538,8 +2631,9 @@ export class SignalProcessingEngine {
       const gainNode = this.audioContext.createGain();
       gainNode.gain.value = config.muted ? 0 : config.volume || 0.5;
 
-      // Connect to destination (speakers)
-      gainNode.connect(this.audioContext.destination);
+      // Connect to master analyser (or destination if not available)
+      const outputNode = this.masterGain || this.audioContext.destination;
+      gainNode.connect(outputNode);
 
       this.nodes.set(nodeId, gainNode);
     }

@@ -1,68 +1,37 @@
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, createContext, useContext } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
+import type { SignalProcessingEngine } from "@/engine/SignalProcessingEngine";
+import { useAudioAnalysisCallback } from "@/hooks";
 
-// Demo frequency data for visualization
-function useAudioAnalyzer() {
-  const analyzerRef = useRef<AnalyserNode | null>(null);
-  const dataArrayRef = useRef<Uint8Array | null>(null);
+// Context to pass audio analysis functions into the Three.js scene
+interface AudioAnalysisContext {
+  getFrequencyData: () => Uint8Array | null;
+  getTimeDomainData: () => Uint8Array | null;
+  isRunning: () => boolean;
+}
 
-  useEffect(() => {
-    // Create a demo audio context and analyzer
-    const audioContext = new AudioContext();
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    analyzerRef.current = analyser;
-    dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+const AudioAnalysisContext = createContext<AudioAnalysisContext | null>(null);
 
-    // Create a demo oscillator for visualization
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.type = "sawtooth";
-    oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(analyser);
-    // Don't connect to destination to avoid sound output
-
-    oscillator.start();
-
-    // Modulate frequency for visual interest
-    const modulateFrequency = () => {
-      const time = audioContext.currentTime;
-      oscillator.frequency.setValueAtTime(
-        220 + Math.sin(time * 0.5) * 100,
-        time
-      );
-      requestAnimationFrame(modulateFrequency);
+function useAudioAnalysisFromContext() {
+  const context = useContext(AudioAnalysisContext);
+  if (!context) {
+    // Return dummy functions if no context (shouldn't happen in practice)
+    return {
+      getFrequencyData: () => null,
+      getTimeDomainData: () => null,
+      isRunning: () => false,
     };
-    modulateFrequency();
-
-    return () => {
-      oscillator.stop();
-      audioContext.close();
-    };
-  }, []);
-
-  const getFrequencyData = () => {
-    if (analyzerRef.current && dataArrayRef.current) {
-      analyzerRef.current.getByteFrequencyData(dataArrayRef.current);
-      return dataArrayRef.current;
-    }
-    return null;
-  };
-
-  return { getFrequencyData };
+  }
+  return context;
 }
 
 // Bar spectrum visualizer component
 function BarSpectrum({ barCount = 64 }: { barCount?: number }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
-  const { getFrequencyData } = useAudioAnalyzer();
+  const { getFrequencyData } = useAudioAnalysisFromContext();
 
   // Create geometry and material
   const geometry = useMemo(() => new THREE.BoxGeometry(0.8, 1, 0.1), []);
@@ -75,6 +44,9 @@ function BarSpectrum({ barCount = 64 }: { barCount?: number }) {
     []
   );
 
+  // Bar spacing - tighter to fit in view
+  const barSpacing = 0.15;
+
   // Initialize instances
   useEffect(() => {
     if (!meshRef.current) return;
@@ -83,14 +55,14 @@ function BarSpectrum({ barCount = 64 }: { barCount?: number }) {
     const dummy = new THREE.Object3D();
 
     for (let i = 0; i < barCount; i++) {
-      const x = (i - barCount / 2) * 1.2;
+      const x = (i - barCount / 2) * barSpacing;
       dummy.position.set(x, 0, 0);
-      dummy.scale.set(1, 0.1, 1);
+      dummy.scale.set(1, 0.5, 1); // Start with visible minimum height
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
     }
     mesh.instanceMatrix.needsUpdate = true;
-  }, [barCount]);
+  }, [barCount, barSpacing]);
 
   // Animate based on audio data
   useFrame(() => {
@@ -102,13 +74,13 @@ function BarSpectrum({ barCount = 64 }: { barCount?: number }) {
 
     for (let i = 0; i < barCount; i++) {
       // Get frequency value (0-255) and normalize
-      let value = 0.1;
+      let value = 0.5; // Minimum visible height
       if (frequencyData) {
         const index = Math.floor((i / barCount) * frequencyData.length);
-        value = Math.max(0.1, (frequencyData[index] / 255) * 20);
+        value = Math.max(0.5, (frequencyData[index] / 255) * 5);
       }
 
-      const x = (i - barCount / 2) * 1.2;
+      const x = (i - barCount / 2) * barSpacing;
       dummy.position.set(x, value / 2, 0);
       dummy.scale.set(1, value, 1);
       dummy.updateMatrix();
@@ -116,7 +88,7 @@ function BarSpectrum({ barCount = 64 }: { barCount?: number }) {
 
       // Update color based on value
       const color = new THREE.Color();
-      color.setHSL((value / 20) * 0.3, 1, 0.5 + (value / 20) * 0.3);
+      color.setHSL((value / 5) * 0.3, 1, 0.5 + (value / 5) * 0.3);
       mesh.setColorAt(i, color);
     }
 
@@ -202,8 +174,8 @@ function VisualizerScene() {
     <>
       <OrthographicCamera
         makeDefault
-        position={[0, 10, 50]}
-        zoom={10}
+        position={[0, 2, 50]}
+        zoom={50}
         near={0.1}
         far={1000}
       />
@@ -222,20 +194,28 @@ function VisualizerScene() {
   );
 }
 
-export function VisualizerCanvas() {
+interface VisualizerCanvasProps {
+  engine?: SignalProcessingEngine | null;
+}
+
+export function VisualizerCanvas({ engine = null }: VisualizerCanvasProps) {
+  const audioAnalysis = useAudioAnalysisCallback(engine);
+
   return (
     <div className="w-full h-full bg-black">
-      <Canvas
-        gl={{
-          antialias: true,
-          alpha: false,
-          powerPreference: "high-performance",
-        }}
-        dpr={[1, 2]}
-      >
-        <color attach="background" args={["#0a0a0f"]} />
-        <VisualizerScene />
-      </Canvas>
+      <AudioAnalysisContext.Provider value={audioAnalysis}>
+        <Canvas
+          gl={{
+            antialias: true,
+            alpha: false,
+            powerPreference: "high-performance",
+          }}
+          dpr={[1, 2]}
+        >
+          <color attach="background" args={["#0a0a0f"]} />
+          <VisualizerScene />
+        </Canvas>
+      </AudioAnalysisContext.Provider>
     </div>
   );
 }

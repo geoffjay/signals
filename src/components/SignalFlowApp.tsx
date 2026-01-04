@@ -695,7 +695,7 @@ export function SignalFlowApp() {
                 <MiniMap pannable zoomable />
               </ReactFlow>
             ) : (
-              <VisualizerCanvas />
+              <VisualizerCanvas engine={engineRef.current} />
             )}
           </div>
 
