@@ -79,28 +79,52 @@ export default defineConfig({
         manualChunks: (id) => {
           // React core and related libraries
           if (
-            id.includes("node_modules/react") ||
-            id.includes("node_modules/react-dom")
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/") ||
+            id.includes("node_modules/scheduler/")
           ) {
             return "react-vendor";
           }
+          // React Router
+          if (
+            id.includes("node_modules/react-router") ||
+            id.includes("node_modules/@remix-run")
+          ) {
+            return "router-vendor";
+          }
+          // Three.js and 3D rendering (largest chunk)
+          if (
+            id.includes("node_modules/three/") ||
+            id.includes("node_modules/@react-three/") ||
+            id.includes("node_modules/postprocessing/") ||
+            id.includes("node_modules/troika-") ||
+            id.includes("node_modules/meshline/") ||
+            id.includes("node_modules/maath/") ||
+            id.includes("node_modules/suspend-react/") ||
+            id.includes("node_modules/its-fine/") ||
+            id.includes("node_modules/zustand/") // zustand is a peer dep of @react-three
+          ) {
+            return "three-vendor";
+          }
           // ReactFlow and its dependencies
           if (
-            id.includes("node_modules/@xyflow") ||
-            id.includes("node_modules/@reactflow")
+            id.includes("node_modules/@xyflow/") ||
+            id.includes("node_modules/@reactflow/")
           ) {
             return "reactflow-vendor";
           }
-          // State management
-          if (id.includes("node_modules/zustand")) {
-            return "state-vendor";
-          }
           // UI component libraries
           if (
-            id.includes("node_modules/lucide-react") ||
-            id.includes("node_modules/@radix-ui")
+            id.includes("node_modules/lucide-react/") ||
+            id.includes("node_modules/@radix-ui/") ||
+            id.includes("node_modules/@base-ui/") ||
+            id.includes("node_modules/@floating-ui/")
           ) {
             return "ui-vendor";
+          }
+          // PocketBase client
+          if (id.includes("node_modules/pocketbase/")) {
+            return "pocketbase-vendor";
           }
         },
       },
