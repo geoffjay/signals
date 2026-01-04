@@ -18,6 +18,12 @@ export type VisualizerType =
 export interface VisualizerEffects {
   bloomEnabled: boolean;
   bloomIntensity: number;
+  chromaticAberrationEnabled: boolean;
+  chromaticAberrationOffset: number;
+  vignetteEnabled: boolean;
+  vignetteIntensity: number;
+  noiseEnabled: boolean;
+  noiseIntensity: number;
 }
 
 export interface VisualizerConfig {
@@ -110,6 +116,12 @@ export const useSignalFlowStore = create<SignalFlowState>()(
         effects: {
           bloomEnabled: true,
           bloomIntensity: 1.5,
+          chromaticAberrationEnabled: false,
+          chromaticAberrationOffset: 0.005,
+          vignetteEnabled: false,
+          vignetteIntensity: 0.5,
+          noiseEnabled: false,
+          noiseIntensity: 0.15,
         },
         barCount: 64,
         particleCount: 50,

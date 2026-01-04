@@ -75,6 +75,18 @@ export function VisualizerToolbar() {
     setVisualizerConfig,
   } = useSignalFlowStore();
 
+  // Merge with defaults for backwards compatibility with persisted state
+  const effects = {
+    bloomEnabled: visualizerConfig.effects.bloomEnabled ?? true,
+    bloomIntensity: visualizerConfig.effects.bloomIntensity ?? 1.5,
+    chromaticAberrationEnabled: visualizerConfig.effects.chromaticAberrationEnabled ?? false,
+    chromaticAberrationOffset: visualizerConfig.effects.chromaticAberrationOffset ?? 0.005,
+    vignetteEnabled: visualizerConfig.effects.vignetteEnabled ?? false,
+    vignetteIntensity: visualizerConfig.effects.vignetteIntensity ?? 0.5,
+    noiseEnabled: visualizerConfig.effects.noiseEnabled ?? false,
+    noiseIntensity: visualizerConfig.effects.noiseIntensity ?? 0.15,
+  };
+
   return (
     <div className="space-y-4">
       {/* Visualizer Type Selection */}
@@ -117,7 +129,7 @@ export function VisualizerToolbar() {
             <p className="text-[9px] text-muted-foreground">Glow effect</p>
           </div>
           <Switch
-            checked={visualizerConfig.effects.bloomEnabled}
+            checked={effects.bloomEnabled}
             onCheckedChange={(checked) =>
               setVisualizerEffects({ bloomEnabled: checked })
             }
@@ -125,23 +137,134 @@ export function VisualizerToolbar() {
         </div>
 
         {/* Bloom Intensity */}
-        {visualizerConfig.effects.bloomEnabled && (
+        {effects.bloomEnabled && (
           <div className="space-y-1.5 pl-1">
             <div className="flex items-center justify-between">
               <Label className="text-[10px] text-muted-foreground">Intensity</Label>
               <span className="text-[10px] text-muted-foreground">
-                {visualizerConfig.effects.bloomIntensity.toFixed(1)}
+                {effects.bloomIntensity.toFixed(1)}
               </span>
             </div>
             <Slider
-              value={[visualizerConfig.effects.bloomIntensity]}
+              value={[effects.bloomIntensity]}
               onValueChange={(value) => {
                 const val = Array.isArray(value) ? value[0] : value;
                 setVisualizerEffects({ bloomIntensity: val });
               }}
               min={0}
-              max={3}
+              max={10}
               step={0.1}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Chromatic Aberration Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Chromatic Aberration</Label>
+            <p className="text-[9px] text-muted-foreground">RGB color fringing</p>
+          </div>
+          <Switch
+            checked={effects.chromaticAberrationEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ chromaticAberrationEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Chromatic Aberration Offset */}
+        {effects.chromaticAberrationEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Offset</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {effects.chromaticAberrationOffset.toFixed(3)}
+              </span>
+            </div>
+            <Slider
+              value={[effects.chromaticAberrationOffset]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ chromaticAberrationOffset: val });
+              }}
+              min={0}
+              max={0.1}
+              step={0.001}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Vignette Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Vignette</Label>
+            <p className="text-[9px] text-muted-foreground">Darkened edges</p>
+          </div>
+          <Switch
+            checked={effects.vignetteEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ vignetteEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Vignette Intensity */}
+        {effects.vignetteEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {effects.vignetteIntensity.toFixed(2)}
+              </span>
+            </div>
+            <Slider
+              value={[effects.vignetteIntensity]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ vignetteIntensity: val });
+              }}
+              min={0}
+              max={1.5}
+              step={0.01}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Noise Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Noise</Label>
+            <p className="text-[9px] text-muted-foreground">Film grain texture</p>
+          </div>
+          <Switch
+            checked={effects.noiseEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ noiseEnabled: checked })
+            }
+          />
+        </div>
+
+        {/* Noise Intensity */}
+        {effects.noiseEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {effects.noiseIntensity.toFixed(2)}
+              </span>
+            </div>
+            <Slider
+              value={[effects.noiseIntensity]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ noiseIntensity: val });
+              }}
+              min={0}
+              max={1}
+              step={0.01}
               className="w-full"
             />
           </div>

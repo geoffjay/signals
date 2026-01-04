@@ -1,6 +1,13 @@
 import { useRef, useEffect, useMemo, createContext, useContext } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import {
+  EffectComposer,
+  Bloom,
+  ChromaticAberration,
+  Vignette,
+  Noise,
+} from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
 import { OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
 import type { SignalProcessingEngine } from "@/engine/SignalProcessingEngine";
@@ -35,7 +42,16 @@ function useVisualizerContext() {
       },
       config: {
         type: "bar-spectrum" as const,
-        effects: { bloomEnabled: true, bloomIntensity: 1.5 },
+        effects: {
+          bloomEnabled: true,
+          bloomIntensity: 1.5,
+          chromaticAberrationEnabled: false,
+          chromaticAberrationOffset: 0.005,
+          vignetteEnabled: false,
+          vignetteIntensity: 0.5,
+          noiseEnabled: false,
+          noiseIntensity: 0.15,
+        },
         barCount: 64,
         particleCount: 50,
         colorScheme: "purple" as const,
@@ -586,6 +602,18 @@ function AmbientParticles({ count = 50 }: { count?: number }) {
 function VisualizerScene() {
   const { config } = useVisualizerContext();
 
+  // Merge with defaults for backwards compatibility with persisted state
+  const effects = {
+    bloomEnabled: config.effects.bloomEnabled ?? true,
+    bloomIntensity: config.effects.bloomIntensity ?? 1.5,
+    chromaticAberrationEnabled: config.effects.chromaticAberrationEnabled ?? false,
+    chromaticAberrationOffset: config.effects.chromaticAberrationOffset ?? 0.005,
+    vignetteEnabled: config.effects.vignetteEnabled ?? false,
+    vignetteIntensity: config.effects.vignetteIntensity ?? 0.5,
+    noiseEnabled: config.effects.noiseEnabled ?? false,
+    noiseIntensity: config.effects.noiseIntensity ?? 0.15,
+  };
+
   // Render the appropriate visualizer based on type
   const renderVisualizer = () => {
     switch (config.type) {
@@ -618,16 +646,36 @@ function VisualizerScene() {
       <ambientLight intensity={0.5} />
       {renderVisualizer()}
       <AmbientParticles count={30} />
-      {config.effects.bloomEnabled && (
-        <EffectComposer>
-          <Bloom
-            intensity={config.effects.bloomIntensity}
-            luminanceThreshold={0.1}
-            luminanceSmoothing={0.9}
-            mipmapBlur
-          />
-        </EffectComposer>
-      )}
+      <EffectComposer>
+        <Bloom
+          intensity={effects.bloomEnabled ? effects.bloomIntensity : 0}
+          luminanceThreshold={0}
+          luminanceSmoothing={0.9}
+          mipmapBlur
+        />
+        <ChromaticAberration
+          offset={
+            effects.chromaticAberrationEnabled
+              ? new THREE.Vector2(
+                  effects.chromaticAberrationOffset,
+                  effects.chromaticAberrationOffset
+                )
+              : new THREE.Vector2(0, 0)
+          }
+          radialModulation={false}
+          modulationOffset={0}
+        />
+        <Vignette
+          offset={0.5}
+          darkness={effects.vignetteEnabled ? effects.vignetteIntensity : 0}
+          blendFunction={BlendFunction.NORMAL}
+        />
+        <Noise
+          premultiply
+          blendFunction={BlendFunction.ADD}
+          opacity={effects.noiseEnabled ? effects.noiseIntensity : 0}
+        />
+      </EffectComposer>
     </>
   );
 }
