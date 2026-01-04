@@ -48,13 +48,11 @@ export function Topbar({ isPlaying, onTogglePlayback }: TopbarProps) {
 
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={toggleAppMode}
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8 rounded-md"
-            >
-              <ModeIcon className="w-4 h-4" />
-            </button>
+          <TooltipTrigger
+            onClick={toggleAppMode}
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8 rounded-md"
+          >
+            <ModeIcon className="w-4 h-4" />
           </TooltipTrigger>
           <TooltipContent>
             <p>{MODE_CONFIG[appMode].tooltip}</p>

@@ -20,8 +20,8 @@ export class SignalProcessingEngine {
   // Master analyser for visualizer - captures all audio going to speakers
   private masterAnalyser: AnalyserNode | null = null;
   private masterGain: GainNode | null = null;
-  private frequencyData: Uint8Array | null = null;
-  private timeDomainData: Uint8Array | null = null;
+  private frequencyData: Uint8Array<ArrayBuffer> | null = null;
+  private timeDomainData: Uint8Array<ArrayBuffer> | null = null;
   // Track expanded instruments: instrumentNodeId -> { definition, internalNodeIds }
   private instrumentInstances: Map<
     string,

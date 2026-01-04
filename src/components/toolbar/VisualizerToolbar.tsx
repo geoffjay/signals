@@ -1,241 +1,240 @@
-import { useState, useEffect } from "react";
 import {
   BarChart3,
   Waves,
-  Circle,
   CircleDot,
   Sparkles,
   Grid3X3,
   Hexagon,
-  ChevronDown,
-  ChevronRight,
-  Mic,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { useToolbarContext } from "./ToolbarShell";
+import {
+  useSignalFlowStore,
+  type VisualizerType,
+} from "@/store/signalFlowStore";
+import { cn } from "@/lib/utils";
 
-// Visualizer element types
-export type VisualizerElementType =
-  | "bar-spectrum"
-  | "waveform"
-  | "circular-spectrum"
-  | "particle-system"
-  | "frequency-grid"
-  | "geometric-shapes"
-  | "audio-input";
-
-interface VisualizerElementDefinition {
-  type: VisualizerElementType;
+// Visualizer type definitions with icons
+const VISUALIZER_TYPES: {
+  type: VisualizerType;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
-}
-
-const VISUALIZER_ELEMENTS: VisualizerElementDefinition[] = [
+}[] = [
   {
     type: "bar-spectrum",
     label: "Bar Spectrum",
     icon: BarChart3,
-    description: "Classic frequency spectrum analyzer with bars",
+    description: "Classic frequency bars",
   },
   {
     type: "waveform",
     label: "Waveform",
     icon: Waves,
-    description: "Real-time audio waveform display",
+    description: "Time-domain waveform",
   },
   {
     type: "circular-spectrum",
-    label: "Circular Spectrum",
+    label: "Circular",
     icon: CircleDot,
-    description: "Frequency spectrum in a circular layout",
+    description: "Radial frequency display",
   },
   {
-    type: "particle-system",
+    type: "particles",
     label: "Particles",
     icon: Sparkles,
-    description: "Audio-reactive particle system",
+    description: "Audio-reactive particles",
   },
   {
     type: "frequency-grid",
-    label: "Frequency Grid",
+    label: "Grid",
     icon: Grid3X3,
-    description: "Grid visualization of frequency bands",
+    description: "Frequency band grid",
   },
   {
-    type: "geometric-shapes",
+    type: "geometric",
     label: "Geometric",
     icon: Hexagon,
-    description: "Animated geometric shapes reacting to audio",
+    description: "Animated shapes",
   },
 ];
 
-const visualizerGroups = [
-  {
-    title: "Inputs",
-    elements: [
-      {
-        type: "audio-input" as VisualizerElementType,
-        label: "Audio Input",
-        icon: Mic,
-        description: "Capture audio from microphone or system",
-      },
-    ],
-  },
-  {
-    title: "Visualizers",
-    elements: VISUALIZER_ELEMENTS,
-  },
-  {
-    title: "Effects",
-    elements: [
-      {
-        type: "particle-system" as VisualizerElementType,
-        label: "Bloom",
-        icon: Circle,
-        description: "Add glow effect to bright elements",
-      },
-    ],
-  },
+const COLOR_SCHEMES = [
+  { value: "purple" as const, label: "Purple", color: "bg-purple-500" },
+  { value: "rainbow" as const, label: "Rainbow", color: "bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500" },
+  { value: "monochrome" as const, label: "Mono", color: "bg-white" },
 ];
 
 export function VisualizerToolbar() {
-  const { showLabels } = useToolbarContext();
-
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
-    () => {
-      const saved = localStorage.getItem("visualizer-toolbar-collapsed-sections");
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    },
-  );
-
-  // Save collapsedSections to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem(
-      "visualizer-toolbar-collapsed-sections",
-      JSON.stringify(Array.from(collapsedSections)),
-    );
-  }, [collapsedSections]);
-
-  const onDragStart = (event: React.DragEvent, elementType: VisualizerElementType) => {
-    event.dataTransfer.setData("application/visualizer-element", elementType);
-    event.dataTransfer.effectAllowed = "move";
-  };
-
-  const toggleSection = (title: string) => {
-    setCollapsedSections((prev) => {
-      const next = new Set(prev);
-      if (next.has(title)) {
-        next.delete(title);
-      } else {
-        next.add(title);
-      }
-      return next;
-    });
-  };
+  const {
+    visualizerConfig,
+    setVisualizerType,
+    setVisualizerEffects,
+    setVisualizerConfig,
+  } = useSignalFlowStore();
 
   return (
-    <>
-      {/* Info Section */}
-      <div className="p-2 bg-muted/50 rounded-lg mb-4">
-        <p className="text-[10px] text-muted-foreground leading-relaxed">
-          Drag visualizer elements onto the canvas to create audio-reactive visuals.
-          Connect an audio input to drive the visualizations.
-        </p>
+    <div className="space-y-4">
+      {/* Visualizer Type Selection */}
+      <div className="space-y-2">
+        <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+          Visualizer
+        </Label>
+        <div className="grid grid-cols-3 gap-1.5">
+          {VISUALIZER_TYPES.map(({ type, label, icon: Icon }) => (
+            <button
+              key={type}
+              onClick={() => setVisualizerType(type)}
+              className={cn(
+                "flex flex-col items-center gap-1 p-2 rounded-lg border transition-all",
+                "hover:bg-accent/50",
+                visualizerConfig.type === type
+                  ? "border-purple-500 bg-purple-500/10 text-purple-400"
+                  : "border-border/50 text-muted-foreground"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              <span className="text-[9px] font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <Separator />
 
-      {/* Visualizer Element Groups */}
-      {visualizerGroups.map((group) => {
-        const isCollapsed = collapsedSections.has(group.title);
-        return (
-          <div key={group.title} className="space-y-2">
-            <button
-              onClick={() => toggleSection(group.title)}
-              className="flex items-center gap-1 w-full hover:bg-accent/50 rounded px-1 py-0.5 transition-colors"
-            >
-              {isCollapsed ? (
-                <ChevronRight className="w-3 h-3 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-3 h-3 text-muted-foreground" />
-              )}
-              <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                {group.title}
-              </h3>
-            </button>
-            {!isCollapsed && (
-              <div
-                className={showLabels ? "space-y-2" : "flex flex-wrap gap-2"}
-              >
-                {group.elements.map((element) => {
-                  const Icon = element.icon;
-                  return (
-                    <div
-                      key={element.type}
-                      draggable
-                      onDragStart={(e) => onDragStart(e, element.type)}
-                      className={`
-                        cursor-grab active:cursor-grabbing
-                        group
-                        ${showLabels ? "flex items-center gap-2 w-full" : ""}
-                      `}
-                      {...(!showLabels && {
-                        "data-tooltip-id": "block-tooltip",
-                        "data-tooltip-content": element.label,
-                      })}
-                    >
-                      <div
-                        className="
-                          flex items-center justify-center
-                          w-7 h-7 flex-shrink-0
-                          bg-purple-500/10 group-hover:bg-purple-500/20
-                          border border-purple-400/50 rounded-md
-                          transition-colors
-                        "
-                      >
-                        <Icon className="w-3.5 h-3.5 text-purple-400" />
-                      </div>
-                      {showLabels && (
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-[11px] text-foreground">
-                            {element.label}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground truncate">
-                            {element.description}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+      {/* Effects Section */}
+      <div className="space-y-3">
+        <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+          Effects
+        </Label>
+
+        {/* Bloom Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-[11px]">Bloom</Label>
+            <p className="text-[9px] text-muted-foreground">Glow effect</p>
           </div>
-        );
-      })}
+          <Switch
+            checked={visualizerConfig.effects.bloomEnabled}
+            onCheckedChange={(checked) =>
+              setVisualizerEffects({ bloomEnabled: checked })
+            }
+          />
+        </div>
 
-      <Separator className="my-4" />
-
-      {/* Quick Actions */}
-      <div className="space-y-2">
-        <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
-          Quick Start
-        </h3>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start gap-2 h-8 text-[11px]"
-          onClick={() => {
-            // TODO: Create a preset visualizer scene
-            console.log("Create preset scene");
-          }}
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          New Visualizer Scene
-        </Button>
+        {/* Bloom Intensity */}
+        {visualizerConfig.effects.bloomEnabled && (
+          <div className="space-y-1.5 pl-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {visualizerConfig.effects.bloomIntensity.toFixed(1)}
+              </span>
+            </div>
+            <Slider
+              value={[visualizerConfig.effects.bloomIntensity]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerEffects({ bloomIntensity: val });
+              }}
+              min={0}
+              max={3}
+              step={0.1}
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
-    </>
+
+      <Separator />
+
+      {/* Display Settings */}
+      <div className="space-y-3">
+        <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+          Display
+        </Label>
+
+        {/* Bar Count (for bar-spectrum) */}
+        {visualizerConfig.type === "bar-spectrum" && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Bar Count</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {visualizerConfig.barCount}
+              </span>
+            </div>
+            <Slider
+              value={[visualizerConfig.barCount]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerConfig({ barCount: val });
+              }}
+              min={16}
+              max={128}
+              step={8}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Particle Count (for particles) */}
+        {visualizerConfig.type === "particles" && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label className="text-[10px] text-muted-foreground">Particle Count</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {visualizerConfig.particleCount}
+              </span>
+            </div>
+            <Slider
+              value={[visualizerConfig.particleCount]}
+              onValueChange={(value) => {
+                const val = Array.isArray(value) ? value[0] : value;
+                setVisualizerConfig({ particleCount: val });
+              }}
+              min={20}
+              max={200}
+              step={10}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Color Scheme */}
+        <div className="space-y-1.5">
+          <Label className="text-[10px] text-muted-foreground">Color Scheme</Label>
+          <div className="flex gap-1.5">
+            {COLOR_SCHEMES.map(({ value, label, color }) => (
+              <button
+                key={value}
+                onClick={() => setVisualizerConfig({ colorScheme: value })}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md border transition-all",
+                  "hover:bg-accent/50",
+                  visualizerConfig.colorScheme === value
+                    ? "border-purple-500 bg-purple-500/10"
+                    : "border-border/50"
+                )}
+              >
+                <div className={cn("w-3 h-3 rounded-full", color)} />
+                <span className="text-[9px]">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Info Section */}
+      <div className="p-2 bg-muted/50 rounded-lg">
+        <p className="text-[9px] text-muted-foreground leading-relaxed">
+          The visualizer reacts to audio from your signal flow.
+          Start playback to see the visualization respond to your sounds.
+        </p>
+      </div>
+    </div>
   );
 }

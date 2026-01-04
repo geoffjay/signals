@@ -6,6 +6,28 @@ import { projectApi, type ProjectMetadata } from "@/lib/projectApi";
 
 export type AppMode = "signal" | "visualizer";
 
+// Visualizer types
+export type VisualizerType =
+  | "bar-spectrum"
+  | "waveform"
+  | "circular-spectrum"
+  | "particles"
+  | "frequency-grid"
+  | "geometric";
+
+export interface VisualizerEffects {
+  bloomEnabled: boolean;
+  bloomIntensity: number;
+}
+
+export interface VisualizerConfig {
+  type: VisualizerType;
+  effects: VisualizerEffects;
+  barCount: number;
+  particleCount: number;
+  colorScheme: "purple" | "rainbow" | "monochrome";
+}
+
 interface SignalFlowState {
   nodes: Node[];
   edges: Edge[];
@@ -16,6 +38,9 @@ interface SignalFlowState {
 
   // App mode (signal generation vs audio visualizer)
   appMode: AppMode;
+
+  // Visualizer configuration
+  visualizerConfig: VisualizerConfig;
 
   // Project management
   currentProjectId: string | null;
@@ -39,6 +64,11 @@ interface SignalFlowState {
   updateNodeData: (nodeId: string, data: Partial<SignalBlockData>) => void;
   setAppMode: (mode: AppMode) => void;
   toggleAppMode: () => void;
+
+  // Visualizer configuration
+  setVisualizerType: (type: VisualizerType) => void;
+  setVisualizerEffects: (effects: Partial<VisualizerEffects>) => void;
+  setVisualizerConfig: (config: Partial<VisualizerConfig>) => void;
 
   // Project persistence
   saveProject: (name: string, description?: string) => Promise<void>;
@@ -73,6 +103,18 @@ export const useSignalFlowStore = create<SignalFlowState>()(
 
       // App mode
       appMode: "signal",
+
+      // Visualizer configuration defaults
+      visualizerConfig: {
+        type: "bar-spectrum",
+        effects: {
+          bloomEnabled: true,
+          bloomIntensity: 1.5,
+        },
+        barCount: 64,
+        particleCount: 50,
+        colorScheme: "purple",
+      },
 
       // Project management state
       currentProjectId: null,
@@ -174,6 +216,37 @@ export const useSignalFlowStore = create<SignalFlowState>()(
       toggleAppMode: () => {
         set((state) => ({
           appMode: state.appMode === "signal" ? "visualizer" : "signal",
+        }));
+      },
+
+      // Visualizer configuration actions
+      setVisualizerType: (type) => {
+        set((state) => ({
+          visualizerConfig: {
+            ...state.visualizerConfig,
+            type,
+          },
+        }));
+      },
+
+      setVisualizerEffects: (effects) => {
+        set((state) => ({
+          visualizerConfig: {
+            ...state.visualizerConfig,
+            effects: {
+              ...state.visualizerConfig.effects,
+              ...effects,
+            },
+          },
+        }));
+      },
+
+      setVisualizerConfig: (config) => {
+        set((state) => ({
+          visualizerConfig: {
+            ...state.visualizerConfig,
+            ...config,
+          },
         }));
       },
 
@@ -313,6 +386,7 @@ export const useSignalFlowStore = create<SignalFlowState>()(
         isPlaying: state.isPlaying,
         nodeIdCounter: state.nodeIdCounter,
         appMode: state.appMode,
+        visualizerConfig: state.visualizerConfig,
       }),
     },
   ),
