@@ -130,6 +130,16 @@ export function getBlockInputs(
     return inputs;
   }
 
+  if (type === "audio-output") {
+    if (config.stereoMode) {
+      return [
+        { id: "left", label: "L" },
+        { id: "right", label: "R" },
+      ];
+    }
+    return [{ id: "in", label: "In" }];
+  }
+
   return definition.inputs;
 }
 

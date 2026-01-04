@@ -149,6 +149,7 @@ export class SignalProcessingEngine {
       "-C", "-C#", "-D", "-D#", "-E", "-F", "-F#", "-G", "-G#", "-A", "-A#", "-B", // note-to-freq note nodes
       "-in", "-master", // mixer/merge/routing input and master nodes (also covers note-to-freq-poly -in-)
       "-inputA", "-inputB", // crossfader input nodes
+      "-left", "-right", "-merger", // audio-output stereo channel nodes
     ];
     const isEffectSubNode = (id: string) =>
       effectSubNodeSuffixes.some((suffix) => id.includes(suffix));
@@ -463,12 +464,35 @@ export class SignalProcessingEngine {
     // Audio output nodes need to stay connected to speakers
     nodes.forEach((node) => {
       if (node.data.blockType === "audio-output") {
-        const audioOutputNode = this.nodes.get(node.id);
-        if (audioOutputNode && this.audioContext) {
-          try {
-            audioOutputNode.connect(this.audioContext.destination);
-          } catch {
-            // Already connected
+        const config = node.data.config as BlockConfig;
+        const stereoMode = config.stereoMode || false;
+
+        if (stereoMode) {
+          // Stereo mode: reconnect internal stereo routing
+          const masterGain = this.nodes.get(node.id);
+          const leftGain = this.nodes.get(`${node.id}-left`);
+          const rightGain = this.nodes.get(`${node.id}-right`);
+          const merger = this.nodes.get(`${node.id}-merger`);
+
+          if (masterGain && leftGain && rightGain && merger && this.audioContext) {
+            try {
+              leftGain.connect(merger, 0, 0); // Left -> merger channel 0
+              rightGain.connect(merger, 0, 1); // Right -> merger channel 1
+              merger.connect(masterGain);
+              masterGain.connect(this.audioContext.destination);
+            } catch {
+              // Already connected
+            }
+          }
+        } else {
+          // Mono mode: simple reconnect to destination
+          const audioOutputNode = this.nodes.get(node.id);
+          if (audioOutputNode && this.audioContext) {
+            try {
+              audioOutputNode.connect(this.audioContext.destination);
+            } catch {
+              // Already connected
+            }
           }
         }
       }
@@ -2480,13 +2504,45 @@ export class SignalProcessingEngine {
   private createAudioOutput(nodeId: string, config: BlockConfig) {
     if (!this.audioContext) return;
 
-    const gainNode = this.audioContext.createGain();
-    gainNode.gain.value = config.muted ? 0 : config.volume || 0.5;
+    const stereoMode = config.stereoMode || false;
 
-    // Connect to destination (speakers)
-    gainNode.connect(this.audioContext.destination);
+    if (stereoMode) {
+      // Stereo mode: separate L/R inputs merged to stereo output
+      const leftGain = this.audioContext.createGain();
+      const rightGain = this.audioContext.createGain();
+      leftGain.gain.value = 1.0;
+      rightGain.gain.value = 1.0;
 
-    this.nodes.set(nodeId, gainNode);
+      // Create a channel merger to combine L/R into stereo
+      const merger = this.audioContext.createChannelMerger(2);
+
+      // Connect each gain to its respective channel in the merger
+      leftGain.connect(merger, 0, 0); // Left gain -> merger channel 0 (left)
+      rightGain.connect(merger, 0, 1); // Right gain -> merger channel 1 (right)
+
+      // Create master gain for volume control
+      const masterGain = this.audioContext.createGain();
+      masterGain.gain.value = config.muted ? 0 : config.volume || 0.5;
+
+      // Connect merger to master gain, then to destination
+      merger.connect(masterGain);
+      masterGain.connect(this.audioContext.destination);
+
+      // Store nodes for routing
+      this.nodes.set(nodeId, masterGain); // Main node reference
+      this.nodes.set(`${nodeId}-left`, leftGain);
+      this.nodes.set(`${nodeId}-right`, rightGain);
+      this.nodes.set(`${nodeId}-merger`, merger);
+    } else {
+      // Mono mode: single input to stereo output (simple gain node)
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = config.muted ? 0 : config.volume || 0.5;
+
+      // Connect to destination (speakers)
+      gainNode.connect(this.audioContext.destination);
+
+      this.nodes.set(nodeId, gainNode);
+    }
   }
 
   private createConstantSource(nodeId: string, config: BlockConfig) {
@@ -3336,6 +3392,27 @@ export class SignalProcessingEngine {
           break;
         }
 
+        case "audio-output": {
+          // Audio output: routes based on mono/stereo mode
+          if (actualTargetHandle === "in") {
+            // Mono mode: connect directly to the gain node
+            sourceNode.connect(targetNode);
+          } else if (actualTargetHandle === "left") {
+            // Stereo mode: connect to left channel gain
+            const leftNode = this.nodes.get(`${actualTargetId}-left`);
+            if (leftNode) {
+              sourceNode.connect(leftNode);
+            }
+          } else if (actualTargetHandle === "right") {
+            // Stereo mode: connect to right channel gain
+            const rightNode = this.nodes.get(`${actualTargetId}-right`);
+            if (rightNode) {
+              sourceNode.connect(rightNode);
+            }
+          }
+          break;
+        }
+
         case "envelope-follower": {
           // Envelope follower has a single input
           if (actualTargetHandle === "in") {
@@ -3875,8 +3952,38 @@ export class SignalProcessingEngine {
       }
 
       case "audio-output": {
-        if (node instanceof GainNode) {
-          node.gain.value = config.muted ? 0 : config.volume || 0.5;
+        const stereoMode = config.stereoMode || false;
+        const hasStereoNodes = this.nodes.has(`${nodeId}-left`);
+
+        // Check if stereo mode changed - need to recreate the node
+        if (stereoMode !== hasStereoNodes) {
+          // Disconnect and remove old nodes
+          const oldNode = this.nodes.get(nodeId);
+          if (oldNode) {
+            oldNode.disconnect();
+          }
+          this.nodes.delete(nodeId);
+
+          if (hasStereoNodes) {
+            // Clean up stereo sub-nodes
+            const leftNode = this.nodes.get(`${nodeId}-left`);
+            const rightNode = this.nodes.get(`${nodeId}-right`);
+            const mergerNode = this.nodes.get(`${nodeId}-merger`);
+            if (leftNode) leftNode.disconnect();
+            if (rightNode) rightNode.disconnect();
+            if (mergerNode) mergerNode.disconnect();
+            this.nodes.delete(`${nodeId}-left`);
+            this.nodes.delete(`${nodeId}-right`);
+            this.nodes.delete(`${nodeId}-merger`);
+          }
+
+          // Recreate with new mode
+          this.createAudioOutput(nodeId, config);
+        } else {
+          // Just update volume/mute on the main gain node
+          if (node instanceof GainNode) {
+            node.gain.value = config.muted ? 0 : config.volume || 0.5;
+          }
         }
         break;
       }

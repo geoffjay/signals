@@ -119,6 +119,7 @@ export interface BlockConfig {
   // Audio output
   volume?: number;
   muted?: boolean;
+  stereoMode?: boolean; // false = mono (single input), true = stereo (L/R inputs)
 
   // Input controls
   min?: number;

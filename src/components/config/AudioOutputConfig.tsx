@@ -32,6 +32,17 @@ export function AudioOutputConfig({
         />
         <Label htmlFor="muted">Muted</Label>
       </div>
+
+      <div className="flex items-center space-x-2">
+        <input
+          id="stereoMode"
+          type="checkbox"
+          checked={config.stereoMode || false}
+          onChange={(e) => onConfigChange({ stereoMode: e.target.checked })}
+          className="w-4 h-4"
+        />
+        <Label htmlFor="stereoMode">Stereo Mode (L/R inputs)</Label>
+      </div>
     </>
   );
 }

@@ -24,11 +24,12 @@ export const OUTPUT_DEFINITIONS: Record<OutputBlockType, BlockDefinition> = {
   "audio-output": {
     type: "audio-output",
     label: "Audio Output",
-    inputs: [{ id: "in", label: "In" }],
+    inputs: [{ id: "in", label: "In" }], // Default mono, stereo inputs handled dynamically
     outputs: [],
     defaultConfig: {
       volume: 0.5,
       muted: false,
+      stereoMode: false, // false = mono (single input), true = stereo (L/R inputs)
     },
   },
   "numeric-meter": {
