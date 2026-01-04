@@ -18,25 +18,36 @@ export type VisualizerType =
 export interface VisualizerEffects {
   bloomEnabled: boolean;
   bloomIntensity: number;
+  bloomExternalSource: string | null;
   chromaticAberrationEnabled: boolean;
   chromaticAberrationOffset: number;
+  chromaticAberrationExternalSource: string | null;
   vignetteEnabled: boolean;
   vignetteIntensity: number;
+  vignetteExternalSource: string | null;
   noiseEnabled: boolean;
   noiseIntensity: number;
+  noiseExternalSource: string | null;
   glitchEnabled: boolean;
   glitchIntensity: number;
+  glitchExternalSource: string | null;
   scanlinesEnabled: boolean;
   scanlinesIntensity: number;
+  scanlinesExternalSource: string | null;
   pixelationEnabled: boolean;
   pixelationGranularity: number;
+  pixelationExternalSource: string | null;
   dotScreenEnabled: boolean;
   dotScreenScale: number;
+  dotScreenExternalSource: string | null;
   sepiaEnabled: boolean;
   sepiaIntensity: number;
+  sepiaExternalSource: string | null;
   hueSaturationEnabled: boolean;
   hueShift: number;
+  hueExternalSource: string | null;
   saturation: number;
+  saturationExternalSource: string | null;
 }
 
 export interface VisualizerConfig {
@@ -129,25 +140,36 @@ export const useSignalFlowStore = create<SignalFlowState>()(
         effects: {
           bloomEnabled: true,
           bloomIntensity: 1.5,
+          bloomExternalSource: null,
           chromaticAberrationEnabled: false,
           chromaticAberrationOffset: 0.005,
+          chromaticAberrationExternalSource: null,
           vignetteEnabled: false,
           vignetteIntensity: 0.5,
+          vignetteExternalSource: null,
           noiseEnabled: false,
           noiseIntensity: 0.15,
+          noiseExternalSource: null,
           glitchEnabled: false,
           glitchIntensity: 0.5,
+          glitchExternalSource: null,
           scanlinesEnabled: false,
           scanlinesIntensity: 0.5,
+          scanlinesExternalSource: null,
           pixelationEnabled: false,
           pixelationGranularity: 8,
+          pixelationExternalSource: null,
           dotScreenEnabled: false,
           dotScreenScale: 1.5,
+          dotScreenExternalSource: null,
           sepiaEnabled: false,
           sepiaIntensity: 0.5,
+          sepiaExternalSource: null,
           hueSaturationEnabled: false,
           hueShift: 0,
+          hueExternalSource: null,
           saturation: 0,
+          saturationExternalSource: null,
         },
         barCount: 64,
         particleCount: 50,

@@ -8,13 +8,13 @@ import {
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
   useSignalFlowStore,
   type VisualizerType,
 } from "@/store/signalFlowStore";
 import { cn } from "@/lib/utils";
+import { EffectControl, DualEffectControl } from "./EffectControl";
 
 // Visualizer type definitions with icons
 const VISUALIZER_TYPES: {
@@ -79,25 +79,36 @@ export function VisualizerToolbar() {
   const effects = {
     bloomEnabled: visualizerConfig.effects.bloomEnabled ?? true,
     bloomIntensity: visualizerConfig.effects.bloomIntensity ?? 1.5,
+    bloomExternalSource: visualizerConfig.effects.bloomExternalSource ?? null,
     chromaticAberrationEnabled: visualizerConfig.effects.chromaticAberrationEnabled ?? false,
     chromaticAberrationOffset: visualizerConfig.effects.chromaticAberrationOffset ?? 0.005,
+    chromaticAberrationExternalSource: visualizerConfig.effects.chromaticAberrationExternalSource ?? null,
     vignetteEnabled: visualizerConfig.effects.vignetteEnabled ?? false,
     vignetteIntensity: visualizerConfig.effects.vignetteIntensity ?? 0.5,
+    vignetteExternalSource: visualizerConfig.effects.vignetteExternalSource ?? null,
     noiseEnabled: visualizerConfig.effects.noiseEnabled ?? false,
     noiseIntensity: visualizerConfig.effects.noiseIntensity ?? 0.15,
+    noiseExternalSource: visualizerConfig.effects.noiseExternalSource ?? null,
     glitchEnabled: visualizerConfig.effects.glitchEnabled ?? false,
     glitchIntensity: visualizerConfig.effects.glitchIntensity ?? 0.5,
+    glitchExternalSource: visualizerConfig.effects.glitchExternalSource ?? null,
     scanlinesEnabled: visualizerConfig.effects.scanlinesEnabled ?? false,
     scanlinesIntensity: visualizerConfig.effects.scanlinesIntensity ?? 0.5,
+    scanlinesExternalSource: visualizerConfig.effects.scanlinesExternalSource ?? null,
     pixelationEnabled: visualizerConfig.effects.pixelationEnabled ?? false,
     pixelationGranularity: visualizerConfig.effects.pixelationGranularity ?? 8,
+    pixelationExternalSource: visualizerConfig.effects.pixelationExternalSource ?? null,
     dotScreenEnabled: visualizerConfig.effects.dotScreenEnabled ?? false,
     dotScreenScale: visualizerConfig.effects.dotScreenScale ?? 1.5,
+    dotScreenExternalSource: visualizerConfig.effects.dotScreenExternalSource ?? null,
     sepiaEnabled: visualizerConfig.effects.sepiaEnabled ?? false,
     sepiaIntensity: visualizerConfig.effects.sepiaIntensity ?? 0.5,
+    sepiaExternalSource: visualizerConfig.effects.sepiaExternalSource ?? null,
     hueSaturationEnabled: visualizerConfig.effects.hueSaturationEnabled ?? false,
     hueShift: visualizerConfig.effects.hueShift ?? 0,
+    hueExternalSource: visualizerConfig.effects.hueExternalSource ?? null,
     saturation: visualizerConfig.effects.saturation ?? 0,
+    saturationExternalSource: visualizerConfig.effects.saturationExternalSource ?? null,
   };
 
   return (
@@ -135,396 +146,186 @@ export function VisualizerToolbar() {
           Effects
         </Label>
 
-        {/* Bloom Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Bloom</Label>
-            <p className="text-[9px] text-muted-foreground">Glow effect</p>
-          </div>
-          <Switch
-            checked={effects.bloomEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ bloomEnabled: checked })
-            }
-          />
-        </div>
+        {/* Bloom */}
+        <EffectControl
+          effectName="bloom"
+          label="Bloom"
+          description="Glow effect"
+          enabled={effects.bloomEnabled}
+          value={effects.bloomIntensity}
+          externalSource={effects.bloomExternalSource}
+          min={0}
+          max={10}
+          step={0.1}
+          valueLabel="Intensity"
+          onToggle={() => setVisualizerEffects({ bloomEnabled: !effects.bloomEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ bloomIntensity: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ bloomExternalSource: s })}
+        />
 
-        {/* Bloom Intensity */}
-        {effects.bloomEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.bloomIntensity.toFixed(1)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.bloomIntensity]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ bloomIntensity: val });
-              }}
-              min={0}
-              max={10}
-              step={0.1}
-              className="w-full"
-            />
-          </div>
-        )}
+        {/* Chromatic Aberration */}
+        <EffectControl
+          effectName="chromaticAberration"
+          label="Chromatic Aberration"
+          description="RGB color fringing"
+          enabled={effects.chromaticAberrationEnabled}
+          value={effects.chromaticAberrationOffset}
+          externalSource={effects.chromaticAberrationExternalSource}
+          min={0}
+          max={0.1}
+          step={0.001}
+          valueLabel="Offset"
+          onToggle={() => setVisualizerEffects({ chromaticAberrationEnabled: !effects.chromaticAberrationEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ chromaticAberrationOffset: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ chromaticAberrationExternalSource: s })}
+        />
 
-        {/* Chromatic Aberration Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Chromatic Aberration</Label>
-            <p className="text-[9px] text-muted-foreground">RGB color fringing</p>
-          </div>
-          <Switch
-            checked={effects.chromaticAberrationEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ chromaticAberrationEnabled: checked })
-            }
-          />
-        </div>
+        {/* Vignette */}
+        <EffectControl
+          effectName="vignette"
+          label="Vignette"
+          description="Darkened edges"
+          enabled={effects.vignetteEnabled}
+          value={effects.vignetteIntensity}
+          externalSource={effects.vignetteExternalSource}
+          min={0}
+          max={1.5}
+          step={0.01}
+          valueLabel="Intensity"
+          onToggle={() => setVisualizerEffects({ vignetteEnabled: !effects.vignetteEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ vignetteIntensity: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ vignetteExternalSource: s })}
+        />
 
-        {/* Chromatic Aberration Offset */}
-        {effects.chromaticAberrationEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Offset</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.chromaticAberrationOffset.toFixed(3)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.chromaticAberrationOffset]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ chromaticAberrationOffset: val });
-              }}
-              min={0}
-              max={0.1}
-              step={0.001}
-              className="w-full"
-            />
-          </div>
-        )}
+        {/* Noise */}
+        <EffectControl
+          effectName="noise"
+          label="Noise"
+          description="Film grain texture"
+          enabled={effects.noiseEnabled}
+          value={effects.noiseIntensity}
+          externalSource={effects.noiseExternalSource}
+          min={0}
+          max={1}
+          step={0.01}
+          valueLabel="Intensity"
+          onToggle={() => setVisualizerEffects({ noiseEnabled: !effects.noiseEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ noiseIntensity: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ noiseExternalSource: s })}
+        />
 
-        {/* Vignette Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Vignette</Label>
-            <p className="text-[9px] text-muted-foreground">Darkened edges</p>
-          </div>
-          <Switch
-            checked={effects.vignetteEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ vignetteEnabled: checked })
-            }
-          />
-        </div>
+        {/* Glitch */}
+        <EffectControl
+          effectName="glitch"
+          label="Glitch"
+          description="Digital artifacts"
+          enabled={effects.glitchEnabled}
+          value={effects.glitchIntensity}
+          externalSource={effects.glitchExternalSource}
+          min={0}
+          max={2}
+          step={0.01}
+          valueLabel="Intensity"
+          onToggle={() => setVisualizerEffects({ glitchEnabled: !effects.glitchEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ glitchIntensity: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ glitchExternalSource: s })}
+        />
 
-        {/* Vignette Intensity */}
-        {effects.vignetteEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.vignetteIntensity.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.vignetteIntensity]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ vignetteIntensity: val });
-              }}
-              min={0}
-              max={1.5}
-              step={0.01}
-              className="w-full"
-            />
-          </div>
-        )}
+        {/* Scanlines */}
+        <EffectControl
+          effectName="scanlines"
+          label="Scanlines"
+          description="CRT monitor effect"
+          enabled={effects.scanlinesEnabled}
+          value={effects.scanlinesIntensity}
+          externalSource={effects.scanlinesExternalSource}
+          min={0}
+          max={2}
+          step={0.01}
+          valueLabel="Intensity"
+          onToggle={() => setVisualizerEffects({ scanlinesEnabled: !effects.scanlinesEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ scanlinesIntensity: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ scanlinesExternalSource: s })}
+        />
 
-        {/* Noise Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Noise</Label>
-            <p className="text-[9px] text-muted-foreground">Film grain texture</p>
-          </div>
-          <Switch
-            checked={effects.noiseEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ noiseEnabled: checked })
-            }
-          />
-        </div>
+        {/* Pixelation */}
+        <EffectControl
+          effectName="pixelation"
+          label="Pixelation"
+          description="Retro 8-bit look"
+          enabled={effects.pixelationEnabled}
+          value={effects.pixelationGranularity}
+          externalSource={effects.pixelationExternalSource}
+          min={2}
+          max={32}
+          step={1}
+          valueLabel="Granularity"
+          onToggle={() => setVisualizerEffects({ pixelationEnabled: !effects.pixelationEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ pixelationGranularity: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ pixelationExternalSource: s })}
+        />
 
-        {/* Noise Intensity */}
-        {effects.noiseEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.noiseIntensity.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.noiseIntensity]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ noiseIntensity: val });
-              }}
-              min={0}
-              max={1}
-              step={0.01}
-              className="w-full"
-            />
-          </div>
-        )}
+        {/* Dot Screen */}
+        <EffectControl
+          effectName="dotScreen"
+          label="Dot Screen"
+          description="Halftone pattern"
+          enabled={effects.dotScreenEnabled}
+          value={effects.dotScreenScale}
+          externalSource={effects.dotScreenExternalSource}
+          min={0.5}
+          max={5}
+          step={0.1}
+          valueLabel="Scale"
+          onToggle={() => setVisualizerEffects({ dotScreenEnabled: !effects.dotScreenEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ dotScreenScale: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ dotScreenExternalSource: s })}
+        />
 
-        {/* Glitch Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Glitch</Label>
-            <p className="text-[9px] text-muted-foreground">Digital artifacts</p>
-          </div>
-          <Switch
-            checked={effects.glitchEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ glitchEnabled: checked })
-            }
-          />
-        </div>
+        {/* Sepia */}
+        <EffectControl
+          effectName="sepia"
+          label="Sepia"
+          description="Vintage brown tone"
+          enabled={effects.sepiaEnabled}
+          value={effects.sepiaIntensity}
+          externalSource={effects.sepiaExternalSource}
+          min={0}
+          max={1}
+          step={0.01}
+          valueLabel="Intensity"
+          onToggle={() => setVisualizerEffects({ sepiaEnabled: !effects.sepiaEnabled })}
+          onValueChange={(v) => setVisualizerEffects({ sepiaIntensity: v })}
+          onExternalSourceChange={(s) => setVisualizerEffects({ sepiaExternalSource: s })}
+        />
 
-        {/* Glitch Intensity */}
-        {effects.glitchEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.glitchIntensity.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.glitchIntensity]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ glitchIntensity: val });
-              }}
-              min={0}
-              max={2}
-              step={0.01}
-              className="w-full"
-            />
-          </div>
-        )}
-
-        {/* Scanlines Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Scanlines</Label>
-            <p className="text-[9px] text-muted-foreground">CRT monitor effect</p>
-          </div>
-          <Switch
-            checked={effects.scanlinesEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ scanlinesEnabled: checked })
-            }
-          />
-        </div>
-
-        {/* Scanlines Intensity */}
-        {effects.scanlinesEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.scanlinesIntensity.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.scanlinesIntensity]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ scanlinesIntensity: val });
-              }}
-              min={0}
-              max={2}
-              step={0.01}
-              className="w-full"
-            />
-          </div>
-        )}
-
-        {/* Pixelation Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Pixelation</Label>
-            <p className="text-[9px] text-muted-foreground">Retro 8-bit look</p>
-          </div>
-          <Switch
-            checked={effects.pixelationEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ pixelationEnabled: checked })
-            }
-          />
-        </div>
-
-        {/* Pixelation Granularity */}
-        {effects.pixelationEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Granularity</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.pixelationGranularity.toFixed(0)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.pixelationGranularity]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ pixelationGranularity: val });
-              }}
-              min={2}
-              max={32}
-              step={1}
-              className="w-full"
-            />
-          </div>
-        )}
-
-        {/* Dot Screen Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Dot Screen</Label>
-            <p className="text-[9px] text-muted-foreground">Halftone pattern</p>
-          </div>
-          <Switch
-            checked={effects.dotScreenEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ dotScreenEnabled: checked })
-            }
-          />
-        </div>
-
-        {/* Dot Screen Scale */}
-        {effects.dotScreenEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Scale</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.dotScreenScale.toFixed(1)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.dotScreenScale]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ dotScreenScale: val });
-              }}
-              min={0.5}
-              max={5}
-              step={0.1}
-              className="w-full"
-            />
-          </div>
-        )}
-
-        {/* Sepia Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Sepia</Label>
-            <p className="text-[9px] text-muted-foreground">Vintage brown tone</p>
-          </div>
-          <Switch
-            checked={effects.sepiaEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ sepiaEnabled: checked })
-            }
-          />
-        </div>
-
-        {/* Sepia Intensity */}
-        {effects.sepiaEnabled && (
-          <div className="space-y-1.5 pl-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-muted-foreground">Intensity</Label>
-              <span className="text-[10px] text-muted-foreground">
-                {effects.sepiaIntensity.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[effects.sepiaIntensity]}
-              onValueChange={(value) => {
-                const val = Array.isArray(value) ? value[0] : value;
-                setVisualizerEffects({ sepiaIntensity: val });
-              }}
-              min={0}
-              max={1}
-              step={0.01}
-              className="w-full"
-            />
-          </div>
-        )}
-
-        {/* Hue/Saturation Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label className="text-[11px]">Hue/Saturation</Label>
-            <p className="text-[9px] text-muted-foreground">Color adjustment</p>
-          </div>
-          <Switch
-            checked={effects.hueSaturationEnabled}
-            onCheckedChange={(checked) =>
-              setVisualizerEffects({ hueSaturationEnabled: checked })
-            }
-          />
-        </div>
-
-        {/* Hue/Saturation Controls */}
-        {effects.hueSaturationEnabled && (
-          <>
-            <div className="space-y-1.5 pl-1">
-              <div className="flex items-center justify-between">
-                <Label className="text-[10px] text-muted-foreground">Hue Shift</Label>
-                <span className="text-[10px] text-muted-foreground">
-                  {(effects.hueShift * 180).toFixed(0)}°
-                </span>
-              </div>
-              <Slider
-                value={[effects.hueShift]}
-                onValueChange={(value) => {
-                  const val = Array.isArray(value) ? value[0] : value;
-                  setVisualizerEffects({ hueShift: val });
-                }}
-                min={-1}
-                max={1}
-                step={0.01}
-                className="w-full"
-              />
-            </div>
-            <div className="space-y-1.5 pl-1">
-              <div className="flex items-center justify-between">
-                <Label className="text-[10px] text-muted-foreground">Saturation</Label>
-                <span className="text-[10px] text-muted-foreground">
-                  {effects.saturation >= 0 ? "+" : ""}{effects.saturation.toFixed(2)}
-                </span>
-              </div>
-              <Slider
-                value={[effects.saturation]}
-                onValueChange={(value) => {
-                  const val = Array.isArray(value) ? value[0] : value;
-                  setVisualizerEffects({ saturation: val });
-                }}
-                min={-1}
-                max={1}
-                step={0.01}
-                className="w-full"
-              />
-            </div>
-          </>
-        )}
+        {/* Hue/Saturation */}
+        <DualEffectControl
+          label="Hue/Saturation"
+          description="Color adjustment"
+          enabled={effects.hueSaturationEnabled}
+          onToggle={() => setVisualizerEffects({ hueSaturationEnabled: !effects.hueSaturationEnabled })}
+          param1Name="hue"
+          param1Label="Hue Shift"
+          param1Value={effects.hueShift}
+          param1ExternalSource={effects.hueExternalSource}
+          param1Min={-1}
+          param1Max={1}
+          param1Step={0.01}
+          param1FormatValue={(v) => `${(v * 180).toFixed(0)}°`}
+          onParam1Change={(v) => setVisualizerEffects({ hueShift: v })}
+          onParam1ExternalSourceChange={(s) => setVisualizerEffects({ hueExternalSource: s })}
+          param2Name="saturation"
+          param2Label="Saturation"
+          param2Value={effects.saturation}
+          param2ExternalSource={effects.saturationExternalSource}
+          param2Min={-1}
+          param2Max={1}
+          param2Step={0.01}
+          param2FormatValue={(v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}`}
+          onParam2Change={(v) => setVisualizerEffects({ saturation: v })}
+          onParam2ExternalSourceChange={(s) => setVisualizerEffects({ saturationExternalSource: s })}
+        />
       </div>
 
       <Separator />

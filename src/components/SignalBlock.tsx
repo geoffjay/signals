@@ -25,7 +25,9 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
   const outputs = getBlockOutputs(blockData.blockType, blockData.config);
   const { setNodes } = useReactFlow();
   const pulseTimeoutRef = useRef<number | null>(null);
-  const openConfigDrawer = useSignalFlowStore((state) => state.openConfigDrawer);
+  const openConfigDrawer = useSignalFlowStore(
+    (state) => state.openConfigDrawer,
+  );
 
   const hasInputs = inputs.length > 0;
   const hasOutputs = outputs.length > 0;
@@ -62,7 +64,12 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
             const sliderConfigs = [...(nodeData.config.sliderConfigs || [])];
             // Ensure the slider config exists
             if (!sliderConfigs[sliderIndex]) {
-              sliderConfigs[sliderIndex] = { min: 0, max: 1, step: 0.01, value: 0.5 };
+              sliderConfigs[sliderIndex] = {
+                min: 0,
+                max: 1,
+                step: 0.01,
+                value: 0.5,
+              };
             }
             sliderConfigs[sliderIndex] = {
               ...sliderConfigs[sliderIndex],
@@ -456,76 +463,86 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
           handlers={handlers}
         />
 
-        {/* Input Ports */}
-        {hasInputs && (
-          <div className="mt-2 space-y-1">
-            {inputs.map((input) => (
-              <div key={input.id} className="relative flex items-center h-6">
-                <Handle
-                  type="target"
-                  position={Position.Left}
-                  id={input.id}
-                  style={{
-                    left: "-6px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "#555",
-                    width: 12,
-                    height: 12,
-                    border: "2px solid #fff",
-                    position: "absolute",
-                  }}
-                />
-                <span className="text-xs text-muted-foreground ml-3">
-                  {input.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="flex justify-between gap-2">
+          {/* Input Ports */}
+          {hasInputs && (
+            <div className="mt-2 space-y-1">
+              {inputs.map((input) => (
+                <div key={input.id} className="relative flex items-center h-6">
+                  <Handle
+                    type="target"
+                    position={Position.Left}
+                    id={input.id}
+                    style={{
+                      left: "-6px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "#555",
+                      width: 12,
+                      height: 12,
+                      border: "2px solid #fff",
+                      position: "absolute",
+                    }}
+                  />
+                  <span className="text-xs text-muted-foreground ml-3">
+                    {input.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
 
-        {/* Output Ports */}
-        {hasOutputs && (
-          <div className={`mt-2 flex flex-col items-end ${
-            blockData.blockType === "multi-slider" && outputs.length > 2
-              ? "space-y-2 -mt-24"
-              : "space-y-1"
-          }`}>
-            {outputs.map((output) => (
-              <div
-                key={output.id}
-                className={`relative flex items-center justify-end ${
-                  blockData.blockType === "multi-slider" && outputs.length > 2
-                    ? "h-5"
-                    : "h-6"
-                }`}
-              >
-                <span className={`text-muted-foreground mr-3 ${
-                  blockData.blockType === "multi-slider" && outputs.length > 2
-                    ? "text-[9px]"
-                    : "text-xs"
-                }`}>
-                  {output.label}
-                </span>
-                <Handle
-                  type="source"
-                  position={Position.Right}
-                  id={output.id}
-                  style={{
-                    right: "-6px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "#555",
-                    width: 12,
-                    height: 12,
-                    border: "2px solid #fff",
-                    position: "absolute",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        )}
+          {/* Ensure outputs are aligned to the right */}
+          {!hasInputs && <div className="h-6" />}
+
+          {/* Output Ports */}
+          {hasOutputs && (
+            <div
+              className={`mt-2 flex flex-col items-end ${
+                blockData.blockType === "multi-slider" && outputs.length > 2
+                  ? "space-y-2 -mt-24"
+                  : "space-y-1"
+              }`}
+            >
+              {outputs.map((output) => (
+                <div
+                  key={output.id}
+                  className={`relative flex items-center justify-end ${
+                    blockData.blockType === "multi-slider" && outputs.length > 2
+                      ? "h-5"
+                      : "h-6"
+                  }`}
+                >
+                  <span
+                    className={`text-muted-foreground mr-3 ${
+                      blockData.blockType === "multi-slider" &&
+                      outputs.length > 2
+                        ? "text-[9px]"
+                        : "text-xs"
+                    }`}
+                  >
+                    {output.label}
+                  </span>
+                  <Handle
+                    type="source"
+                    position={Position.Right}
+                    id={output.id}
+                    style={{
+                      right: "-6px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "#555",
+                      width: 12,
+                      height: 12,
+                      border: "2px solid #fff",
+                      position: "absolute",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

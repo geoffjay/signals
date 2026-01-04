@@ -22,6 +22,8 @@ import {
   useSignalFlowStore,
   type VisualizerConfig,
 } from "@/store/signalFlowStore";
+import { useExternalConnectionStore } from "@/store/externalConnectionStore";
+import { mapToEffectRange } from "./effectRanges";
 
 // Context to pass audio analysis functions and config into the Three.js scene
 interface AudioAnalysisContext {
@@ -51,25 +53,36 @@ function useVisualizerContext() {
         effects: {
           bloomEnabled: true,
           bloomIntensity: 1.5,
+          bloomExternalSource: null,
           chromaticAberrationEnabled: false,
           chromaticAberrationOffset: 0.005,
+          chromaticAberrationExternalSource: null,
           vignetteEnabled: false,
           vignetteIntensity: 0.5,
+          vignetteExternalSource: null,
           noiseEnabled: false,
           noiseIntensity: 0.15,
+          noiseExternalSource: null,
           glitchEnabled: false,
           glitchIntensity: 0.5,
+          glitchExternalSource: null,
           scanlinesEnabled: false,
           scanlinesIntensity: 0.5,
+          scanlinesExternalSource: null,
           pixelationEnabled: false,
           pixelationGranularity: 8,
+          pixelationExternalSource: null,
           dotScreenEnabled: false,
           dotScreenScale: 1.5,
+          dotScreenExternalSource: null,
           sepiaEnabled: false,
           sepiaIntensity: 0.5,
+          sepiaExternalSource: null,
           hueSaturationEnabled: false,
           hueShift: 0,
+          hueExternalSource: null,
           saturation: 0,
+          saturationExternalSource: null,
         },
         barCount: 64,
         particleCount: 50,
@@ -775,33 +788,129 @@ function Effects({ effects }: EffectsProps) {
   );
 }
 
+// Helper to resolve effect value from external source or manual value
+function useResolvedEffectValue(
+  effectName: string,
+  manualValue: number,
+  externalSource: string | null
+): number {
+  // Get raw connections Map - stable reference
+  const connectionsMap = useExternalConnectionStore((state) => state.connections);
+
+  // Compute resolved value in useMemo to avoid unstable references
+  return useMemo(() => {
+    if (!externalSource) {
+      return manualValue;
+    }
+
+    // Find connection by name
+    for (const connection of connectionsMap.values()) {
+      if (connection.name === externalSource) {
+        return mapToEffectRange(connection.value, effectName);
+      }
+    }
+
+    return manualValue;
+  }, [connectionsMap, externalSource, manualValue, effectName]);
+}
+
 // Main scene component
 function VisualizerScene() {
   const { config } = useVisualizerContext();
 
+  // Get external source settings with defaults
+  const bloomExternalSource = config.effects.bloomExternalSource ?? null;
+  const chromaticAberrationExternalSource = config.effects.chromaticAberrationExternalSource ?? null;
+  const vignetteExternalSource = config.effects.vignetteExternalSource ?? null;
+  const noiseExternalSource = config.effects.noiseExternalSource ?? null;
+  const glitchExternalSource = config.effects.glitchExternalSource ?? null;
+  const scanlinesExternalSource = config.effects.scanlinesExternalSource ?? null;
+  const pixelationExternalSource = config.effects.pixelationExternalSource ?? null;
+  const dotScreenExternalSource = config.effects.dotScreenExternalSource ?? null;
+  const sepiaExternalSource = config.effects.sepiaExternalSource ?? null;
+  const hueExternalSource = config.effects.hueExternalSource ?? null;
+  const saturationExternalSource = config.effects.saturationExternalSource ?? null;
+
+  // Resolve effect values (from external source or manual)
+  const bloomIntensity = useResolvedEffectValue(
+    "bloom",
+    config.effects.bloomIntensity ?? 1.5,
+    bloomExternalSource
+  );
+  const chromaticAberrationOffset = useResolvedEffectValue(
+    "chromaticAberration",
+    config.effects.chromaticAberrationOffset ?? 0.005,
+    chromaticAberrationExternalSource
+  );
+  const vignetteIntensity = useResolvedEffectValue(
+    "vignette",
+    config.effects.vignetteIntensity ?? 0.5,
+    vignetteExternalSource
+  );
+  const noiseIntensity = useResolvedEffectValue(
+    "noise",
+    config.effects.noiseIntensity ?? 0.15,
+    noiseExternalSource
+  );
+  const glitchIntensity = useResolvedEffectValue(
+    "glitch",
+    config.effects.glitchIntensity ?? 0.5,
+    glitchExternalSource
+  );
+  const scanlinesIntensity = useResolvedEffectValue(
+    "scanlines",
+    config.effects.scanlinesIntensity ?? 0.5,
+    scanlinesExternalSource
+  );
+  const pixelationGranularity = useResolvedEffectValue(
+    "pixelation",
+    config.effects.pixelationGranularity ?? 8,
+    pixelationExternalSource
+  );
+  const dotScreenScale = useResolvedEffectValue(
+    "dotScreen",
+    config.effects.dotScreenScale ?? 1.5,
+    dotScreenExternalSource
+  );
+  const sepiaIntensity = useResolvedEffectValue(
+    "sepia",
+    config.effects.sepiaIntensity ?? 0.5,
+    sepiaExternalSource
+  );
+  const hueShift = useResolvedEffectValue(
+    "hue",
+    config.effects.hueShift ?? 0,
+    hueExternalSource
+  );
+  const saturation = useResolvedEffectValue(
+    "saturation",
+    config.effects.saturation ?? 0,
+    saturationExternalSource
+  );
+
   // Merge with defaults for backwards compatibility with persisted state
   const effects = {
     bloomEnabled: config.effects.bloomEnabled ?? true,
-    bloomIntensity: config.effects.bloomIntensity ?? 1.5,
+    bloomIntensity,
     chromaticAberrationEnabled: config.effects.chromaticAberrationEnabled ?? false,
-    chromaticAberrationOffset: config.effects.chromaticAberrationOffset ?? 0.005,
+    chromaticAberrationOffset,
     vignetteEnabled: config.effects.vignetteEnabled ?? false,
-    vignetteIntensity: config.effects.vignetteIntensity ?? 0.5,
+    vignetteIntensity,
     noiseEnabled: config.effects.noiseEnabled ?? false,
-    noiseIntensity: config.effects.noiseIntensity ?? 0.15,
+    noiseIntensity,
     glitchEnabled: config.effects.glitchEnabled ?? false,
-    glitchIntensity: config.effects.glitchIntensity ?? 0.5,
+    glitchIntensity,
     scanlinesEnabled: config.effects.scanlinesEnabled ?? false,
-    scanlinesIntensity: config.effects.scanlinesIntensity ?? 0.5,
+    scanlinesIntensity,
     pixelationEnabled: config.effects.pixelationEnabled ?? false,
-    pixelationGranularity: config.effects.pixelationGranularity ?? 8,
+    pixelationGranularity,
     dotScreenEnabled: config.effects.dotScreenEnabled ?? false,
-    dotScreenScale: config.effects.dotScreenScale ?? 1.5,
+    dotScreenScale,
     sepiaEnabled: config.effects.sepiaEnabled ?? false,
-    sepiaIntensity: config.effects.sepiaIntensity ?? 0.5,
+    sepiaIntensity,
     hueSaturationEnabled: config.effects.hueSaturationEnabled ?? false,
-    hueShift: config.effects.hueShift ?? 0,
-    saturation: config.effects.saturation ?? 0,
+    hueShift,
+    saturation,
   };
 
   // Render the appropriate visualizer based on type

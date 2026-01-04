@@ -7,12 +7,16 @@ import { InstrumentBuilder } from "@/pages/InstrumentBuilder";
 import { useAuthStore } from "@/store/authStore";
 import { useSignalFlowStore } from "@/store/signalFlowStore";
 import { useInstrumentBuilderStore } from "@/store/instrumentBuilderStore";
+import { useExternalConnectionSync } from "@/hooks/useExternalConnectionSync";
 
 function AppContent() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const isProjectDirty = useSignalFlowStore((state) => state.isDirty);
   const isInstrumentDirty = useInstrumentBuilderStore((state) => state.isDirty);
   const isDirty = isProjectDirty || isInstrumentDirty;
+
+  // Sync external connections from signal flow nodes to the store
+  useExternalConnectionSync();
 
   useEffect(() => {
     // Check if user is authenticated on mount

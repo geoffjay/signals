@@ -7,7 +7,8 @@ interface ExternalConnectionsControlProps {
 }
 
 /**
- * External Connections control block - displays connection names and current values
+ * External Connections control block - displays connection names and current values.
+ * Registration is handled by useExternalConnectionSync at the app level.
  */
 export function ExternalConnectionsControl({ nodeId, config }: ExternalConnectionsControlProps) {
   const numConnections = config.extConnectionCount || 1;
