@@ -1,71 +1,79 @@
 import { DocumentationLayout } from "./DocumentationLayout";
+import {
+  TypographyH1,
+  TypographyH2,
+  TypographyH3,
+  TypographyP,
+  TypographyLead,
+  TypographyList,
+} from "@/components/ui/typography";
 
 export function Routing() {
   return (
     <DocumentationLayout>
-      <article className="prose prose-neutral dark:prose-invert max-w-none">
-        <h1>Routing</h1>
-        <p className="lead">
+      <article>
+        <TypographyH1>Routing</TypographyH1>
+        <TypographyLead>
           Routing blocks help manage complex signal flows by combining or splitting
           signal paths.
-        </p>
+        </TypographyLead>
 
-        <h2>Multiplexer</h2>
-        <p>
+        <TypographyH2>Multiplexer</TypographyH2>
+        <TypographyP>
           The Multiplexer combines multiple input signals into a single output. This is
           useful for mixing signals together or selecting between different sources.
-        </p>
+        </TypographyP>
 
-        <h3>Configuration</h3>
-        <ul>
-          <li><strong>Number of Inputs:</strong> 2, 4, or 8 input channels</li>
-          <li><strong>Selector Value:</strong> Determines input weighting or selection</li>
-        </ul>
+        <TypographyH3>Configuration</TypographyH3>
+        <TypographyList>
+          <li><span className="font-semibold">Number of Inputs:</span> 2, 4, or 8 input channels</li>
+          <li><span className="font-semibold">Selector Value:</span> Determines input weighting or selection</li>
+        </TypographyList>
 
-        <h3>Use Cases</h3>
-        <ul>
+        <TypographyH3>Use Cases</TypographyH3>
+        <TypographyList>
           <li>Mixing multiple oscillators into one signal</li>
           <li>Creating layered sounds</li>
           <li>Combining processed and dry signals</li>
-        </ul>
+        </TypographyList>
 
-        <h2>Splitter</h2>
-        <p>
+        <TypographyH2>Splitter</TypographyH2>
+        <TypographyP>
           The Splitter takes a single input and routes it to multiple outputs. All
           outputs receive the same signal.
-        </p>
+        </TypographyP>
 
-        <h3>Configuration</h3>
-        <ul>
-          <li><strong>Number of Outputs:</strong> 2, 4, or 8 output channels</li>
-        </ul>
+        <TypographyH3>Configuration</TypographyH3>
+        <TypographyList>
+          <li><span className="font-semibold">Number of Outputs:</span> 2, 4, or 8 output channels</li>
+        </TypographyList>
 
-        <h3>Use Cases</h3>
-        <ul>
+        <TypographyH3>Use Cases</TypographyH3>
+        <TypographyList>
           <li>Sending one signal to multiple processors</li>
           <li>Parallel processing chains</li>
           <li>Monitoring a signal at multiple points</li>
-        </ul>
+        </TypographyList>
 
-        <h2>Routing Patterns</h2>
+        <TypographyH2>Routing Patterns</TypographyH2>
 
-        <h3>Serial Processing</h3>
-        <p>
+        <TypographyH3>Serial Processing</TypographyH3>
+        <TypographyP>
           Connect blocks in a chain: Generator → Processor 1 → Processor 2 → Output.
           Each processor modifies the signal before passing it to the next.
-        </p>
+        </TypographyP>
 
-        <h3>Parallel Processing</h3>
-        <p>
+        <TypographyH3>Parallel Processing</TypographyH3>
+        <TypographyP>
           Use a Splitter to send one signal to multiple processors, then use a
           Multiplexer to combine the results. This allows for complex sound design.
-        </p>
+        </TypographyP>
 
-        <h3>Monitoring</h3>
-        <p>
+        <TypographyH3>Monitoring</TypographyH3>
+        <TypographyP>
           Use a Splitter to tap into a signal for monitoring while it continues to
           the main output path.
-        </p>
+        </TypographyP>
       </article>
     </DocumentationLayout>
   );
