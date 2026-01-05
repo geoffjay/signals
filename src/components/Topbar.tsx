@@ -1,6 +1,8 @@
 import { Play, Square, Waves, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TopbarMenu } from "@/components/TopbarMenu";
+import { SearchTrigger } from "@/components/SearchTrigger";
+import { SearchDialog, useSearchDialog } from "@/components/SearchDialog";
 import { useSignalFlowStore, type AppMode } from "@/store/signalFlowStore";
 import {
   Tooltip,
@@ -30,9 +32,13 @@ const MODE_CONFIG: Record<AppMode, { icon: typeof Waves; label: string; tooltip:
 export function Topbar({ isPlaying, onTogglePlayback }: TopbarProps) {
   const { appMode, toggleAppMode } = useSignalFlowStore();
   const ModeIcon = MODE_CONFIG[appMode].icon;
+  const { open, setOpen } = useSearchDialog();
 
   return (
     <div className="h-12 flex items-center justify-end px-4 gap-2">
+      <div className="flex-1" />
+      <SearchTrigger onClick={() => setOpen(true)} />
+      <div className="w-4" />
       <Button
         onClick={onTogglePlayback}
         size="sm"
@@ -61,6 +67,7 @@ export function Topbar({ isPlaying, onTogglePlayback }: TopbarProps) {
       </TooltipProvider>
 
       <TopbarMenu />
+      <SearchDialog open={open} onOpenChange={setOpen} />
     </div>
   );
 }

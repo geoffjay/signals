@@ -1,9 +1,18 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SignalFlowAppWithProvider } from "@/components/SignalFlowApp";
-import { Documentation } from "@/pages/Documentation";
 import { InstrumentBuilder } from "@/pages/InstrumentBuilder";
+import {
+  GettingStarted,
+  Blocks,
+  SignalGeneration,
+  SignalProcessing,
+  Routing,
+  Visualization,
+  ExternalConnections,
+  KeyboardShortcuts,
+} from "@/pages/docs";
 import { useAuthStore } from "@/store/authStore";
 import { useSignalFlowStore } from "@/store/signalFlowStore";
 import { useInstrumentBuilderStore } from "@/store/instrumentBuilderStore";
@@ -39,7 +48,15 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/" element={<SignalFlowAppWithProvider />} />
-      <Route path="/docs" element={<Documentation />} />
+      <Route path="/docs" element={<Navigate to="/docs/getting-started" replace />} />
+      <Route path="/docs/getting-started" element={<GettingStarted />} />
+      <Route path="/docs/blocks" element={<Blocks />} />
+      <Route path="/docs/signal-generation" element={<SignalGeneration />} />
+      <Route path="/docs/signal-processing" element={<SignalProcessing />} />
+      <Route path="/docs/routing" element={<Routing />} />
+      <Route path="/docs/visualization" element={<Visualization />} />
+      <Route path="/docs/external-connections" element={<ExternalConnections />} />
+      <Route path="/docs/keyboard-shortcuts" element={<KeyboardShortcuts />} />
       <Route path="/instruments/builder" element={<InstrumentBuilder />} />
     </Routes>
   );
