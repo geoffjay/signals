@@ -352,15 +352,15 @@ export function SignalFlowApp() {
         return;
       }
 
-      // Cmd/Ctrl+[: Hide tools sidebar
-      if (modifierKey && event.key === "[") {
+      // Cmd/Ctrl+[: Hide tools sidebar (signal mode only)
+      if (modifierKey && event.key === "[" && appMode === "signal") {
         event.preventDefault();
         setIsToolbarVisible(false);
         return;
       }
 
-      // Cmd/Ctrl+]: Show tools sidebar
-      if (modifierKey && event.key === "]") {
+      // Cmd/Ctrl+]: Show tools sidebar (signal mode only)
+      if (modifierKey && event.key === "]" && appMode === "signal") {
         event.preventDefault();
         setIsToolbarVisible(true);
         return;
@@ -390,7 +390,7 @@ export function SignalFlowApp() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedNodeId, configDrawerNodeId, deleteSelectedNode, togglePlayback, setConfigDrawerNodeId, setIsToolbarVisible]);
+  }, [selectedNodeId, configDrawerNodeId, deleteSelectedNode, togglePlayback, setConfigDrawerNodeId, setIsToolbarVisible, appMode]);
 
   // Handle playback state changes
   useEffect(() => {
