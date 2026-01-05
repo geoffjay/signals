@@ -11,6 +11,37 @@ import { BlockContent } from "./blocks";
 import { Button } from "./ui/button";
 import { useSignalFlowStore } from "@/store/signalFlowStore";
 
+// Helper to convert color (RGBA or hex) to darkened RGBA with transparency
+function colorToHeaderRgba(color: string, darkenFactor = 0.15, alpha = 0.5): string {
+  let r: number, g: number, b: number;
+
+  // Try to parse as RGBA format first (e.g., "rgba(255, 102, 0, 1.00)")
+  const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+  if (rgbaMatch) {
+    r = parseInt(rgbaMatch[1], 10);
+    g = parseInt(rgbaMatch[2], 10);
+    b = parseInt(rgbaMatch[3], 10);
+  } else {
+    // Fall back to hex format
+    const cleanHex = color.replace("#", "");
+    r = parseInt(cleanHex.substring(0, 2), 16);
+    g = parseInt(cleanHex.substring(2, 4), 16);
+    b = parseInt(cleanHex.substring(4, 6), 16);
+  }
+
+  // Handle NaN values (invalid color)
+  if (isNaN(r) || isNaN(g) || isNaN(b)) {
+    return color; // Return original if parsing failed
+  }
+
+  // Darken the color
+  const darkenedR = Math.round(r * (1 - darkenFactor));
+  const darkenedG = Math.round(g * (1 - darkenFactor));
+  const darkenedB = Math.round(b * (1 - darkenFactor));
+
+  return `rgba(${darkenedR}, ${darkenedG}, ${darkenedB}, ${alpha})`;
+}
+
 export interface SignalBlockData extends Record<string, unknown> {
   blockType: BlockType;
   label: string;
@@ -424,15 +455,12 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
         transition-all duration-200
         ${selected ? "border-primary shadow-lg" : "border-border"}
       `}
-      style={{
-        backgroundColor: customColor || undefined,
-      }}
     >
       {/* Block Header */}
       <div
         className={`px-3 py-2 rounded-t-md border-b border-border ${!customColor ? "bg-muted/50" : ""}`}
         style={{
-          backgroundColor: customColor ? "rgba(0, 0, 0, 0.15)" : undefined,
+          backgroundColor: customColor ? colorToHeaderRgba(customColor) : undefined,
         }}
       >
         <div className="flex items-center justify-between gap-2">
@@ -453,6 +481,9 @@ export const SignalBlock = memo(({ id, data, selected }: NodeProps) => {
       {/* Block Content */}
       <div
         className={`px-4 py-3 relative rounded-b-md ${!customColor ? "bg-card" : ""}`}
+        style={{
+          backgroundColor: customColor || undefined,
+        }}
       >
         {/* Block-specific content (controls, visualizations) */}
         <BlockContent
