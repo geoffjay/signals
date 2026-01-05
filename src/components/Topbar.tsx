@@ -35,7 +35,7 @@ export function Topbar({ isPlaying, onTogglePlayback }: TopbarProps) {
   const { open, setOpen } = useSearchDialog();
 
   return (
-    <div className="h-12 flex items-center justify-end px-4 gap-2">
+    <div className="h-14 flex items-center justify-end px-4 gap-2">
       <div className="flex-1" />
       <SearchTrigger onClick={() => setOpen(true)} />
       <div className="w-4" />

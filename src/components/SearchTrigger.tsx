@@ -11,7 +11,7 @@ export function SearchTrigger({ onClick }: SearchTriggerProps) {
 
   return (
     <InputGroup
-      className="cursor-pointer w-48 hover:border-ring/50 transition-colors"
+      className="cursor-pointer w-48 h-8 hover:border-ring/50 transition-colors"
       onClick={onClick}
     >
       <InputGroupAddon align="inline-start">
